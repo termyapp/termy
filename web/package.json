@@ -15,5 +15,8 @@
     "react-use": "^15.3.4",
     "stitches-reset": "^1.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.0.2"
+  }
 }
