@@ -1,0 +1,19 @@
+{
+  "name": "termy-web",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@stitches/react": "^0.0.2",
+    "framer-motion": "^2.5.1",
+    "next": "latest",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-use": "^15.3.4",
+    "stitches-reset": "^1.0.0"
+  },
+  "license": "MIT"
+}
