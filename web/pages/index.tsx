@@ -151,6 +151,10 @@ const IndexPage = () => {
       >
         {[
           {
+            title: 'Keyboard-first',
+            description: 'Productivity++',
+          },
+          {
             title: 'Web based',
             description: 'Render all your fancy HTML in your terminal',
           },
@@ -173,11 +177,6 @@ const IndexPage = () => {
           {
             title: 'Backwards compability',
             description: 'All your existing shell commands work',
-          },
-
-          {
-            title: 'Custom `ls` command',
-            description: 'A better way to navigate your file system',
           },
         ].map(feature => (
           <Box key={feature.title}>
