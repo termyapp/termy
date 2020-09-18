@@ -5,7 +5,7 @@ description = "A Tauri App"
 authors = [ "you" ]
 license = ""
 repository = ""
-default-run = "TERMY"
+default-run = "Termy"
 edition = "2018"
 build = "src/build.rs"
 
@@ -27,5 +27,5 @@ embedded-server = [ "tauri/embedded-server" ]
 no-server = [ "tauri/no-server" ]
 
 [[bin]]
-name = "TERMY"
+name = "Termy"
 path = "src/main.rs"
