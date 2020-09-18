@@ -21,7 +21,7 @@ const Nav: React.FC = () => {
       <Flex as="ul" css={{}}>
         {[
           { ...shortcuts.KeyD, text: 'Docs' },
-          { ...shortcuts.KeyC, text: 'Discord' },
+          { ...shortcuts.KeyI, text: 'Discord' },
           { ...shortcuts.KeyG, text: 'GitHub' },
         ].map(link => (
           <Box
@@ -51,7 +51,17 @@ const Nav: React.FC = () => {
         ))}
       </Flex>
 
-      <Button as="a" href={shortcuts.KeyA.href} variant="blue" css={{}}>
+      <Button
+        as="a"
+        href={shortcuts.KeyA.href}
+        variant="blue"
+        css={{
+          display: 'none',
+          bp2: {
+            display: 'initial',
+          },
+        }}
+      >
         Get early access
         <Key code="KeyA" fn={() => window.open(shortcuts.KeyA.href)} ml>
           A

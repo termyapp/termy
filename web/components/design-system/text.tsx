@@ -13,7 +13,11 @@ export const Text = styled.span({
         fontSize: '$3',
       },
       '4': {
-        fontSize: '$4',
+        fontSize: '$3',
+
+        bp2: {
+          fontSize: '$4',
+        },
       },
       '5': {
         fontSize: '$5',
@@ -25,14 +29,22 @@ export const Text = styled.span({
       '7': {
         fontSize: '$7',
         letterSpacing: '-.021em',
+
+        bp2: {
+          fontSize: '$7',
+        },
       },
       '8': {
         fontSize: '$8',
         letterSpacing: '-.034em',
       },
       '9': {
-        fontSize: '$9',
+        fontSize: '70px',
         letterSpacing: '-.055em',
+
+        bp2: {
+          fontSize: '90px',
+        },
       },
     },
   },

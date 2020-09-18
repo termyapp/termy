@@ -110,6 +110,11 @@ const IndexPage = () => {
           top: 0,
           left: 0,
           zIndex: -1,
+
+          display: 'none',
+          bp2: {
+            display: 'initial',
+          },
         }}
       >
         <Grid
@@ -144,9 +149,13 @@ const IndexPage = () => {
       </Box>
       <Grid
         css={{
-          gridTemplateColumns: '35% 35%',
+          gridTemplateColumns: 'auto',
           justifyContent: 'center',
           gap: '$7',
+
+          bp2: {
+            gridTemplateColumns: '45% 45%',
+          },
         }}
       >
         {[
@@ -179,7 +188,7 @@ const IndexPage = () => {
           },
         ].map(feature => (
           <Box key={feature.title}>
-            <Text as="h4" size="7">
+            <Text as="h4" size="6">
               {feature.title}
             </Text>
             <Text as="p" size="5" css={{ color: '$gray700' }}>
@@ -195,10 +204,14 @@ const IndexPage = () => {
 
 const Demo = styled.img({
   display: 'block',
-  width: '80%',
+  width: '95%',
   mx: 'auto',
   br: '$3',
   border: '1px solid $gray400',
+
+  bp2: {
+    width: '80%',
+  },
 })
 
 const Arrow = styled(Text, {

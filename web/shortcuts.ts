@@ -1,6 +1,6 @@
 import { KeyProps } from './components/design-system'
 
-type Shortcut = 'Slash' | 'KeyD' | 'KeyC' | 'KeyG' | 'KeyA'
+type Shortcut = 'Slash' | 'KeyD' | 'KeyI' | 'KeyG' | 'KeyA'
 
 const shortcuts: { [key in Shortcut]: KeyProps } = {
   Slash: {
@@ -17,10 +17,10 @@ const shortcuts: { [key in Shortcut]: KeyProps } = {
     },
     href: '/docs',
   },
-  KeyC: {
+  KeyI: {
     shortcut: {
-      code: 'KeyC',
-      shortcutText: 'C',
+      code: 'KeyI',
+      shortcutText: 'I',
     },
     external: true,
     href: 'http://discord.com/invite/tzrRhdZ',

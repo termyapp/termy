@@ -1,8 +1,9 @@
-import { useRouter } from "next/dist/client/router"
-import Link from "next/link"
-import React from "react"
-import useKey, { KeyFilter } from "react-use/lib/useKey"
-import { Text, Flex, Box } from "./"
+import { useRouter } from 'next/dist/client/router'
+import Link from 'next/link'
+import React from 'react'
+import { KeyFilter } from 'react-use/lib/useKey'
+import { useKey, createBreakpoint, useMediaDevices } from 'react-use'
+import { Text, Flex } from './'
 
 interface Props {
   code: KeyFilter
@@ -10,40 +11,48 @@ interface Props {
   ml?: boolean
 }
 
+const useBreakPoint = createBreakpoint({ mobile: 300, desktop: 900 })
 export const Key: React.FC<Props> = ({ code, fn, ml = false, children }) => {
+  const breakpoint = useBreakPoint()
+  const state = useMediaDevices()
+
   useKey(
-    (e) => e.code === code,
-    (e) => {
+    e => e.code === code,
+    e => {
       // disable for dev
-      if (process.env.NODE_ENV === "development") return
+
+      if (breakpoint !== 'desktop' || process.env.NODE_ENV === 'development')
+        return
 
       e.preventDefault()
       fn()
     },
     {},
-    [code, fn]
+    [code, fn],
   )
+
+  if (breakpoint === 'mobile') return null
 
   return (
     <Flex
       css={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <Text
         css={{
-          display: "block",
-          color: "$purple600",
-          br: "$2",
-          border: "1px solid $purple300",
-          background: "$purple200",
-          px: "5px",
-          py: "3px",
-          fontSize: "9px",
-          letterSpacing: "1px",
-          ml: ml ? "$2" : "0",
+          display: 'block',
+          color: '$purple600',
+          br: '$2',
+          border: '1px solid $purple300',
+          background: '$purple200',
+          px: '5px',
+          py: '3px',
+          fontSize: '9px',
+          letterSpacing: '1px',
+          ml: ml ? '$2' : '0',
         }}
       >
         {children}
@@ -86,7 +95,7 @@ export const KeyLink: React.FC<KeyProps> = ({
       as="a"
       href={href}
       target="_blank"
-      css={{ alignItems: "center", justifyContent: "center" }}
+      css={{ alignItems: 'center', justifyContent: 'center' }}
     >
       {content}
     </Flex>
