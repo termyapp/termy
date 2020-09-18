@@ -1,9 +1,8 @@
-import { useRouter } from 'next/dist/client/router'
-import Link from 'next/link'
-import React from 'react'
-import useKey, { KeyFilter } from 'react-use/lib/useKey'
-import { Flex } from './flex'
-import { Text } from './text'
+import { useRouter } from "next/dist/client/router"
+import Link from "next/link"
+import React from "react"
+import useKey, { KeyFilter } from "react-use/lib/useKey"
+import { Text, Flex, Box } from "./"
 
 interface Props {
   code: KeyFilter
@@ -13,33 +12,43 @@ interface Props {
 
 export const Key: React.FC<Props> = ({ code, fn, ml = false, children }) => {
   useKey(
-    e => e.code === code,
-    e => {
+    (e) => e.code === code,
+    (e) => {
+      // disable for dev
+      if (process.env.NODE_ENV === "development") return
+
       e.preventDefault()
       fn()
     },
     {},
-    [code, fn],
+    [code, fn]
   )
+
   return (
-    <Text
+    <Flex
       css={{
-        display: 'inline-block',
-        color: '$purple600',
-        br: '$2',
-        border: '1px solid $purple300',
-        alignItems: 'center',
-        background: '$purple200',
-        px: '7px',
-        py: '3px',
-        fontSize: '$1',
-        letterSpacing: '1px',
-        lineHeight: 'normal',
-        ml: ml ? '$2' : '0',
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      {children}
-    </Text>
+      <Text
+        css={{
+          display: "block",
+          color: "$purple600",
+          br: "$2",
+          border: "1px solid $purple300",
+          background: "$purple200",
+          px: "5px",
+          py: "3px",
+          fontSize: "9px",
+          letterSpacing: "1px",
+          ml: ml ? "$2" : "0",
+        }}
+      >
+        {children}
+      </Text>
+    </Flex>
   )
 }
 
@@ -73,7 +82,12 @@ export const KeyLink: React.FC<KeyProps> = ({
   )
 
   return external ? (
-    <Flex as="a" href={href} target="_blank" css={{ alignItems: 'center' }}>
+    <Flex
+      as="a"
+      href={href}
+      target="_blank"
+      css={{ alignItems: "center", justifyContent: "center" }}
+    >
       {content}
     </Flex>
   ) : (

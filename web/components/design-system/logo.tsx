@@ -14,7 +14,6 @@ export const Logo = () => {
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         lineHeight: 1.3, // somehow it clips it if it's not heigh enough?!
-
         position: 'relative',
       }}
     >
@@ -22,8 +21,8 @@ export const Logo = () => {
       <Text
         css={{
           position: 'absolute',
-          top: 0,
-          left: '105%',
+          top: -8,
+          right: -12,
           WebkitTextFillColor: 'rgba(200, 10, 10, .8)',
           background: 'rgba(200, 10, 10, .2)',
           px: '$1',

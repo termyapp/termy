@@ -1,21 +1,31 @@
 import { KeyProps } from './components/design-system'
 
-const shortcuts: { [key: string]: KeyProps } = {
-  DOCS: {
+type Shortcut = 'Slash' | 'KeyD' | 'KeyC' | 'KeyG' | 'KeyA'
+
+const shortcuts: { [key in Shortcut]: KeyProps } = {
+  Slash: {
+    shortcut: {
+      code: 'Slash',
+      shortcutText: '/',
+    },
+    href: '/',
+  },
+  KeyD: {
     shortcut: {
       code: 'KeyD',
       shortcutText: 'D',
     },
     href: '/docs',
   },
-  COMMUNITY: {
+  KeyC: {
     shortcut: {
       code: 'KeyC',
       shortcutText: 'C',
     },
-    href: '/community',
+    external: true,
+    href: 'http://discord.com/invite/tzrRhdZ',
   },
-  GITHUB: {
+  KeyG: {
     shortcut: {
       code: 'KeyG',
       shortcutText: 'G',
@@ -23,7 +33,7 @@ const shortcuts: { [key: string]: KeyProps } = {
     external: true,
     href: 'https://github.com/termyapp/termy',
   },
-  GET_ACCESS: {
+  KeyA: {
     shortcut: {
       code: 'KeyA',
       shortcutText: 'A',

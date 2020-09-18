@@ -1,18 +1,18 @@
-import Link from 'next/link'
-import React from 'react'
-import shortcuts from '../shortcuts'
-import { Text, Logo, Key, KeyLink, Flex, Button, Box } from './design-system'
+import Link from "next/link"
+import React from "react"
+import shortcuts from "../shortcuts"
+import { Text, Logo, Key, KeyLink, Flex, Button, Box } from "./design-system"
 
 const Footer: React.FC = () => {
   return (
     <Flex
       as="footer"
       css={{
-        justifyContent: 'space-between',
-        alignItems: 'baseline',
-        py: '$3',
-        mt: '$9',
-        borderTop: '1px solid $gray500',
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        py: "$3",
+        mt: "$9",
+        borderTop: "1px solid $gray500",
       }}
     >
       <Link href="/">
@@ -22,27 +22,27 @@ const Footer: React.FC = () => {
       </Link>
       <Flex as="ul" css={{}}>
         {[
-          { ...shortcuts.DOCS, text: 'Docs' },
-          { ...shortcuts.COMMUNITY, text: 'Community' },
-          { ...shortcuts.GITHUB, text: 'GitHub' },
-        ].map(link => (
+          { ...shortcuts.KeyD, text: "Docs" },
+          { ...shortcuts.KeyC, text: "Discord" },
+          { ...shortcuts.KeyG, text: "GitHub" },
+        ].map((link) => (
           <Box
             key={link.text}
             as="li"
             css={{
-              '& + &': {
-                ml: '$5',
+              "& + &": {
+                ml: "$5",
               },
             }}
           >
-            <KeyLink {...link}>
+            <KeyLink {...link} shortcut={undefined}>
               <Text
                 size="4"
                 css={{
-                  color: '$gray700',
+                  color: "$gray700",
 
-                  ':hover': {
-                    color: 'white',
+                  ":hover": {
+                    color: "white",
                   },
                 }}
               >
