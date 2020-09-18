@@ -1,9 +1,9 @@
 import { useRouter } from 'next/dist/client/router'
 import Link from 'next/link'
 import React from 'react'
+import { createBreakpoint, useKey } from 'react-use'
 import { KeyFilter } from 'react-use/lib/useKey'
-import { useKey, createBreakpoint, useMediaDevices } from 'react-use'
-import { Text, Flex } from './'
+import { Flex, Text } from './'
 
 interface Props {
   code: KeyFilter
@@ -14,21 +14,20 @@ interface Props {
 const useBreakPoint = createBreakpoint({ mobile: 300, desktop: 900 })
 export const Key: React.FC<Props> = ({ code, fn, ml = false, children }) => {
   const breakpoint = useBreakPoint()
-  const state = useMediaDevices()
 
   useKey(
     e => e.code === code,
     e => {
       // disable for dev
-
-      if (breakpoint !== 'desktop' || process.env.NODE_ENV === 'development')
+      if (breakpoint !== 'desktop' || process.env.NODE_ENV === 'development') {
         return
+      }
 
       e.preventDefault()
       fn()
     },
     {},
-    [code, fn],
+    [code, fn, breakpoint, process.env.NODE_ENV],
   )
 
   if (breakpoint === 'mobile') return null
