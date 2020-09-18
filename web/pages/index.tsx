@@ -99,7 +99,7 @@ const IndexPage = () => {
             color: '$gray600',
           }}
         >
-          Pretty, cool hah?
+          Pretty cool, hah?
         </Text>
       </Box>
       <Box
@@ -151,7 +151,7 @@ const IndexPage = () => {
       >
         {[
           {
-            title: 'Keyboard-first',
+            title: 'Keyboard first',
             description: 'Productivity++',
           },
           {
@@ -161,21 +161,20 @@ const IndexPage = () => {
 
           {
             title: 'Structured data piping',
-            description:
-              'We convert your stdout/stdin to JSON, so you can do stuff with it',
+            description: 'Termy converts std{in,out,err} to JSON',
           },
           {
-            title: "VSCode's powerful editor included",
+            title: "VSCode's powerful editor",
             description: 'No more awkward interactions with vi/nano/pico',
           },
           {
-            title: 'Plugins',
+            title: 'Command Line Apps (CLA)',
             description:
-              'Bring your own plugins that replace the standard npm/yarn/git commands',
+              'Create small applications to make your tools easier to use',
           },
 
           {
-            title: 'Backwards compability',
+            title: 'Backward compatibility',
             description: 'All your existing shell commands work',
           },
         ].map(feature => (
