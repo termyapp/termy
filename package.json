@@ -3,13 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "yarn tauri:dev",
+    "dev": "yarn tauri dev",
     "start": "BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "tauri": "tauri",
-    "tauri:dev": "yarn tauri dev",
     "tauri:build": "yarn tauri build"
   },
   "eslintConfig": {
