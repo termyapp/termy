@@ -21,9 +21,7 @@ export interface CurrentDirStat extends FileEntry {
 
 export interface Payload {
   id: string
-  stdin: string
-  stdout: string
-  stderr: string
+  chunk: Uint8Array
 }
 
 export type ViewType = 'img' | 'dir' | 'text' | 'else'

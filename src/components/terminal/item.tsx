@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { Terminal } from 'xterm'
+import { FitAddon } from 'xterm-addon-fit'
 import { Command } from '../../interfaces'
 import { getCurrentDir, useListener } from '../../lib'
 import getCommandType from '../../lib/get-command-type'
@@ -40,26 +41,34 @@ const CurrentDir = styled('span', {
 })
 
 const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
-  const events = useListener(id)
   const termRef = useRef<null | Terminal>(null)
   const ref = useRef<HTMLDivElement>(null)
-  console.log('events', events)
   useEffect(() => {
     if (!ref.current) return
-    termRef.current = new Terminal()
-    termRef.current.open(ref.current)
+    const term = new Terminal({
+      convertEol: true,
+      cursorStyle: 'bar',
+      // allowTransparency: true, // this can negatively affect performance
+    })
+    const fitAddon = new FitAddon()
+    term.loadAddon(fitAddon)
+    fitAddon.fit()
+    term.open(ref.current)
+    termRef.current = term
   }, [])
 
-  useEffect(() => {
-    const term = termRef.current
-    console.log(term)
+  useListener(
+    id,
+    payload => {
+      const term = termRef.current
+      if (!term) return
+      // console.log('writing chunk', payload.id)
+      term.write(payload.chunk)
+    },
+    [],
+  )
 
-    if (!term || events.length < 1) return
-    console.log('writing', events[events.length - 1].stdout)
-    term.write(events[events.length - 1].stdout)
-  }, [events])
-
-  return <div ref={ref} style={{ background: 'red', height: '20rem' }}></div>
+  return <div ref={ref} style={{ background: 'red', height: '408px' }}></div>
 }
 
 const CustomItem = ({ id, currentDir, input }: Command) => {

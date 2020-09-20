@@ -1,20 +1,25 @@
-import { useEffect, useState } from 'react'
+import { DependencyList, useEffect } from 'react'
 import { CurrentDirStat, Payload } from '../interfaces'
 import { listen } from './tauri'
 
-export const useListener = (id: string) => {
-  const [events, setEvents] = useState<Payload[]>([])
-
+export const useListener = (
+  id: string,
+  handler: (payload: Payload) => void,
+  deps?: DependencyList,
+) => {
   useEffect(() => {
+    // receive events from shell.rs
     listen('event', event => {
-      const payload = event.payload as Payload
-      if (payload.id === id) {
-        setEvents([...events, payload])
+      const rawPayload = event.payload as { id: string; chunk: number[] }
+      if (rawPayload.id === id) {
+        const payload: Payload = {
+          id: rawPayload.id,
+          chunk: Uint8Array.from(rawPayload.chunk),
+        }
+        handler(payload)
       }
     })
-  }, [id, events, setEvents])
-
-  return events
+  }, [id, handler, ...deps])
 }
 
 export const getCurrentDir = (currentDir: string) => {

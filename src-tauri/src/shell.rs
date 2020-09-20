@@ -1,17 +1,7 @@
 use anyhow::Result;
-use base64::{decode, encode};
-use fs::File;
-use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use io::Read;
-use serde::{Deserialize, Serialize};
-use std::process::Command;
-use std::{
-    env,
-    ffi::OsStr,
-    fs,
-    io::{self, BufRead, BufReader},
-    path::Path,
-};
+use io::{BufReader, Read};
+use serde::Serialize;
+use std::{env, ffi::OsStr, io};
 use subprocess::Exec;
 use tauri::WebviewMut;
 
@@ -25,11 +15,9 @@ pub struct LsOutput {
 }
 
 #[derive(Serialize, Debug)]
-pub struct ShellResult {
+struct Payload<'a> {
     id: String,
-    stdin: String,
-    stdout: String,
-    stderr: String,
+    chunk: &'a [u8],
 }
 
 pub fn shell(
@@ -44,52 +32,37 @@ pub fn shell(
     let command = parts.next().expect("Failed to parse input");
     let args = parts.map(OsStr::new).collect::<Vec<&OsStr>>();
 
-    let mut shell_result = ShellResult {
-        id,
-        stdin: input.to_string(),
-        stdout: "".to_string(),
-        stderr: "".to_string(),
-    };
-
     match command {
-        "ls" => {
-            let mut entries = fs::read_dir(current_dir)?
-                .map(|res| {
-                    res.map(|e| LsOutput {
-                        path: e.path().to_str().unwrap().to_string(),
-                        is_dir: e.metadata().unwrap().is_dir(),
-                        file_name: e.file_name().to_str().unwrap().to_string(),
-                        is_file: e.file_type().unwrap().is_file(),
-                    })
-                })
-                .collect::<Result<Vec<_>, io::Error>>()?;
-            shell_result.stdout = serde_json::to_string(&entries)?;
-        }
         command => {
             env::set_current_dir(&current_dir)?;
 
-            let mut p = Exec::cmd(command).args(&args).stream_stdout()?;
+            // todo: stdin & stderr
+            let p = Exec::cmd(command).args(&args).stream_stdout()?;
 
-            let reader = BufReader::new(p);
-
-            reader.lines().for_each(|line| match line {
-                Ok(out) => {
-                    shell_result.stdout += &format!("{}\n", out);
+            let mut reader = BufReader::new(p);
+            let mut chunk = [0u8; 8 * 1024];
+            loop {
+                let len = reader.read(&mut chunk)?;
+                if len == 0 {
+                    break;
                 }
-                Err(err) => {
-                    shell_result.stderr += err.to_string().as_ref();
-                }
-            });
+                let chunk = &chunk[..len];
+                let event_result = tauri::event::emit(
+                    webview,
+                    "event",
+                    Some(Payload {
+                        id: id.clone(),
+                        chunk,
+                    }),
+                );
+                if let Err(err) = event_result {
+                    println!("Failed to send chunk: {}", err);
+                } else {
+                    // println!("Sent chunk");
+                };
+            }
         }
     }
-
-    if shell_result.stderr.len() > 0 {
-        println!("Error: {}", shell_result.stderr);
-    } else {
-        println!("Out: {:?}", shell_result.stdout)
-    }
-
-    tauri::event::emit(webview, "event", Some(shell_result)).expect("Failed to send event");
 
     Ok(())
 }

@@ -6,23 +6,20 @@
 extern crate base64;
 
 use anyhow::Result;
-use base64::{decode, encode};
+use base64::encode;
 use cmd::{PromptStruct, ViewStruct};
 use fs::File;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use io::Read;
 use serde::{Deserialize, Serialize};
 use shell::shell;
-use std::process::Command;
 use std::{
-    env,
     ffi::OsStr,
     fs,
-    io::{self, BufRead, BufReader},
+    io::{self},
     path::Path,
 };
-use subprocess::Exec;
-use tauri::WebviewMut;
+use std::{process::Command, thread};
 mod cmd;
 mod shell;
 
@@ -38,21 +35,20 @@ struct Event {
 fn main() {
     tauri::AppBuilder::new()
         .setup(|_webview, _source| {
-            let mut webview = _webview.as_mut();
+            let webview = _webview.as_mut();
             tauri::event::listen(String::from("event"), move |arg| {
                 let event = arg.unwrap();
                 let event: Event = serde_json::from_str(&event).unwrap();
                 println!("Event: {:?}", event);
 
+                let mut webview2 = webview.clone();
                 match event.event_type.as_ref() {
                     "new" => {
-                        if let Err(error) =
-                            shell(&mut webview, event.input, event.current_dir, event.id)
-                        {
-                            println!("Error: {}", error);
-                        } else {
-                            println!("Success!");
-                        }
+                        thread::spawn(move || {
+                            shell(&mut webview2, event.input, event.current_dir, event.id)
+                        });
+
+                        println!("Success!");
                     }
                     _ => {
                         println!("Invalid event type: {}", event.event_type);
@@ -96,8 +92,6 @@ fn main() {
                             callback,
                             error,
                         ),
-
-                        _ => (),
                     }
                     Ok(())
                 }
@@ -156,7 +150,7 @@ fn view_path(path: String) -> Result<ViewPath> {
 
     let content = match view_type {
         ViewType::Dir => {
-            let mut entries = fs::read_dir(&path)?
+            let entries = fs::read_dir(&path)?
                 .map(|res| {
                     res.map(|e| DirContent {
                         path: e.path().to_str().unwrap().to_string(),
