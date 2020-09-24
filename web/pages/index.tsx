@@ -82,15 +82,16 @@ const IndexPage = () => {
             shell
           </mark>{' '}
           that provides you with{' '}
-          <Text css={{ color: '$foreground' }}>structured JSON</Text>, instead
-          of junk text.
+          <Text css={{ color: '$foreground', fontWeight: 600 }}>JSON</Text>,
+          <br />
+          instead of junk text.
         </Text>
 
         <Button as="a" href="" variant="blue" css={{ display: 'inline-block' }}>
           Get access
         </Button>
 
-        <Demo src="/demo.gif" alt="Demo Gif" />
+        <Demo src="/demo2.gif" alt="Demo Gif" />
 
         <Text
           as="p"
@@ -99,7 +100,7 @@ const IndexPage = () => {
             color: '$gray600',
           }}
         >
-          Pretty cool, hah?
+          Pretty cool, huh?
         </Text>
       </Box>
       <Box
