@@ -4,7 +4,7 @@ import create from 'zustand'
 import { Command } from './interfaces'
 import getCommandType from './lib/get-command-type'
 
-const DEFAULT_PATH = '/Users/martonlanga/code/termy/demo'
+const DEFAULT_PATH = '/Users/martonlanga'
 
 interface Store {
   history: Command[]
@@ -27,7 +27,7 @@ const [useStore] = create<Store>((set, get) => {
           'event',
           JSON.stringify({
             ...command,
-            eventType: 'new',
+            eventType: 'NEW_COMMAND',
           }),
         )
       } else if (commandType === 'custom') {

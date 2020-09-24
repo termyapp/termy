@@ -14,6 +14,7 @@ use io::Read;
 use serde::{Deserialize, Serialize};
 use shell::shell;
 use std::{
+    collections::HashMap,
     ffi::OsStr,
     fs,
     io::{self},
@@ -22,6 +23,7 @@ use std::{
 use std::{process::Command, thread};
 mod cmd;
 mod shell;
+use crossbeam_channel::unbounded;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -36,19 +38,52 @@ fn main() {
     tauri::AppBuilder::new()
         .setup(|_webview, _source| {
             let webview = _webview.as_mut();
+            let mut senders = HashMap::new();
+            println!("Senders len: {}", senders.len());
+
             tauri::event::listen(String::from("event"), move |arg| {
                 let event = arg.unwrap();
                 let event: Event = serde_json::from_str(&event).unwrap();
                 println!("Event: {:?}", event);
 
                 let mut webview2 = webview.clone();
+
                 match event.event_type.as_ref() {
-                    "new" => {
+                    "NEW_COMMAND" => {
+                        let (sender, receiver) = unbounded();
+                        senders.insert(event.id.to_owned(), sender);
+
+                        // let id = event.id.clone();
+                        // let mut remove_sender = || {
+                        //     senders.remove(&id);
+                        // };
                         thread::spawn(move || {
-                            shell(&mut webview2, event.input, event.current_dir, event.id)
+                            if let Err(err) = shell(
+                                &mut webview2,
+                                receiver,
+                                event.id,
+                                event.input,
+                                event.current_dir,
+                            ) {
+                                println!("Error in shell: {}", err);
+                            }
+
+                            // todo: clean up
+                            // remove_sender();
                         });
 
                         println!("Success!");
+                    }
+                    "STDIN" => {
+                        if let Some(s) = senders.get(&event.id) {
+                            let copy = event.input.clone();
+                            // communicate to correct thread
+                            if let Err(err) = s.send(event.input) {
+                                println!("Error sending message: {}", err);
+                            } else {
+                                println!("Message sent: {}", copy);
+                            }
+                        }
                     }
                     _ => {
                         println!("Invalid event type: {}", event.event_type);

@@ -4,6 +4,7 @@ import { FitAddon } from 'xterm-addon-fit'
 import { Command } from '../../interfaces'
 import { getCurrentDir, useListener } from '../../lib'
 import getCommandType from '../../lib/get-command-type'
+import { emit } from '../../lib/tauri'
 import { styled } from '../../stitches.config'
 import Column from '../custom/view'
 
@@ -50,9 +51,29 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
       cursorStyle: 'bar',
       // allowTransparency: true, // this can negatively affect performance
     })
+
+    term.onKey(({ key, domEvent }) => {
+      console.log('onKey', key)
+      console.log(domEvent)
+
+      switch (domEvent.key) {
+        case 'Enter':
+          key = '\r\n'
+          break
+      }
+
+      emit(
+        'event',
+        JSON.stringify({ id, eventType: 'STDIN', input: key, currentDir }),
+      )
+      term.write(key)
+    })
+
+    // fit
     const fitAddon = new FitAddon()
     term.loadAddon(fitAddon)
     fitAddon.fit()
+
     term.open(ref.current)
     termRef.current = term
   }, [])
@@ -68,7 +89,13 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
     [],
   )
 
-  return <div ref={ref} style={{ background: 'red', height: '408px' }}></div>
+  return (
+    <div
+      tabIndex={0}
+      ref={ref}
+      style={{ background: 'red', height: '408px' }}
+    ></div>
+  )
 }
 
 const CustomItem = ({ id, currentDir, input }: Command) => {

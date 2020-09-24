@@ -218,10 +218,10 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
         }}
       >
         <Editable
-          key={isFocused + ''}
+          // key={isFocused + ''}
+          // onFocus={() => setIsFocused(true)}
+          // onBlur={() => setIsFocused(false)}
           autoFocus
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
           id="input"
           className="h-full"
           placeholder={isFocused ? '>' : "Press 'Esc' to focus"}

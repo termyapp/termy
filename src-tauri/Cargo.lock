@@ -226,6 +226,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-channel"
+version = "0.4.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b153fe7cbef478c567df0f972e02e6d736db11affe43dfc9c56a9374d1adfb87"
+dependencies = [
+ "crossbeam-utils",
+ "maybe-uninit",
+]
+
+[[package]]
 name = "crossbeam-deque"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1310,6 +1320,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "base64 0.12.3",
+ "crossbeam-channel",
+ "crossbeam-utils",
  "fuzzy-matcher",
  "regex",
  "serde",
