@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="#"><img src="./logo.png" /></a>
+  <a href="https://termy.app" target="_blank"><img src="./logo.png" /></a>
 </p>
 
 <br/>
