@@ -4,17 +4,20 @@ import Terminal from './components/terminal'
 import { isDev } from './lib'
 import { darkThemeClass, css } from './stitches.config'
 
+export const globalStyles = css.global({
+  body: {
+    fontFamily: '$sans',
+    backgroundColor: '$background',
+    color: '$foreground',
+  },
+})
+
 const App: React.FC = () => {
+  globalStyles()
   const darkMode = useDarkMode(isDev, {
     classNameDark: darkThemeClass,
   })
 
-  css.global({
-    body: {
-      backgroundColor: '$background',
-      color: '$foreground',
-    },
-  })
   return <Terminal />
 }
 

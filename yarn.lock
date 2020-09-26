@@ -1419,40 +1419,22 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"
   integrity sha512-ONhaKPIufzzrlNbqtWFFd+jlnemX6lJAgq9ZeiZtS7I1PIf/la7CW4m83rTXRnVnsMbW2k56pGYu7AUFJD9Pow==
 
-"@stitches/core@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@stitches/core/-/core-0.0.2.tgz#027b965cd3745ee113094279766d6e7ad777bb3e"
-  integrity sha512-fvwZcUbb/cqV52+g+nGbwo8NbLt+Zpz7TSik+EwjtJd5Y3cpPOK0UZ+3hvMLlvqIPIzzcQULgrVuU08XkTdPfw==
+"@stitches/core@^0.0.3-canary.1":
+  version "0.0.3-canary.1"
+  resolved "https://registry.yarnpkg.com/@stitches/core/-/core-0.0.3-canary.1.tgz#cae76be9388889090df83cab7e7ba90d2233d1ab"
+  integrity sha512-HhTTkax8Yz6LMDXwVaPk9ZhEA167bUWHABPbIQFpmIIzuYtQ4W8Ju4i/0yR+/kOl2bqaV/zrx11nXEBPDQPj1g==
   dependencies:
     "@types/node" "^13.11.1"
     tslib "^1.11.1"
 
-"@stitches/css@^9.0.0-alpha.8":
-  version "9.0.0-alpha.8"
-  resolved "https://registry.yarnpkg.com/@stitches/css/-/css-9.0.0-alpha.8.tgz#272133a79baf33331ca66b4b0ced3ae71b916288"
-  integrity sha512-EuKpHng8yYqGxxkPy7IHtLgcdqnHVVtTajDHjxlGhiQeWqGIahYye3KPJnG7NFINhgyf3CpmcZGSJpTMnXU9DQ==
+"@stitches/react@0.0.3-canary.1":
+  version "0.0.3-canary.1"
+  resolved "https://registry.yarnpkg.com/@stitches/react/-/react-0.0.3-canary.1.tgz#80a0eb66910db7f506399feb0df4e50ce5a9e9e2"
+  integrity sha512-PGFUhGXM1IB5e8ruU/fzqtUdiujYiKkpYguO6L5XI2InOvm9+5zaLeoWvuCKifHD5ntjq09RxcCLK/pdq1V5SA==
   dependencies:
-    "@types/node" "^13.11.1"
-    tslib "^1.11.1"
-
-"@stitches/react@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@stitches/react/-/react-0.0.2.tgz#5cc246212b0c65df34cc2dac3320782340b518ea"
-  integrity sha512-ftd00ioQZ/gCxoR5AYVySPxVlK2J7UMc4Q0cK9IRJ+xEGBnKV+p+03E3jQt+be6k7BfRiSIlLEVHrbTN3jgqfA==
-  dependencies:
-    "@stitches/core" "^0.0.2"
+    "@stitches/core" "^0.0.3-canary.1"
     "@types/node" "^13.11.1"
     "@types/react-test-renderer" "^16.9.3"
-    tslib "^1.11.1"
-
-"@stitches/tailwind@^9.0.0-alpha.8":
-  version "9.0.0-alpha.8"
-  resolved "https://registry.yarnpkg.com/@stitches/tailwind/-/tailwind-9.0.0-alpha.8.tgz#912d08d507832d2fee155512e0b0549e88fc4e64"
-  integrity sha512-1AOA5mm4Z3v/GhgiscT09iE0bi4qL55zr/w1D7jhFf0weZQ8+0iaBZxe7/IyCYQZU2SUw+DPPhT1N8/w737wNA==
-  dependencies:
-    "@stitches/css" "^9.0.0-alpha.8"
-    "@types/node" "^13.11.1"
-    react-polymorphic-box "^1.1.0"
     tslib "^1.11.1"
 
 "@svgr/babel-plugin-add-jsx-attribute@^4.2.0":
@@ -10727,11 +10709,6 @@ react-is@^16.12.0, react-is@^16.13.1, react-is@^16.8.1, react-is@^16.8.4:
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
-react-polymorphic-box@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/react-polymorphic-box/-/react-polymorphic-box-1.1.1.tgz#a88f5a7d132a891d091eb18d80864d8089f455a5"
-  integrity sha512-qhyZ8oBUeYZLxqHacYCpAca6zoiYnQ1Y6w7bPdfo0w5mf+aTkMM9SV+Es8uUv9rmEkZ9lSp5C0fRd0gH2VS77Q==
-
 react-portal@^4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/react-portal/-/react-portal-4.2.1.tgz#12c1599238c06fb08a9800f3070bea2a3f78b1a6"
@@ -11758,10 +11735,10 @@ slate-history@^0.59.0:
     immer "^5.0.0"
     is-plain-object "^3.0.0"
 
-slate-react@^0.58.4:
-  version "0.58.4"
-  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.58.4.tgz#ecde34dd322af8413c2f23f0f0a577fed2422f46"
-  integrity sha512-3JXWHVPmYrR/EMcH1qtmwXZtYxxCtuokQg+r/4wD1Ab9J3zRmW4UGLoaRP9/uQrZOAOvr8mMh4IgmrxV2dQskw==
+slate-react@^0.59.0:
+  version "0.59.0"
+  resolved "https://registry.yarnpkg.com/slate-react/-/slate-react-0.59.0.tgz#c8043dce7ea71279f314d9951c32e4f548b1ea0b"
+  integrity sha512-Fx5vfTi0s1fY5PaXzPH8uA9mW8aevVVYrGGvqX/k363tlPDnQSs/QTibIyFl1Y3MPJ+GdocoyOGjAaZMUIXfIg==
   dependencies:
     "@types/is-hotkey" "^0.1.1"
     "@types/lodash" "^4.14.149"
@@ -12086,11 +12063,6 @@ stealthy-require@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
   integrity sha1-NbCYdbT/SfJqd35QmzCQoyJr8ks=
-
-stitches-reset@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/stitches-reset/-/stitches-reset-1.0.0.tgz#e952964efc78eb9a44eabed3e5bec75fbad5dfe3"
-  integrity sha512-qeTbzXrS27hvhfdKSWn8rEzkno1Yii4y3/2Oq6HksMuMxY9x2xzNNnNh6Aor+0XYOK6HvpQZ8kluAO3M8rt34A==
 
 stream-browserify@^2.0.1:
   version "2.0.2"

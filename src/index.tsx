@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './xterm.css'
+import './reset.css'
 import App from './app'
 
 ReactDOM.render(
