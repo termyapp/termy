@@ -22,7 +22,7 @@ const Container = styled('div', {
   flexWrap: 'nowrap',
   py: '$1',
   px: '$2',
-  background: '#f42069',
+  background: 'blue',
   fontSize: '$2',
 })
 
