@@ -3,7 +3,7 @@ use crossbeam_utils::thread;
 use io::{BufReader, Read};
 use serde::Serialize;
 use std::io::prelude::*;
-use std::{env, ffi::OsStr, io};
+use std::{ffi::OsStr, io};
 use subprocess::{Exec, Redirection};
 use tauri::WebviewMut;
 
@@ -39,42 +39,94 @@ pub fn shell(
         command => {
             // todo: set env vars
 
-            let mut p = Exec::cmd(command)
-                .args(&args)
-                .cwd(current_dir)
-                .stdin(Redirection::Pipe)
-                .stdout(Redirection::Pipe)
-                .stderr(Redirection::Pipe)
-                .popen()
-                .unwrap();
+            // todo: make programs think i'm a tty (run `tty`)
+            // https://github.com/softprops/atty
+            // https://nodejs.org/api/tty.html#tty_tt
 
-            let mut reader = BufReader::new(p.stdout.as_ref().unwrap());
+            let p;
+
+            {
+                let popen = Exec::cmd(command)
+                    .args(&args)
+                    .cwd(current_dir)
+                    .stdin(Redirection::Pipe)
+                    .stdout(Redirection::Pipe)
+                    .stderr(Redirection::Pipe)
+                    .popen();
+
+                if popen.is_err() {
+                    tauri::event::emit(
+                        webview,
+                        "event",
+                        Some(Payload {
+                            id: id.clone(),
+                            chunk: popen.unwrap_err().to_string().as_bytes(),
+                        }),
+                    )
+                    .expect("Failed to send popen error");
+                    return Ok(());
+                }
+
+                p = popen.unwrap()
+            };
+
+            let mut stdout_reader = BufReader::new(p.stdout.as_ref().unwrap());
+            let mut stderr_reader = BufReader::new(p.stderr.as_ref().unwrap());
             let mut chunk = [0u8; 1024];
-            let scope = thread::scope(|s| {
-                let handle = s.spawn(move |_| loop {
-                    println!("here {}", chunk.len());
+            let _ = thread::scope(|s| {
+                let _ = s.spawn(move |_| {
+                    loop {
+                        println!("here {}", chunk.len());
 
-                    let read = reader.read(&mut chunk);
-                    if let Ok(len) = read {
-                        if len == 0 {
-                            break;
-                        }
-                        let chunk = &chunk[..len];
-                        let event_result = tauri::event::emit(
-                            webview,
-                            "event",
-                            Some(Payload {
-                                id: id.clone(),
-                                chunk,
-                            }),
-                        );
-                        if let Err(err) = event_result {
-                            println!("Failed to send chunk: {}", err);
+                        let read = stdout_reader.read(&mut chunk);
+                        if let Ok(len) = read {
+                            if len == 0 {
+                                break;
+                            }
+                            let chunk = &chunk[..len];
+                            let event_result = tauri::event::emit(
+                                webview,
+                                "event",
+                                Some(Payload {
+                                    id: id.clone(),
+                                    chunk,
+                                }),
+                            );
+                            if let Err(err) = event_result {
+                                println!("Failed to send chunk: {}", err);
+                            } else {
+                                println!("Sent chunk");
+                            };
                         } else {
-                            println!("Sent chunk");
-                        };
-                    } else {
-                        eprintln!("Err: {}", read.unwrap_err());
+                            eprintln!("Err: {}", read.unwrap_err());
+                        }
+                    }
+
+                    loop {
+                        println!("here {}", chunk.len());
+
+                        let read = stderr_reader.read(&mut chunk);
+                        if let Ok(len) = read {
+                            if len == 0 {
+                                break;
+                            }
+                            let chunk = &chunk[..len];
+                            let event_result = tauri::event::emit(
+                                webview,
+                                "event",
+                                Some(Payload {
+                                    id: id.clone(),
+                                    chunk,
+                                }),
+                            );
+                            if let Err(err) = event_result {
+                                println!("Failed to send chunk: {}", err);
+                            } else {
+                                println!("Sent chunk");
+                            };
+                        } else {
+                            eprintln!("Err: {}", read.unwrap_err());
+                        }
                     }
                 });
 
