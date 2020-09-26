@@ -9,7 +9,16 @@ const DEFAULT_PATH = '/Users/martonlanga'
 
 const useStore = create(
   combine(
-    { history: [] as Command[], currentDir: DEFAULT_PATH },
+    {
+      history: [
+        // {
+        //   id: '123',
+        //   input: 'ls',
+        //   currentDir: '/Users/martonlanga/code/termy/demo',
+        // },
+      ] as Command[],
+      currentDir: DEFAULT_PATH,
+    },
     (set, get) => ({
       clear: () => set({ history: [] }),
       setCurrentDir: (newDir: string) =>

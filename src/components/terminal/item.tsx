@@ -8,39 +8,6 @@ import { emit } from '../../lib/tauri'
 import { styled } from '../../stitches.config'
 import Column from '../custom/view'
 
-const WithPrompt: React.FC<{ dir: string; input: string }> = ({
-  dir,
-  input,
-  children,
-}) => (
-  <div>
-    <Prompt>
-      <CurrentDir>{dir}</CurrentDir>
-      {/* todo: use readonly prompt */}
-      <span>{input}</span>
-    </Prompt>
-    {children}
-  </div>
-)
-
-const Prompt = styled('div', {
-  background: '$gray200',
-  borderRadius: '$2',
-  px: '$3',
-  py: '$2',
-  my: '$3',
-  borderColor: '$gray400',
-  border: '1px solid',
-})
-
-const CurrentDir = styled('span', {
-  color: '$gray700',
-  fontWeight: 'bold',
-  mr: '$2',
-  fontSize: '$2',
-  textDecoration: 'underline',
-})
-
 const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
   const termRef = useRef<null | Terminal>(null)
   const ref = useRef<HTMLDivElement>(null)
@@ -48,8 +15,11 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
     if (!ref.current) return
     const term = new Terminal({
       convertEol: true,
-      cursorStyle: 'bar',
-      // allowTransparency: true, // this can negatively affect performance
+      cursorStyle: 'block',
+      allowTransparency: true, // this can negatively affect performance
+      theme: {
+        background: 'rgba(0,0,0,0)',
+      },
     })
 
     term.onKey(({ key, domEvent }) => {
@@ -89,14 +59,10 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
     [],
   )
 
-  return (
-    <div
-      tabIndex={0}
-      ref={ref}
-      style={{ background: 'red', height: '408px' }}
-    ></div>
-  )
+  return <Xterm tabIndex={0} ref={ref}></Xterm>
 }
+
+const Xterm = styled.div({ px: '$2', height: '100%' })
 
 const CustomItem = ({ id, currentDir, input }: Command) => {
   if (input.startsWith('cd')) {
@@ -113,9 +79,15 @@ const CustomItem = ({ id, currentDir, input }: Command) => {
 
 const Item: React.FC<Command> = command => {
   const type = getCommandType(command.input)
+  const dir = getCurrentDir(command.currentDir)
 
   return (
-    <WithPrompt dir={getCurrentDir(command.currentDir)} input={command.input}>
+    <Container>
+      <Prompt>
+        <CurrentDir>{dir}</CurrentDir>
+        {/* todo: use readonly prompt */}
+        <span>{command.input}</span>
+      </Prompt>
       {type === 'default' ? (
         <DefaultItem {...command} />
       ) : (
@@ -123,17 +95,34 @@ const Item: React.FC<Command> = command => {
           <CustomItem {...command} />
         </Wrapper>
       )}
-    </WithPrompt>
+    </Container>
   )
 }
 
+const Container = styled('div', {
+  overflow: 'hidden',
+  my: '$3',
+  background: '$gray100',
+  border: '1px solid $gray300',
+  br: '$3',
+})
+
+const Prompt = styled('div', {
+  px: '$3',
+  py: '$2',
+})
+
+const CurrentDir = styled('span', {
+  color: '$blue400',
+  fontWeight: '600',
+  mr: '$2',
+  fontSize: '$3',
+  borderBottom: '3px solid $blue300',
+})
+
 const Wrapper = styled('div', {
-  overflowY: 'hidden',
   height: '20rem',
   width: '100%',
-  borderColor: '$gray300',
-  border: '1px solid',
-  borderRadius: '$2',
 })
 
 export default Item

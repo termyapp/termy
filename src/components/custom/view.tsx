@@ -4,6 +4,7 @@ import { FileEntry, ViewPath, ViewType } from '../../interfaces'
 import { promisified } from '../../lib/tauri'
 import Highlight from './highlight'
 import { styled } from '../../stitches.config'
+import { Folder, File } from '../svg'
 
 const viewPath = async (path: string): Promise<ViewPath> => {
   try {
@@ -153,9 +154,13 @@ const Files = React.forwardRef<
           <Item
             key={file.path}
             onClick={() => setSelectedIndex(i)}
-            // focused={selectedIndex === i}
-            type={file.isDir ? 'dir' : 'file'}
+            type={selectedIndex === i ? 'active' : file.isDir ? 'dir' : 'file'}
           >
+            {file.isDir ? (
+              <Folder css={{ mr: '$2', width: '18px', height: '18px' }} />
+            ) : (
+              <File css={{ mr: '$2', width: '18px', height: '18px' }} />
+            )}
             {file.fileName}
           </Item>
         ))}
@@ -180,48 +185,59 @@ const Files = React.forwardRef<
 const Container = styled('div', {
   display: 'flex',
   flexWrap: 'nowrap',
-  height: '20rem',
   width: 'min-content',
+  height: '100%',
 })
 
 const FilesContainer = styled('div', {
-  padding: '$1',
-  background: '$gray100',
-  borderRadius: '$3',
-  width: '15rem',
-  overflowY: 'scroll',
+  width: '16rem',
+  overflowY: 'auto',
 
   '& + &': {
-    marginLeft: '$3',
+    marginLeft: '$2',
   },
 })
 
 const Item = styled('div', {
-  padding: '$1',
-  borderRadius: '$2',
+  padding: '$2',
+  br: '$1',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
   overflowX: 'auto',
-
-  ':hover, :focus': {
-    backgroundColor: '$gray400',
-  },
+  display: 'flex',
+  alignItems: 'center',
 
   variants: {
     type: {
       dir: {
-        fontWeight: 'bolder',
+        fontWeight: '500',
+        color: '$blue600',
+        background: '$blue100',
+
+        ':hover': {
+          background: '$blue300',
+        },
       },
       file: {
         color: '$gray700',
         fontWeight: 300,
+
+        ':hover': {
+          background: '$gray300',
+        },
+      },
+      active: {
+        color: '$background',
+        backgroundColor: '$foreground',
+        fontWeight: '600',
       },
     },
   },
 })
 
 const Image = styled('img', {
-  height: '100%',
+  maxHeight: '100%',
+  maxWidth: '70vw',
   objectFit: 'contain',
   objectPosition: 'left',
   marginLeft: '$3',

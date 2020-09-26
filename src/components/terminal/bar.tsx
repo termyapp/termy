@@ -22,8 +22,9 @@ const Container = styled('div', {
   flexWrap: 'nowrap',
   py: '$1',
   px: '$2',
-  background: 'blue',
+  background: '$blue500',
   fontSize: '$2',
+  br: '$1',
 })
 
 const CurrentDir = styled('div', {

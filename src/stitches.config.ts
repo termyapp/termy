@@ -2,8 +2,8 @@ import { createStyled } from '@stitches/react'
 
 export const theme = {
   colors: {
-    $foreground: 'hsl(206,10%,5%)',
-    $background: '$000',
+    $foreground: 'black',
+    $background: 'white',
 
     $canvas: 'hsl(0,0%,93%)',
 
@@ -57,8 +57,8 @@ export const theme = {
       'Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
   },
   space: {
-    $1: '5px',
-    $2: '10px',
+    $1: '3px',
+    $2: '8px',
     $3: '15px',
     $4: '20px',
     $5: '25px',
@@ -69,7 +69,7 @@ export const theme = {
   },
   sizes: {
     $1: '5px',
-    $2: '10px',
+    $2: '8px',
     $3: '15px',
     $4: '20px',
     $5: '25px',
@@ -107,11 +107,11 @@ export const theme = {
 
 export const darkTheme = {
   $foreground: 'hsl(206,2%,93%)',
-  $background: '#000',
+  $background: '#020202',
 
   $canvas: 'hsl(0,0%,15%)',
 
-  $gray100: 'hsl(206,8%,12%)',
+  $gray100: 'hsl(206,8%,7%)',
   $gray200: 'hsl(206,7%,14%)',
   $gray300: 'hsl(206,7%,15%)',
   $gray400: 'hsl(206,7%,24%)',
@@ -240,9 +240,9 @@ export const { styled, css } = createStyled({
       backgroundColor: value,
     }),
     //
-    // br: (value: keyof typeof theme['radii'] | (string & {})) => ({
-    //   borderRadius: value,
-    // }),
+    br: (value: keyof typeof theme['radii'] | (string & {})) => ({
+      borderRadius: value,
+    }),
     // btrr: (value: keyof typeof theme['radii'] | (string & {})) => ({
     //   borderTopRightRadius: value,
     // }),
@@ -252,7 +252,7 @@ export const { styled, css } = createStyled({
     // bblr: (value: keyof typeof theme['radii'] | (string & {})) => ({
     //   borderBottomLeftRadius: value,
     // }),
-    // btlr: (value: keyof typeof theme['radii'] | (string & {})) => ({
+    // btlr: (wvalue: keyof typeof theme['radii'] | (string & {})) => ({
     //   borderTopLeftRadius: value,
     // }),
 

@@ -10,7 +10,7 @@ const Highlight: React.FC<{ language?: string }> = ({ children, language }) => {
       customStyle={{
         margin: 0,
         marginLeft: 4,
-        borderRadius: 5,
+        br: 5,
         flex: 1,
       }}
     >

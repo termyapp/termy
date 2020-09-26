@@ -5,6 +5,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  outline: none;
 }
 
 /* Remove default padding */

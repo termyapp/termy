@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useKey } from 'react-use'
 import { getCurrentDir } from '../../lib'
 import { styled } from '../../stitches.config'
 import useStore from '../../store'
@@ -32,6 +33,8 @@ import Prompt, { getInput } from './prompt'
 
 const Terminal: React.FC = () => {
   const { history, currentDir, setCurrentDir } = useStore()
+
+  useKey('Escape', () => getInput()?.focus())
 
   useEffect(() => {
     const input = getInput()

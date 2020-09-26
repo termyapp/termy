@@ -10,6 +10,7 @@ import {
   Slate,
   withReact,
 } from 'slate-react'
+import { Transform } from 'stream'
 import { v4 as uuidv4 } from 'uuid'
 import { promisified } from '../../../lib/tauri'
 import { styled } from '../../../stitches.config'
@@ -61,7 +62,7 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
     [],
   )
   const [isFocused, setIsFocused] = useState(true)
-  const [historyIndex, setHistoryIndex] = useState(history.length)
+  const [historyIndex, setHistoryIndex] = useState(0)
   const [value, setValue] = useState<Node[]>([
     {
       type: 'paragraph',
@@ -124,7 +125,6 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
 
         const command = { id: uuidv4(), input, currentDir }
 
-        setHistoryIndex(history.length + 1)
         add(command)
         setValue([
           {
@@ -135,6 +135,16 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
 
         Editor.deleteBackward(editor, { unit: 'line' })
         ReactEditor.focus(editor)
+      } else {
+        switch (event.key) {
+          case 'ArrowUp':
+            event.preventDefault()
+            if (historyIndex < history.length) setHistoryIndex(historyIndex + 1)
+            break
+          case 'ArrowDown':
+            event.preventDefault()
+            if (historyIndex > 0) setHistoryIndex(historyIndex - 1)
+        }
       }
     },
     [
@@ -148,27 +158,23 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
       add,
     ],
   )
+  console.log('index', historyIndex)
 
   useEffect(() => {
-    if (
-      historyIndex >= 0 &&
-      historyIndex < history.length &&
-      history[historyIndex]
-    ) {
-      setValue([
-        {
-          type: 'paragraph',
-          children: [{ text: history[historyIndex].input }],
-        },
-      ])
-    } else if (historyIndex === history.length) {
-      setValue([
-        {
-          type: 'paragraph',
-          children: [{ text: '' }],
-        },
-      ])
+    let text = ''
+    if (historyIndex !== 0) {
+      const historyItem = history[history.length - historyIndex]
+      if (!historyItem) return
+      text = historyItem.input
     }
+    console.log('setting', text)
+    Transforms.select(editor, { path: [0, 0], offset: text.length })
+    setValue([
+      {
+        type: 'paragraph',
+        children: [{ text }],
+      },
+    ])
   }, [historyIndex, history])
 
   useEffect(() => {
@@ -218,10 +224,9 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
         }}
       >
         <Editable
-          // key={isFocused + ''}
-          // onFocus={() => setIsFocused(true)}
-          // onBlur={() => setIsFocused(false)}
           autoFocus
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           id="input"
           className="h-full"
           placeholder={isFocused ? '>' : "Press 'Esc' to focus"}
@@ -265,13 +270,13 @@ const SuggestionsContainer = styled('div', {
   display: 'flex',
   flexDirection: 'column-reverse',
   backgroundColor: '$gray200',
-  borderRadius: '$2',
+  br: '$2',
 })
 
 const SuggestionItem = styled('div', {
   py: '$2',
   px: '$3',
-  borderRadius: '$2',
+  br: '$2',
 
   variants: {
     type: {
