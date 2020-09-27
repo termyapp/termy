@@ -104,7 +104,7 @@ fn main() {
                         }) => tauri::execute_promise(
                             _webview,
                             move || {
-                                let result = view_path(path)?;
+                                let result = view_command(path)?;
                                 // println!("Result: {:?}", result);
                                 Ok(result)
                             },
@@ -156,14 +156,14 @@ enum ViewType {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ViewPath {
+pub struct ViewCommand {
     path: String,
     view_type: ViewType,
     // metadata
     content: String, // Parsed json
 }
 
-fn view_path(path: String) -> Result<ViewPath> {
+fn view_command(path: String) -> Result<ViewCommand> {
     println!("Path: {}", path);
     let ospath = OsStr::new(&path);
     let metadata = fs::metadata(ospath)?;
@@ -220,7 +220,7 @@ fn view_path(path: String) -> Result<ViewPath> {
         _ => "".to_string(),
     };
 
-    Ok(ViewPath {
+    Ok(ViewCommand {
         path,
         view_type,
         content,

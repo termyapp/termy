@@ -26,7 +26,7 @@ export interface Payload {
 
 export type ViewType = 'img' | 'dir' | 'text' | 'else'
 
-export type ViewPath = {
+export type ViewCommand = {
   viewType: ViewType
   path: string
   content: string

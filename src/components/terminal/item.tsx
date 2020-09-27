@@ -6,11 +6,12 @@ import { getCurrentDir, useListener } from '../../lib'
 import getCommandType from '../../lib/get-command-type'
 import { emit } from '../../lib/tauri'
 import { styled } from '../../stitches.config'
-import Column from '../custom/view'
+import List from '../custom/list'
 
 const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
   const termRef = useRef<null | Terminal>(null)
   const ref = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!ref.current) return
     const term = new Terminal({
@@ -46,7 +47,7 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
 
     term.open(ref.current)
     termRef.current = term
-  }, [])
+  }, [currentDir, id])
 
   useListener(
     id,
@@ -71,7 +72,7 @@ const CustomItem = ({ id, currentDir, input }: Command) => {
 
   switch (input) {
     case 'ls':
-      return <Column path={currentDir} />
+      return <List path={currentDir} />
     default:
       throw new Error('No case for: ' + input)
   }
@@ -91,20 +92,22 @@ const Item: React.FC<Command> = command => {
       {type === 'default' ? (
         <DefaultItem {...command} />
       ) : (
-        <Wrapper>
-          <CustomItem {...command} />
-        </Wrapper>
+        <CustomItem {...command} />
       )}
     </Container>
   )
 }
 
 const Container = styled('div', {
-  overflow: 'hidden',
   my: '$3',
   background: '$gray100',
   border: '1px solid $gray300',
   br: '$3',
+
+  ':focus-within': {
+    border: '1px solid $gray400',
+    background: '$gray200',
+  },
 })
 
 const Prompt = styled('div', {
@@ -118,11 +121,6 @@ const CurrentDir = styled('span', {
   mr: '$2',
   fontSize: '$3',
   borderBottom: '3px solid $blue300',
-})
-
-const Wrapper = styled('div', {
-  height: '20rem',
-  width: '100%',
 })
 
 export default Item

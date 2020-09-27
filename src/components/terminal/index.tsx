@@ -74,6 +74,8 @@ const Main = styled('div', {
   px: '$2',
 })
 
-const Commands = styled('div', {})
+const Commands = styled('div', {
+  overflowX: 'hidden',
+})
 
 export default Terminal

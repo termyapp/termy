@@ -19,7 +19,7 @@ export const useListener = (
         handler(payload)
       }
     })
-  }, [id, handler, ...deps])
+  }, [id, handler, ...deps]) // eslint-disable-line
 }
 
 export const getCurrentDir = (currentDir: string) => {

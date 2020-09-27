@@ -10,7 +10,6 @@ import {
   Slate,
   withReact,
 } from 'slate-react'
-import { Transform } from 'stream'
 import { v4 as uuidv4 } from 'uuid'
 import { promisified } from '../../../lib/tauri'
 import { styled } from '../../../stitches.config'
@@ -156,6 +155,7 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
       currentDir,
       history.length,
       add,
+      historyIndex,
     ],
   )
   console.log('index', historyIndex)
@@ -175,7 +175,7 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
         children: [{ text }],
       },
     ])
-  }, [historyIndex, history])
+  }, [historyIndex, history, editor])
 
   useEffect(() => {
     if (target && suggestions.length > 0 && suggestionRef.current) {
@@ -224,7 +224,7 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
         }}
       >
         <Editable
-          autoFocus
+          // autoFocus
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           id="input"
@@ -255,7 +255,7 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
 }
 
 const Container = styled('div', {
-  my: '$3',
+  py: '$3',
 
   div: {
     backgroundColor: 'transparent',

@@ -58,7 +58,7 @@ export const theme = {
   },
   space: {
     $1: '3px',
-    $2: '8px',
+    $2: '7px',
     $3: '15px',
     $4: '20px',
     $5: '25px',
@@ -112,7 +112,7 @@ export const darkTheme = {
   $canvas: 'hsl(0,0%,15%)',
 
   $gray100: 'hsl(206,8%,7%)',
-  $gray200: 'hsl(206,7%,14%)',
+  $gray200: 'hsl(206,7%,11%)',
   $gray300: 'hsl(206,7%,15%)',
   $gray400: 'hsl(206,7%,24%)',
   $gray500: 'hsl(206,7%,30%)',

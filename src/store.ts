@@ -11,11 +11,11 @@ const useStore = create(
   combine(
     {
       history: [
-        // {
-        //   id: '123',
-        //   input: 'ls',
-        //   currentDir: '/Users/martonlanga/code/termy/demo',
-        // },
+        {
+          id: '123',
+          input: 'ls',
+          currentDir: '/Users/martonlanga/code/termy/demo',
+        },
       ] as Command[],
       currentDir: DEFAULT_PATH,
     },
