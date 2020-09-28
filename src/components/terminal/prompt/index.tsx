@@ -41,10 +41,10 @@ const getSuggestions = async (
   }
 }
 
-export const getInput = (): HTMLDivElement | null => {
-  const input = document.querySelector<HTMLDivElement>('#input')
-  if (input) {
-    return input as HTMLDivElement
+export const getPrompt = (): HTMLDivElement | null => {
+  const prompt = document.querySelector<HTMLDivElement>('#prompt')
+  if (prompt) {
+    return prompt as HTMLDivElement
   }
   return null
 }
@@ -188,7 +188,7 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
   }, [editor, index, search, suggestions.length, target])
 
   return (
-    <Container>
+    <Container id="prompt">
       <Slate
         editor={editor}
         value={value}
@@ -227,7 +227,6 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
           // autoFocus
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          id="input"
           className="h-full"
           placeholder={isFocused ? '>' : "Press 'Esc' to focus"}
           onKeyDown={onKeyDown}
