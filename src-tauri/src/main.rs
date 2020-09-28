@@ -279,12 +279,15 @@ fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggestion>
                     .lines()
                     .filter_map(|line| {
                         let name = line.to_string();
-                        let score = if let Some(score) = matcher.fuzzy_match(name.as_str(), command)
-                        {
-                            score
-                        } else {
-                            return None;
-                        };
+                        let mut score =
+                            if let Some(score) = matcher.fuzzy_match(name.as_str(), command) {
+                                score
+                            } else {
+                                return None;
+                            };
+                        if name == command {
+                            score += 100;
+                        }
                         Some(Suggestion {
                             name: name,
                             score,
