@@ -91,7 +91,7 @@ const IndexPage = () => {
           Get access
         </Button>
 
-        <Demo src="/demo2.gif" alt="Demo Gif" />
+        <Demo src="/demo3.gif" alt="Demo Gif" />
 
         <Text
           as="p"

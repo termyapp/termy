@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://termy.app" target="_blank"><img src="./logo.png" /></a>
+  <a href="https://termy.app" target="_blank"><img src="./web/public/demo3.gif" /></a>
 </p>
 
 <br/>
@@ -17,6 +17,14 @@
 </p>
 
 <br/>
+
+## Features
+
+#### Autosuggestions
+
+#### Structured data piping
+
+#### Rich HTML based UI
 
 ## Motivation
 
