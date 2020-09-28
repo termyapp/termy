@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useKey } from 'react-use'
 import { getCurrentDir } from '../../lib'
 import { styled } from '../../stitches.config'
@@ -33,20 +33,20 @@ import Prompt, { getInput } from './prompt'
 
 const Terminal: React.FC = () => {
   const { history, currentDir, setCurrentDir } = useStore()
+  const mainRef = useRef<HTMLDivElement>(null)
+  console.log('history', history)
 
   useKey('Escape', () => getInput()?.focus())
 
   useEffect(() => {
-    const input = getInput()
-    if (input) {
-      input.scrollIntoView({ behavior: 'smooth' })
-    }
-    console.log('history', history)
-  }, [history])
+    setTimeout(() => {
+      getInput()?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }, 150)
+  }, [history.length])
 
   return (
     <Grid>
-      <Main>
+      <Main ref={mainRef} id="m1">
         <Commands>
           {history.map((command, i) => (
             <Item key={command.id} {...command} />
