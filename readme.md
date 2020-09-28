@@ -1,7 +1,7 @@
 <h1 align="center">Termy</h1>
 
 <p align="center">
-    A terminal built on web technologies with a standardized JSON shell.
+  An easy to use terminal built on web technologies with a shell built for structured data
 </p>
 
 <p align="center">
