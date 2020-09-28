@@ -63,7 +63,7 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
   return <Xterm tabIndex={0} ref={ref}></Xterm>
 }
 
-const Xterm = styled.div({ px: '$2', height: '100%' })
+const Xterm = styled.div({ px: '$2' })
 
 const CustomItem = ({ id, currentDir, input }: Command) => {
   if (input.startsWith('cd')) {
