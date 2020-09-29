@@ -20,11 +20,11 @@
 
 ## Features
 
-#### Autosuggestions
+- Autosuggestions
 
-#### Structured data piping
+- Structured data piping
 
-#### Rich HTML based UI
+- Rich HTML based UI
 
 ## Motivation
 
