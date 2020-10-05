@@ -9,7 +9,7 @@ export const useListener = (
 ) => {
   useEffect(() => {
     // receive events from shell.rs
-    listen('event', event => {
+    listen('event', (event: any) => {
       const rawPayload = event.payload as { id: string; chunk: number[] }
       if (rawPayload.id === id) {
         const payload: Payload = {

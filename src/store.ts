@@ -1,5 +1,5 @@
 import path from 'path'
-import { emit } from 'tauri/api/event'
+import { emit } from './lib/tauri'
 import create from 'zustand'
 import { combine } from 'zustand/middleware'
 import { Command } from './interfaces'
