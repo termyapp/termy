@@ -1,0 +1,18 @@
+[package]
+name = "shell"
+version = "0.1.0"
+authors = ["martonlanga <martonlanga@gmail.com>"]
+license = "MIT"
+build = "build.rs"
+edition = "2018"
+exclude = ["artifacts.json", "index.node"]
+
+[lib]
+name = "shell"
+crate-type = ["cdylib"]
+
+[build-dependencies]
+neon-build = "0.4.2"
+
+[dependencies]
+neon = "0.4.2"

@@ -16,7 +16,7 @@ const electronConfiguration = {
     rules: [
       {
         test: /\.ts$/,
-        include: /src/,
+        include: /electron/,
         use: [{ loader: 'ts-loader' }],
       },
     ],

@@ -9,15 +9,15 @@ export class Window {
 
   createWindow(): BrowserWindow {
     const window = new BrowserWindow({
-      width: 300,
-      height: 600,
+      width: 1200,
+      height: 1000,
       webPreferences: {
         nodeIntegration: true,
       },
     })
 
-    // Load our index.html
-    window.loadURL(`file://${app.getAppPath()}/index.html`)
+    // Load our index.html (not the react one)
+    window.loadFile(`index.html`)
 
     window.webContents.openDevTools()
 

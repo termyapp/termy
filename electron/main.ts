@@ -1,13 +1,11 @@
 import { app, BrowserWindow } from 'electron'
 import { appManager } from './app-manager'
-import { TrayMenu } from './tray-menu'
 import { Window } from './window'
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-  appManager.setTray(new TrayMenu())
   appManager.setWindow('window', new Window())
 
   app.on('activate', function () {
