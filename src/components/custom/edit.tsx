@@ -1,4 +1,4 @@
-import Editor from '@monaco-editor/react'
+// import Editor from '@monaco-editor/react'
 import React, { useRef } from 'react'
 import { PortalFunctionParams } from 'react-portal'
 import { useKey } from 'react-use'
@@ -34,7 +34,7 @@ const Edit = ({
   return isOpen
     ? portal(
         <div className="absolute inset-0">
-          <Editor
+          {/* <Editor
             height="100vh"
             theme="dark"
             language={language}
@@ -43,7 +43,7 @@ const Edit = ({
               valueGetter.current = getValue
             }}
             value={readFile(path)}
-          />
+          /> */}
         </div>,
       )
     : null

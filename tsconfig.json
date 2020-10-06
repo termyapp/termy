@@ -1,20 +1,20 @@
 {
+  "include": ["src", "types"], // electron as well?
+  "exclude": ["node_modules"],
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
+    "target": "esnext",
     "skipLibCheck": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    // "noEmit": true, https://github.com/TypeStrong/ts-loader/issues/767
-    "jsx": "react",
-    "downlevelIteration": true
-  },
-  "include": ["src"]
+    "jsx": "preserve",
+    "baseUrl": "./",
+    /* paths - If you configure Snowpack import aliases, add them here. */
+    "paths": {},
+    /* noEmit - Snowpack builds (emits) files, not tsc. */
+    "noEmit": false
+  }
 }

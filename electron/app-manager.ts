@@ -1,19 +1,9 @@
 import { Window } from './window'
-import { TrayMenu } from './tray-menu'
 
 export type ManagerTypes = Window
 
 class AppManager {
-  private trayMenu!: TrayMenu
   private windowManager: Map<string, ManagerTypes> = new Map()
-
-  setTray(tray: TrayMenu): void {
-    this.trayMenu = tray
-  }
-
-  getTray(tray: TrayMenu): TrayMenu {
-    return this.trayMenu
-  }
 
   setWindow(name: string, element: ManagerTypes): void {
     this.windowManager.set(name, element)

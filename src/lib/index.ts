@@ -18,8 +18,8 @@ export const useListener = (
         }
         handler(payload)
       }
-    })
-  }, [id, handler, ...deps]) // eslint-disable-line
+    }) // @ts-ignore
+  }, [id, handler, ...deps])
 }
 
 export const getCurrentDir = (currentDir: string) => {
@@ -54,4 +54,5 @@ export const getParsedManPage = (cmd: string): any[] => {
   return []
 }
 
-export const isDev = process.env.NODE_ENV === 'development'
+// export const isDev = process.env.NODE_ENV === 'development'
+export const isDev = true

@@ -17,7 +17,7 @@ export class Window {
     })
 
     // Load our index.html (not the react one)
-    window.loadFile(`index.html`)
+    window.loadURL('http://localhost:8080')
 
     window.webContents.openDevTools()
 
