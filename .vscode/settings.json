@@ -1,6 +1,6 @@
 {
   "search.exclude": {
-    "**/dist": true
+    "**/build": true
   },
   "files.exclude": {
     "**/.git": true,
@@ -9,6 +9,6 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/node_modules": true,
-    "**/dist": true
+    "**/build": true
   }
 }

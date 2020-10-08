@@ -1,7 +1,7 @@
 const Copy = require('copy-webpack-plugin')
 const path = require('path')
 const ElectronReloadPlugin = require('webpack-electron-reload')({
-  path: path.join(__dirname, './dist/main.js'),
+  path: path.join(__dirname, './build/main.js'),
 })
 
 // Electron config
@@ -31,12 +31,16 @@ module.exports = {
     ],
   },
   output: {
-    path: __dirname + '/dist',
+    path: __dirname + '/build',
     filename: 'main.js',
   },
   plugins: [
     new Copy({
-      patterns: [{ from: 'electron/preload.js', to: 'preload.js' }],
+      patterns: [
+        { from: 'electron/preload.js', to: 'preload.js' },
+        // { from: 'build/preload.js', to: '../public/preload.js' },
+        // { from: 'build/main.js', to: '../public/electron.js' },
+      ],
     }),
     ElectronReloadPlugin(),
   ],

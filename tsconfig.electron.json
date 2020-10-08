@@ -4,7 +4,7 @@
   "exclude": ["src"],
   "compilerOptions": {
     "rootDir": "electron",
-    "outDir": "dist",
+    "outDir": "build",
     "noEmit": false
   }
 }

@@ -10,7 +10,7 @@
 
 # production
 /build
-/dist
+/build
 
 # misc
 .DS_Store
@@ -25,3 +25,5 @@ yarn-error.log*
 
 
 my-app
+
+/dist

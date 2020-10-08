@@ -1,14 +1,36 @@
 {
   "name": "termy",
+  "description": "An easy to use terminal. Termy has autosuggestions, a modern GUI (HTML), structured data piping and many others.",
+  "author": "Yoshi",
   "version": "0.1.0",
   "private": true,
-  "main": "dist/main.js",
+  "main": "build/main.js",
+  "homepage": "./",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack --watch",
+    "dev": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && webpack --watch\"",
     "start": "cross-env BROWSER=none react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "postinstall": "electron-build-env neon build --release"
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "electron-pack": "electron-builder -c.extraMetadata.main=build/electron.js",
+    "preelectron-pack": "yarn build",
+    "postinstall": "electron-build-env neon build --release && electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "app.termy",
+    "mac": {
+      "category": "public.app-category.developer-tools"
+    },
+    "productName": "Termy",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "nodeGypRebuild": true
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -33,6 +55,7 @@
   },
   "dependencies": {
     "@stitches/react": "0.0.3-canary.1",
+    "electron-is-dev": "^1.2.0",
     "native": "file:native",
     "path": "^0.12.7",
     "react-portal": "^4.2.1",
@@ -60,12 +83,12 @@
     "@types/react-syntax-highlighter": "^11.0.5",
     "@types/uuid": "^8.3.0",
     "@types/webpack": "^4.41.22",
+    "concurrently": "^5.3.0",
     "copy-webpack-plugin": "^6.2.0",
     "cross-env": "^7.0.2",
     "electron": "^10.1.3",
     "electron-build-env": "^0.2.0",
     "electron-builder": "^22.8.1",
-    "electron-rebuild": "^2.2.0",
     "neon-cli": "^0.4.2",
     "node-loader": "^1.0.1",
     "react": "^16.13.1",
@@ -73,6 +96,7 @@
     "react-scripts": "3.4.3",
     "ts-loader": "^8.0.4",
     "typescript": "~3.7.2",
+    "wait-on": "^5.2.0",
     "webpack-cli": "^3.3.12",
     "webpack-electron-reload": "^1.0.1"
   }
