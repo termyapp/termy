@@ -7,6 +7,9 @@ import Bar from './bar'
 import Item from './item'
 import Prompt, { getPrompt } from './prompt'
 
+// @ts-ignore
+console.log(window.ipcRenderer.sendSync('synchronous-message', 'ping')) // prints "pong"
+
 const Terminal: React.FC = () => {
   const { history, currentDir, setCurrentDir } = useStore()
   const mainRef = useRef<HTMLDivElement>(null)

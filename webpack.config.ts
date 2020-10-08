@@ -1,5 +1,9 @@
+import Copy from 'copy-webpack-plugin'
+import * as path from 'path'
+import * as webpack from 'webpack'
+
 // Electron Webpack Configuration
-const electronConfiguration = {
+const electronConfiguration: webpack.Configuration = {
   // Build mode
   mode: 'development',
   entry: './electron/main.ts',
@@ -22,6 +26,14 @@ const electronConfiguration = {
   output: {
     path: __dirname + '/dist',
     filename: 'main.js',
+  },
+  plugins: [
+    new Copy({
+      patterns: [{ from: 'electron/preload.js', to: 'preload.js' }],
+    }),
+  ],
+  node: {
+    __dirname: true,
   },
 }
 

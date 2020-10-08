@@ -2,19 +2,27 @@
   "include": ["src", "types"], // electron as well?
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "target": "esnext",
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "jsx": "preserve",
     "baseUrl": "./",
     /* paths - If you configure Snowpack import aliases, add them here. */
     "paths": {},
     /* noEmit - Snowpack builds (emits) files, not tsc. */
-    "noEmit": false
+    "noEmit": false,
+    "allowJs": true,
+    "checkJs": false,
+    "downlevelIteration": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "lib": ["dom", "es2017"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2018"
   }
 }
