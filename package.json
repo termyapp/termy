@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@stitches/react": "0.0.3-canary.1",
-    "native": "file:./native/lib",
+    "native": "file:native",
     "path": "^0.12.7",
     "react-portal": "^4.2.1",
     "react-syntax-highlighter": "^13.5.3",
@@ -67,6 +67,7 @@
     "electron-builder": "^22.8.1",
     "electron-rebuild": "^2.2.0",
     "neon-cli": "^0.4.2",
+    "node-loader": "^1.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.3",

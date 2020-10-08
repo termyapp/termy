@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-import path from 'path'
+import native from 'native'
 import { appManager } from './app-manager'
 import { Window } from './window'
 
@@ -29,3 +29,6 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+
+// Works!!!
+console.log(native.hello())

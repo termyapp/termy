@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, app } from 'electron'
 import path from 'path'
 
 export class Window {
@@ -13,8 +13,13 @@ export class Window {
       width: 1200,
       height: 1000,
       webPreferences: {
-        preload: path.resolve(__dirname, '../dist/preload.js'),
+        preload: path.resolve(app.getAppPath(), './preload.js'),
         nodeIntegration: false,
+
+        // todo: https://www.electronjs.org/docs/tutorial/context-isolation
+        // currently this would break the ipc communcication
+        // contextIsolation: true,
+        // worldSafeExecuteJavaScript: true,
       },
     })
 

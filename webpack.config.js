@@ -4,16 +4,12 @@ const ElectronReloadPlugin = require('webpack-electron-reload')({
   path: path.join(__dirname, './dist/main.js'),
 })
 
-// Electron Webpack Configuration
-const electronConfiguration = {
-  // Build mode
+// Electron config
+module.exports = {
   mode: 'development',
   entry: './electron/main.ts',
   target: 'electron-main',
   resolve: {
-    // alias: {
-    //   ['@']: path.resolve(__dirname, 'src')
-    // },
     extensions: ['.tsx', '.ts', '.js'],
   },
   module: {
@@ -28,6 +24,10 @@ const electronConfiguration = {
           },
         ],
       },
+      {
+        test: /\.node$/,
+        loader: 'node-loader',
+      },
     ],
   },
   output: {
@@ -41,8 +41,6 @@ const electronConfiguration = {
     ElectronReloadPlugin(),
   ],
   node: {
-    __dirname: true,
+    __dirname: false, // can't mock dirname because of node-loader
   },
 }
-
-module.exports = [electronConfiguration]
