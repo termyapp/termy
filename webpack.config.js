@@ -1,9 +1,11 @@
-import Copy from 'copy-webpack-plugin'
-import * as path from 'path'
-import * as webpack from 'webpack'
+const Copy = require('copy-webpack-plugin')
+const path = require('path')
+const ElectronReloadPlugin = require('webpack-electron-reload')({
+  path: path.join(__dirname, './dist/main.js'),
+})
 
 // Electron Webpack Configuration
-const electronConfiguration: webpack.Configuration = {
+const electronConfiguration = {
   // Build mode
   mode: 'development',
   entry: './electron/main.ts',
@@ -19,7 +21,12 @@ const electronConfiguration: webpack.Configuration = {
       {
         test: /\.ts$/,
         include: /electron/,
-        use: [{ loader: 'ts-loader' }],
+        use: [
+          {
+            loader: 'ts-loader',
+            options: { configFile: 'tsconfig.electron.json' },
+          },
+        ],
       },
     ],
   },
@@ -31,6 +38,7 @@ const electronConfiguration: webpack.Configuration = {
     new Copy({
       patterns: [{ from: 'electron/preload.js', to: 'preload.js' }],
     }),
+    ElectronReloadPlugin(),
   ],
   node: {
     __dirname: true,

@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
+import path from 'path'
 import { appManager } from './app-manager'
 import { Window } from './window'
 
@@ -14,6 +15,10 @@ app.on('ready', () => {
     if (BrowserWindow.getAllWindows().length === 0)
       appManager.setWindow('window', new Window())
   })
+
+  ipcMain.on('message', (event, message) => {
+    console.log('got an IPC message', message)
+  })
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -23,9 +28,4 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
-})
-
-ipcMain.on('synchronous-message', (event, arg) => {
-  console.log(arg) // prints "ping"
-  event.returnValue = 'pong'
 })

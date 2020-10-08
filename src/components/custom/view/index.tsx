@@ -70,7 +70,7 @@ const View = React.forwardRef<
 
             return (
               <Highlight
-                language={extension ? extension.replaceAll('.', '') : undefined}
+                language={extension ? extension.replace(/./g, '') : undefined}
               >
                 {content + ''}
               </Highlight>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import xterm from 'xterm'
+import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { Command } from '../../interfaces'
 import { getCurrentDir, useListener } from '../../lib'
@@ -9,12 +9,12 @@ import { styled } from '../../stitches.config'
 import List from '../custom/list'
 
 const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
-  let termRef = useRef<xterm.Terminal>(null)
+  let termRef = useRef<Terminal>(null)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!ref.current) return
-    const term = new xterm.Terminal({
+    const term = new Terminal({
       convertEol: true,
       cursorStyle: 'block',
       allowTransparency: true, // this can negatively affect performance

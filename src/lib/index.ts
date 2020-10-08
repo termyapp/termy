@@ -1,11 +1,11 @@
-import { DependencyList, useEffect } from 'react'
+import { useEffect } from 'react'
 import { CurrentDirStat, Payload } from '../interfaces'
 import { listen } from './tauri'
 
 export const useListener = (
   id: string,
   handler: (payload: Payload) => void,
-  deps?: DependencyList,
+  deps = [],
 ) => {
   useEffect(() => {
     // receive events from shell.rs
@@ -18,7 +18,7 @@ export const useListener = (
         }
         handler(payload)
       }
-    }) // @ts-ignore
+    }) // eslint-disable-next-line
   }, [id, handler, ...deps])
 }
 

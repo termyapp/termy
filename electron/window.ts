@@ -1,4 +1,5 @@
-import { app, BrowserWindow } from 'electron'
+import { BrowserWindow } from 'electron'
+import path from 'path'
 
 export class Window {
   public readonly window: BrowserWindow
@@ -12,12 +13,13 @@ export class Window {
       width: 1200,
       height: 1000,
       webPreferences: {
+        // preload: path.resolve(__dirname, '../dist/preload.js'),
         nodeIntegration: true,
       },
     })
 
     // Load our index.html (not the react one)
-    window.loadURL('http://localhost:8080')
+    window.loadURL('http://localhost:3000')
 
     window.webContents.openDevTools()
 

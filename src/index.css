@@ -1,0 +1,8 @@
+@import-normalize; /* bring in normalize.css styles */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+}
