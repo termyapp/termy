@@ -13,8 +13,8 @@ export class Window {
       width: 1200,
       height: 1000,
       webPreferences: {
-        // preload: path.resolve(__dirname, '../dist/preload.js'),
-        nodeIntegration: true,
+        preload: path.resolve(__dirname, '../dist/preload.js'),
+        nodeIntegration: false,
       },
     })
 
