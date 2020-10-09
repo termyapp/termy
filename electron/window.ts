@@ -1,4 +1,5 @@
-import { BrowserWindow, app } from 'electron'
+import { app, BrowserWindow } from 'electron'
+import isDev from 'electron-is-dev'
 import path from 'path'
 
 export class Window {
@@ -23,8 +24,11 @@ export class Window {
       },
     })
 
-    // Load our index.html (not the react one)
-    window.loadURL('http://localhost:3000')
+    window.loadURL(
+      isDev
+        ? 'http://localhost:3000'
+        : `file://${path.join(app.getAppPath(), '../build/index.html')}`,
+    )
 
     window.webContents.openDevTools()
 
