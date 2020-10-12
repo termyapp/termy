@@ -31,3 +31,8 @@
 7. send back {id, result}
 8. listen for event in Item w/ correct id
 9. render result correctly
+
+
+# Focus
+
+https://www.notion.so/Focus-Rings-4459faa9d1f643728ca8dde145a89900
