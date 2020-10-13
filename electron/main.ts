@@ -1,19 +1,28 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, session } from 'electron'
 import native from 'native'
-import { appManager } from './app-manager'
-import { Window } from './window'
+import { createWindow } from './window'
+
+let mainWindow
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', () => {
-  appManager.setWindow('window', new Window())
+app.on('ready', async () => {
+  try {
+    // https://github.com/electron/electron/issues/23662
+    // await session.defaultSession.loadExtension(
+    //   `/Users/martonlanga/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi`,
+    // )
+  } catch (error) {
+    console.log(error)
+  }
 
-  app.on('activate', function () {
+  mainWindow = await createWindow()
+
+  app.on('activate', async function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0)
-      appManager.setWindow('window', new Window())
+    if (BrowserWindow.getAllWindows().length === 0) await createWindow()
   })
 
   ipcMain.on('message', (event, message) => {
