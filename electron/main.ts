@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, session } from 'electron'
-import native from 'native'
+import { app, BrowserWindow, ipcMain } from 'electron'
+// const native = require('./target/debug|release/[module_name].node')
+import native from '../native'
 import { createWindow } from './window'
 
 let mainWindow
@@ -39,4 +40,4 @@ app.on('window-all-closed', () => {
   }
 })
 
-console.log(native.event('ey'))
+native.event('world')

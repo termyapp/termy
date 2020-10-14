@@ -1,3 +1,3 @@
-import native from './index.node'
+const native = require('./index.node')
 
-export default native
+module.exports = native
