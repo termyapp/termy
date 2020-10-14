@@ -1,3 +1,3 @@
-const addon = require('./index.node')
+import native from './index.node'
 
-module.exports = addon
+export default native

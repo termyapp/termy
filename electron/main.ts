@@ -39,5 +39,4 @@ app.on('window-all-closed', () => {
   }
 })
 
-// Works!!!
-console.log(native.hello())
+console.log(native.event('ey'))

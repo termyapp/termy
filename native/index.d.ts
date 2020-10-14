@@ -1,9 +1,3 @@
-export interface SearchResult {
-  path: string
-  name: string
-  icon?: string
-}
+declare function event(message: string): string | void
 
-declare function hello(): void
-
-export { hello }
+export { event }

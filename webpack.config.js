@@ -38,8 +38,8 @@ module.exports = {
     new Copy({
       patterns: [
         { from: 'electron/preload.js', to: 'preload.js' },
-        { from: 'build/preload.js', to: '../public/preload.js' },
-        { from: 'build/main.js', to: '../public/electron.js' },
+        // { from: 'build/preload.js', to: '../public/preload.js' },
+        // { from: 'build/main.js', to: '../public/electron.js' },
       ],
     }),
     ElectronReloadPlugin(),
