@@ -102,8 +102,7 @@ const Item: React.FC<Command> = command => {
 
 const Container = styled('div', {
   my: '$3',
-  background: '$gray100',
-  border: '1px solid $gray300',
+  // border: '1px solid $gray300',
   br: '$3',
 
   ':focus-within': {
