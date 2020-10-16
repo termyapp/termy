@@ -3,7 +3,6 @@
   "include": ["electron"],
   "exclude": ["src"],
   "compilerOptions": {
-    "rootDir": "electron",
     "outDir": "build",
     "noEmit": false
   }
