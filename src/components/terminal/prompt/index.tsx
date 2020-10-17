@@ -1,4 +1,5 @@
 import path from 'path'
+import { Message } from '../../../../types'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Portal } from 'react-portal'
 import { createEditor, Editor, Node, Range, Transforms } from 'slate'
@@ -11,9 +12,9 @@ import {
   withReact,
 } from 'slate-react'
 import { v4 as uuidv4 } from 'uuid'
-import { promisified } from '../../../lib/tauri'
 import { styled } from '../../../stitches.config'
 import useStore from '../../../store'
+import { ipcRenderer } from '../../../lib/ipc'
 
 interface Suggestion {
   name: string
@@ -28,13 +29,15 @@ const getSuggestions = async (
   try {
     if (input.length < 1) return null
 
-    const data: Suggestion[] = await promisified({
-      cmd: 'prompt',
-      input,
-      currentDir,
-    })
-    console.log(data)
-    return data.slice(0, 10)
+    const message: Message = {
+      type: 'GET_SUGGESTIONS',
+      data: { input, currentDir },
+    }
+
+    const data = ipcRenderer.sendSync('message', message)
+    console.log('data', data)
+    // return data.slice(0, 10)
+    return null
   } catch (error) {
     console.error('Error while getting files: ', error)
     return null

@@ -1,6 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-// const native = require('./target/debug|release/[module_name].node')
-import native from '../native'
+import { messageHandler } from './communication'
 import { createWindow } from './window'
 
 let mainWindow
@@ -27,7 +26,8 @@ app.on('ready', async () => {
   })
 
   ipcMain.on('message', (event, message) => {
-    console.log('got an IPC message', message)
+    console.log('message: ', message)
+    event.returnValue = messageHandler(message)
   })
 })
 
@@ -39,5 +39,3 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
-native.event('world')

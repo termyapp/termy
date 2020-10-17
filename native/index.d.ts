@@ -1,3 +1,5 @@
-declare function event(message: string): string | void
+import { Suggestion } from '../types'
 
-export { event }
+declare function getSuggestions(input: string, currentDir: string): Suggestion[]
+
+export { getSuggestions }

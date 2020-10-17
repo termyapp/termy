@@ -1,14 +1,18 @@
+use anyhow::Result;
+use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
+use serde::Serialize;
+use std::fs;
+use std::process::Command;
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Suggestion {
-    name: String,
+    pub name: String,
     score: i64,
     command: String,
 }
 
-
-fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggestion>> {
+pub fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggestion>> {
     let mut suggestions = vec![];
     let matcher = SkimMatcherV2::default();
 
@@ -62,7 +66,7 @@ fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggestion>
                             score += 100;
                         }
                         Some(Suggestion {
-                            name: name,
+                            name,
                             score,
                             command: command.to_string(),
                         })

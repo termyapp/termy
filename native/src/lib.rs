@@ -3,63 +3,83 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, Env, JsNumber, JsString, Module, Result, Task};
+use anyhow;
+use napi::{CallContext, JsBuffer, JsObject, JsString, Module, NapiValue, Status};
 use std::convert::TryInto;
+use suggestions::get_suggestions;
+mod suggestions;
 
 register_module!(shell, init);
 
-struct AsyncTask(u32);
-
-impl Task for AsyncTask {
-    type Output = u32;
-    type JsValue = JsNumber;
-
-    fn compute(&mut self) -> Result<Self::Output> {
-        use std::thread::sleep;
-        use std::time::Duration;
-        sleep(Duration::from_millis(self.0 as u64));
-        Ok(self.0 * 2)
-    }
-
-    fn resolve(&self, env: &mut Env, output: Self::Output) -> Result<Self::JsValue> {
-        env.create_uint32(output)
-    }
-}
-
-fn init(module: &mut Module) -> Result<()> {
-    module.create_named_method("event", event)?;
-
-    // module.create_named_method("suggestions", suggestions)?;
+fn init(module: &mut Module) -> napi::Result<()> {
+    module.create_named_method("getSuggestions", suggestions)?;
 
     Ok(())
 }
 
-#[js_function(1)]
-fn event(ctx: CallContext) -> Result<JsString> {
-    let argument: String = ctx.get::<JsString>(0)?.try_into()?;
+#[js_function(2)]
+fn suggestions(ctx: CallContext) -> napi::Result<JsObject> {
+    let input: String = ctx.get::<JsString>(0)?.try_into()?;
+    let current_dir: String = ctx.get::<JsString>(1)?.try_into()?;
     // let task = AsyncTask(argument);
     // ctx.env.spawn(task)
-    println!("hello {}", argument);
 
-    ctx.env.create_string(&argument)
+    let suggestions = get_suggestions(input, current_dir).unwrap();
+    // println!("{}", suggestions.len());
+    let mut result = ctx.env.create_array_with_length(suggestions.len())?;
+    for (index, suggestion) in suggestions.iter().enumerate() {
+        let data = ctx.env.create_string(&suggestion.name)?;
+        // println!("{}: {:?}", index, data);
+        result.set_element(index as u32, data)?;
+    }
+
+    Ok(result)
 }
 
-// #[js_function(1)]
-// fn suggestions(ctx: CallContext) -> Result<JsNumber> {
-//     let argument: u32 = ctx.get::<JsNumber>(0)?.try_into()?;
+use anyhow::Context;
 
-//     ctx.env.create_uint32(argument + 100)
-// }
+use serde::de::DeserializeOwned;
+
+pub trait MapErr<T>: Into<Result<T, anyhow::Error>> {
+    fn convert_err(self) -> napi::Result<T> {
+        self.into()
+            .map_err(|err| napi::Error::new(Status::GenericFailure, format!("{:?}", err)))
+    }
+}
+
+impl<T> MapErr<T> for Result<T, anyhow::Error> {}
+
+pub trait CtxtExt {
+    /// Currently this uses JsBuffer
+    fn get_deserialized<T>(&self, index: usize) -> napi::Result<T>
+    where
+        T: DeserializeOwned;
+}
+
+impl<V> CtxtExt for CallContext<'_, V>
+where
+    V: NapiValue,
+{
+    fn get_deserialized<T>(&self, index: usize) -> napi::Result<T>
+    where
+        T: DeserializeOwned,
+    {
+        let buffer = self.get::<JsBuffer>(index)?;
+        let v = serde_json::from_slice(&buffer)
+            .with_context(|| format!("Argument at `{}` is not JsBuffer", index))
+            .convert_err()?;
+
+        Ok(v)
+    }
+}
 
 // use serde::Deserialize;
 
 // extern crate base64;
 
-// use anyhow::Result;
 // use base64::encode;
 // use cmd::{PromptStruct, ViewStruct};
 // use fs::File;
-// use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 // use io::Read;
 // use serde::{Deserialize, Serialize};
 // use shell::shell;
