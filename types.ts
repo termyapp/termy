@@ -3,7 +3,10 @@ export type Message =
       type: 'GET_SUGGESTIONS'
       data: { input: string; currentDir: string }
     }
-  | { type: 'PROCESS'; data: { id: string } }
+  | {
+      type: 'NEW_COMMAND'
+      data: { id: string; input: string; currentDir: string }
+    }
 
 export type Suggestion = {
   raw: string

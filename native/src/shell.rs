@@ -2,10 +2,9 @@ use anyhow::Result;
 use crossbeam_utils::thread;
 use io::{BufReader, Read};
 use serde::Serialize;
-use std::io::prelude::*;
 use std::{ffi::OsStr, io};
+use std::{io::prelude::*, time};
 use subprocess::{Exec, Redirection};
-use tauri::WebviewMut;
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -23,7 +22,6 @@ struct Payload<'a> {
 }
 
 pub fn shell(
-    webview: &mut WebviewMut,
     receiver: crossbeam_channel::Receiver<String>,
     id: String,
     input: String,
@@ -55,15 +53,15 @@ pub fn shell(
                     .popen();
 
                 if popen.is_err() {
-                    tauri::event::emit(
-                        webview,
-                        "event",
-                        Some(Payload {
-                            id: id.clone(),
-                            chunk: popen.unwrap_err().to_string().as_bytes(),
-                        }),
-                    )
-                    .expect("Failed to send popen error");
+                    // tauri::event::emit(
+                    //     webview,
+                    //     "event",
+                    //     Some(Payload {
+                    //         id: id.clone(),
+                    //         chunk: popen.unwrap_err().to_string().as_bytes(),
+                    //     }),
+                    // )
+                    // .expect("Failed to send popen error");
                     return Ok(());
                 }
 
@@ -84,19 +82,19 @@ pub fn shell(
                                 break;
                             }
                             let chunk = &chunk[..len];
-                            let event_result = tauri::event::emit(
-                                webview,
-                                "event",
-                                Some(Payload {
-                                    id: id.clone(),
-                                    chunk,
-                                }),
-                            );
-                            if let Err(err) = event_result {
-                                println!("Failed to send chunk: {}", err);
-                            } else {
-                                println!("Sent chunk");
-                            };
+                        // let event_result = tauri::event::emit(
+                        //     webview,
+                        //     "event",
+                        //     Some(Payload {
+                        //         id: id.clone(),
+                        //         chunk,
+                        //     }),
+                        // );
+                        // if let Err(err) = event_result {
+                        //     println!("Failed to send chunk: {}", err);
+                        // } else {
+                        //     println!("Sent chunk");
+                        // };
                         } else {
                             eprintln!("Err: {}", read.unwrap_err());
                         }
@@ -111,19 +109,19 @@ pub fn shell(
                                 break;
                             }
                             let chunk = &chunk[..len];
-                            let event_result = tauri::event::emit(
-                                webview,
-                                "event",
-                                Some(Payload {
-                                    id: id.clone(),
-                                    chunk,
-                                }),
-                            );
-                            if let Err(err) = event_result {
-                                println!("Failed to send chunk: {}", err);
-                            } else {
-                                println!("Sent chunk");
-                            };
+                        // let event_result = tauri::event::emit(
+                        //     webview,
+                        //     "event",
+                        //     Some(Payload {
+                        //         id: id.clone(),
+                        //         chunk,
+                        //     }),
+                        // );
+                        // if let Err(err) = event_result {
+                        //     println!("Failed to send chunk: {}", err);
+                        // } else {
+                        //     println!("Sent chunk");
+                        // };
                         } else {
                             eprintln!("Err: {}", read.unwrap_err());
                         }
@@ -171,6 +169,8 @@ pub fn shell(
                     } else {
                         println!("No message or error");
                     }
+
+                    // std::thread::sleep(time::Duration::from_millis(100));
                 }
 
                 let exit_status = p.exit_status().unwrap();

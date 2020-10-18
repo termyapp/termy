@@ -1,7 +1,15 @@
+import { ipcMain } from 'electron'
 import native from '../native'
 import { Message } from '../types'
 
-export const messageHandler = (message: Message) => {
+export default () => {
+  ipcMain.on('message', (event, message) => {
+    console.log('message: ', message)
+    event.returnValue = handleMessage(message)
+  })
+}
+
+const handleMessage = (message: Message) => {
   switch (message.type) {
     case 'GET_SUGGESTIONS': {
       const suggestions = native.getSuggestions(
@@ -11,8 +19,12 @@ export const messageHandler = (message: Message) => {
       console.log('suggestions', suggestions)
       return suggestions
     }
-    case 'PROCESS': {
-      // todo
+    case 'NEW_COMMAND': {
+      const { id, input, currentDir } = message.data
+      const sendStdout = (chunk: number[]) => {
+        ipcMain.emit('event', { id, chunk })
+      }
+      native.newCommand(id, input, currentDir, sendStdout)
     }
   }
 }

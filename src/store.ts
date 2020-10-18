@@ -1,6 +1,7 @@
 import path from 'path'
 import create from 'zustand'
 import { combine } from 'zustand/middleware'
+import { Message } from '../types'
 import { Command } from './interfaces'
 import getCommandType from './lib/get-command-type'
 import { ipcRenderer } from './lib/ipc'
@@ -28,16 +29,8 @@ const useStore = create(
         const commandType = getCommandType(command.input)
         if (commandType === 'default') {
           // send event
-
-          console.log(
-            ipcRenderer.sendSync(
-              'message',
-              JSON.stringify({
-                ...command,
-                eventType: 'NEW_COMMAND',
-              }),
-            ),
-          )
+          const message: Message = { type: 'NEW_COMMAND', data: command }
+          console.log(ipcRenderer.sendSync('message', message))
         } else if (commandType === 'custom') {
           if ('cd' === command.input.split(' ')[0]) {
             const newDir = path.resolve(
