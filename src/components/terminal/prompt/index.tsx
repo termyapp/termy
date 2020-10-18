@@ -34,10 +34,9 @@ const getSuggestions = async (
       data: { input, currentDir },
     }
 
-    const data = ipcRenderer.sendSync('message', message)
+    const data: Suggestion[] = ipcRenderer.sendSync('message', message)
     console.log('data', data)
-    // return data.slice(0, 10)
-    return null
+    return data
   } catch (error) {
     console.error('Error while getting files: ', error)
     return null

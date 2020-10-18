@@ -8,8 +8,8 @@ use std::process::Command;
 #[serde(rename_all = "camelCase")]
 pub struct Suggestion {
     pub name: String,
-    score: i64,
-    command: String,
+    pub score: i64,
+    pub command: String,
 }
 
 pub fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggestion>> {

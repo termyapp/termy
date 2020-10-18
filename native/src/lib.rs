@@ -3,8 +3,7 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
-use anyhow;
-use napi::{CallContext, JsBuffer, JsObject, JsString, Module, NapiValue, Status};
+use napi::{CallContext, JsObject, JsString, Module, NapiValue};
 use std::convert::TryInto;
 use suggestions::get_suggestions;
 mod suggestions;
@@ -28,52 +27,26 @@ fn suggestions(ctx: CallContext) -> napi::Result<JsObject> {
     // println!("{}", suggestions.len());
     let mut result = ctx.env.create_array_with_length(suggestions.len())?;
     for (index, suggestion) in suggestions.iter().enumerate() {
-        let data = ctx.env.create_string(&suggestion.name)?;
-        // println!("{}: {:?}", index, data);
+        if index > 10 {
+            // limit suggestions to a maximum of 10
+            break;
+        }
+
+        let mut data = ctx.env.create_object()?;
+
+        let name = ctx.env.create_string(&suggestion.name)?;
+        let command = ctx.env.create_string(&suggestion.command)?;
+        let score = ctx.env.create_int64(suggestion.score)?;
+
+        data.set_named_property("name", name)?;
+        data.set_named_property("command", command)?;
+        data.set_named_property("score", score)?;
+
         result.set_element(index as u32, data)?;
     }
 
     Ok(result)
 }
-
-use anyhow::Context;
-
-use serde::de::DeserializeOwned;
-
-pub trait MapErr<T>: Into<Result<T, anyhow::Error>> {
-    fn convert_err(self) -> napi::Result<T> {
-        self.into()
-            .map_err(|err| napi::Error::new(Status::GenericFailure, format!("{:?}", err)))
-    }
-}
-
-impl<T> MapErr<T> for Result<T, anyhow::Error> {}
-
-pub trait CtxtExt {
-    /// Currently this uses JsBuffer
-    fn get_deserialized<T>(&self, index: usize) -> napi::Result<T>
-    where
-        T: DeserializeOwned;
-}
-
-impl<V> CtxtExt for CallContext<'_, V>
-where
-    V: NapiValue,
-{
-    fn get_deserialized<T>(&self, index: usize) -> napi::Result<T>
-    where
-        T: DeserializeOwned,
-    {
-        let buffer = self.get::<JsBuffer>(index)?;
-        let v = serde_json::from_slice(&buffer)
-            .with_context(|| format!("Argument at `{}` is not JsBuffer", index))
-            .convert_err()?;
-
-        Ok(v)
-    }
-}
-
-// use serde::Deserialize;
 
 // extern crate base64;
 
@@ -91,7 +64,7 @@ where
 //     path::Path,
 // };
 // use std::{process::Command, thread};
-// mod cmd;
+// mod cmd;! marton#9930
 // mod shell;
 // use crossbeam_channel::unbounded;
 
