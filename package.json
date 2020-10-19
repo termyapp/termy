@@ -4,16 +4,15 @@
   "author": "Yoshi",
   "version": "0.1.0",
   "private": true,
-  "main": "build/main.js",
+  "main": "public/electron.js",
   "homepage": "./",
   "scripts": {
-    "dev": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://localhost:3000 && webpack --watch\"",
-    "start": "cross-env BROWSER=none react-scripts start",
-    "build": "react-scripts build",
+    "start": "concurrently \"cross-env BROWSER=none yarn react:start\" \"wait-on http://localhost:3000 && webpack --watch\"",
+    "build": "yarn build:react && electron-builder",
+    "release": "yarn build:react && GH_TOKEN=<TOKEN> electron-builder --publish=always",
     "test": "react-scripts test",
-    "dist": "yarn electron-pack",
-    "electron-pack": "electron-builder -c.extraMetadata.main=build/electron.js",
-    "preelectron-pack": "yarn build",
+    "react:start": "cross-env BROWSER=none react-scripts start",
+    "build:react": "react-scripts build",
     "postinstall": "electron-builder install-app-deps"
   },
   "build": {
@@ -22,14 +21,11 @@
       "category": "public.app-category.developer-tools"
     },
     "productName": "Termy",
-    "files": [
-      "build/**/*",
-      "node_modules/**/*"
-    ],
-    "directories": {
-      "buildResources": "assets"
+    "publish": {
+      "provider": "github"
     },
-    "nodeGypRebuild": true
+    "nodeGypRebuild": true,
+    "extends": null
   },
   "eslintConfig": {
     "extends": "react-app"

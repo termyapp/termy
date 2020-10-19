@@ -35,11 +35,12 @@ const shortcuts: { [key in Shortcut]: KeyProps } = {
   },
   KeyA: {
     shortcut: {
-      code: 'KeyA',
-      shortcutText: 'A',
+      code: 'KeyO',
+      shortcutText: 'O',
     },
     external: true,
-    href: 'https://forms.gle/6hZtuTPamCtXLg8f8',
+    href:
+      'https://github.com/termyapp/termy/releases/download/untagged-d71f568835ce574dd09f/termy-0.1.0.dmg',
   },
 }
 
