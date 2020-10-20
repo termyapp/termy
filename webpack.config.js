@@ -1,12 +1,24 @@
 const Copy = require('copy-webpack-plugin')
 const path = require('path')
-const ElectronReloadPlugin = require('webpack-electron-reload')({
-  path: path.join(__dirname, './build/main.js'),
-})
+
+const isDev = process.env.NODE_ENV === 'development'
+
+let plugins = [
+  new Copy({
+    patterns: [{ from: 'electron/preload.js', to: 'preload.js' }],
+  }),
+]
+
+if (isDev) {
+  const ElectronReloadPlugin = require('webpack-electron-reload')({
+    path: path.join(__dirname, './public/electron.js'),
+  })
+  plugins.push(ElectronReloadPlugin())
+}
 
 // Electron config
 module.exports = {
-  mode: 'development',
+  mode: process.env.NODE_ENV,
   entry: './electron/main.ts',
   target: 'electron-main',
   resolve: {
@@ -30,21 +42,13 @@ module.exports = {
       },
     ],
   },
-  output: {
-    path: __dirname + '/build',
-    filename: 'main.js',
-  },
-  plugins: [
-    new Copy({
-      patterns: [
-        { from: 'electron/preload.js', to: 'preload.js' },
-        // { from: 'build/preload.js', to: '../public/preload.js' },
-        // { from: 'build/main.js', to: '../public/electron.js' },
-      ],
-    }),
-    ElectronReloadPlugin(),
-  ],
   node: {
     __dirname: false, // can't mock dirname because of node-loader
   },
+  output: {
+    // putting them in public, so it gets copied along with the other static files
+    path: __dirname + '/public',
+    filename: 'electron.js',
+  },
+  plugins,
 }

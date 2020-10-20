@@ -1,6 +1,9 @@
 import setupCommunication from './communication'
 import { app, BrowserWindow } from 'electron'
 import { createWindow } from './window'
+// import installExtension, {
+//   REACT_DEVELOPER_TOOLS,
+// } from 'electron-devtools-installer'
 
 let mainWindow: BrowserWindow
 
@@ -32,13 +35,12 @@ const createMainWindow = async () => {
   })
 }
 
-const setupDevtools = () => {
+const setupDevtools = async () => {
   try {
-    // https://github.com/electron/electron/issues/23662
-    // await session.defaultSession.loadExtension(
-    //   `/Users/martonlanga/Library/Application Support/Google/Chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi`,
-    // )
+    // doesn't work: https://github.com/electron/electron/issues/23662
+    // const name = await installExtension(REACT_DEVELOPER_TOOLS)
+    // console.log(`Added Extension:  ${name}`)
   } catch (error) {
-    console.log(error)
+    console.error(error)
   }
 }

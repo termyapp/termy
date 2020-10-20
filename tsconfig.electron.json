@@ -3,7 +3,7 @@
   "include": ["electron"],
   "exclude": ["src"],
   "compilerOptions": {
-    "outDir": "build",
+    "outDir": "public",
     "noEmit": false
   }
 }
