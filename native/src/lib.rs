@@ -3,10 +3,6 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
-// use napi::threadsafe_function::{
-//     ThreadsafeFunction, ThreadsafeFunctionCallMode, ThreadsafeFunctionReleaseMode, ToJs,
-// };
-// #[cfg(napi4)]
 use napi::{CallContext, JsFunction, JsObject, JsString, JsUndefined, Module};
 
 use std::convert::TryInto;
@@ -37,7 +33,7 @@ register_module!(shell, init);
 fn init(module: &mut Module) -> napi::Result<()> {
     module.create_named_method("getSuggestions", suggestions)?;
 
-    // module.create_named_method("newCommand", command)?;
+    module.create_named_method("newCommand", command)?;
 
     Ok(())
 }
@@ -84,42 +80,38 @@ struct Event {
     current_dir: String,
 }
 
-// #[js_function(4)]
-// fn command(ctx: CallContext) -> napi::Result<JsUndefined> {
-//     //   let arg0 = ctx.get::<JsUnknown>(0)?;
-//     //   let de_serialized: AnObject = ctx.env.from_js_value(arg0)?;
+#[js_function(4)]
+fn command(ctx: CallContext) -> napi::Result<JsUndefined> {
+    //   let arg0 = ctx.get::<JsUnknown>(0)?;
+    //   let de_serialized: AnObject = ctx.env.from_js_value(arg0)?;
 
-//     let id: String = ctx.get::<JsString>(0)?.try_into()?;
-//     let input: String = ctx.get::<JsString>(1)?.try_into()?;
-//     let current_dir: String = ctx.get::<JsString>(2)?.try_into()?;
-//     let send_stdout = ctx.get::<JsFunction>(0)?;
+    let id: String = ctx.get::<JsString>(0)?.try_into()?;
+    let input: String = ctx.get::<JsString>(1)?.try_into()?;
+    let current_dir: String = ctx.get::<JsString>(2)?.try_into()?;
+    let send_stdout = ctx.get::<JsFunction>(0)?;
 
-//     let send_stdout = ctx.env.create_threadsafe_function(
-//         send_stdout,
-//         0,
-//         |ctx: ThreadSafeCallContext<Vec<u32>>| {
-//             ctx.value
-//                 .iter()
-//                 .map(|v| ctx.env.create_uint32(*v))
-//                 .collect::<Result<Vec<JsNumber>>>()
-//         },
-//     )?;
+    let send_stdout = ctx.env.create_threadsafe_function(send_stdout, 0, |ctx| {
+        ctx.value
+            .iter()
+            .map(|v| ctx.env.create_uint32(*v))
+            .collect::<Result<Vec<JsNumber>>>()
+    })?;
 
-//     let mut senders = HashMap::new();
-//     let (sender, receiver) = unbounded();
-//     senders.insert(id.clone(), sender);
-//     println!("Senders len: {}", senders.len());
+    let mut senders = HashMap::new();
+    let (sender, receiver) = unbounded();
+    senders.insert(id.clone(), sender);
+    println!("Senders len: {}", senders.len());
 
-//     thread::spawn(move || {
-//         if let Err(err) = shell(receiver, id, input, current_dir, send_stdout) {
-//             println!("Error in shell: {}", err);
-//         }
-//     });
+    thread::spawn(move || {
+        if let Err(err) = shell(receiver, id, input, current_dir, send_stdout) {
+            println!("Error in shell: {}", err);
+        }
+    });
 
-//     println!("Success!");
+    println!("Success!");
 
-//     ctx.env.get_undefined()
-// }
+    ctx.env.get_undefined()
+}
 
 // let event = arg.unwrap();
 // let event: Event = serde_json::from_str(&event).unwrap();

@@ -18,8 +18,8 @@ base64 = "0.12.3"
 fuzzy-matcher = "*"
 crossbeam-channel = "0.4.4"
 crossbeam-utils = "0.7.2"
-napi = "0.5"
-napi-derive = "0.5"
+napi = { git = "https://github.com/napi-rs/napi-rs" }
+napi-derive = { git = "https://github.com/napi-rs/napi-rs" }
 
 [build-dependencies]
 napi-build = "0.2"
