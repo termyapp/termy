@@ -3,30 +3,17 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, JsFunction, JsObject, JsString, JsUndefined, Module};
+use napi::{CallContext, Error, JsFunction, JsObject, JsString, JsUndefined, Module};
 
-use std::convert::TryInto;
 use suggestions::get_suggestions;
 mod suggestions;
 
 extern crate base64;
 
-use base64::encode;
-use fs::File;
-use io::Read;
 use serde::{Deserialize, Serialize};
-use shell::shell;
-use std::{
-    collections::HashMap,
-    ffi::OsStr,
-    fs,
-    io::{self},
-    path::Path,
-};
-use std::{process::Command, thread};
+use std::thread;
 
 mod shell;
-use crossbeam_channel::unbounded;
 
 register_module!(shell, init);
 
@@ -40,8 +27,8 @@ fn init(module: &mut Module) -> napi::Result<()> {
 
 #[js_function(2)]
 fn suggestions(ctx: CallContext) -> napi::Result<JsObject> {
-    let input: String = ctx.get::<JsString>(0)?.try_into()?;
-    let current_dir: String = ctx.get::<JsString>(1)?.try_into()?;
+    let input = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
+    let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
 
     let suggestions = get_suggestions(input, current_dir).unwrap();
     // limit suggestions to a maximum of 10
@@ -85,27 +72,35 @@ fn command(ctx: CallContext) -> napi::Result<JsUndefined> {
     //   let arg0 = ctx.get::<JsUnknown>(0)?;
     //   let de_serialized: AnObject = ctx.env.from_js_value(arg0)?;
 
-    let id: String = ctx.get::<JsString>(0)?.try_into()?;
-    let input: String = ctx.get::<JsString>(1)?.try_into()?;
-    let current_dir: String = ctx.get::<JsString>(2)?.try_into()?;
-    let send_stdout = ctx.get::<JsFunction>(0)?;
+    // let id: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
+    // let input: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
+    // let current_dir: String = ctx.get::<JsString>(2)?.into_utf8()?.to_owned()?;
+    let func = ctx.get::<JsFunction>(3)?;
 
-    let send_stdout = ctx.env.create_threadsafe_function(send_stdout, 0, |ctx| {
-        ctx.value
-            .iter()
-            .map(|v| ctx.env.create_uint32(*v))
-            .collect::<Result<Vec<JsNumber>>>()
-    })?;
+    // let mut senders = HashMap::new();
+    // let (sender, receiver) = unbounded();
+    // senders.insert(id.clone(), sender);
+    // println!("Senders len: {}", senders.len());
 
-    let mut senders = HashMap::new();
-    let (sender, receiver) = unbounded();
-    senders.insert(id.clone(), sender);
-    println!("Senders len: {}", senders.len());
+    let send_stdout = ctx.env.create_threadsafe_function(
+        func,
+        0,
+        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<String>>| {
+            ctx.value
+                .iter()
+                .map(|arg| ctx.env.create_string(arg))
+                .collect::<Result<Vec<JsString>, Error>>()
+        },
+    )?;
 
     thread::spawn(move || {
-        if let Err(err) = shell(receiver, id, input, current_dir, send_stdout) {
-            println!("Error in shell: {}", err);
-        }
+        let output = vec!["hello".to_string()];
+        // rust-analyzer complains, but it compiles ¯\_(ツ)_/¯
+        send_stdout.call(
+            Ok(output.clone()),
+            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
+        );
+        send_stdout.release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
     });
 
     println!("Success!");

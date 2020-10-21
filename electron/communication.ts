@@ -21,8 +21,10 @@ const handleMessage = (message: Message) => {
     }
     case 'NEW_COMMAND': {
       const { id, input, currentDir } = message.data
-      const sendStdout = (chunk: number[]) => {
-        ipcMain.emit('event', { id, chunk })
+      const sendStdout = (...args: any[]) => {
+        // first arg is `null` for some reason
+        console.log('received: ', args)
+        // ipcMain.emit('event', { id, chunk })
       }
       native.newCommand(id, input, currentDir, sendStdout)
     }

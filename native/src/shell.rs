@@ -22,10 +22,11 @@ struct Payload<'a> {
 }
 
 pub fn shell(
-    receiver: crossbeam_channel::Receiver<String>,
     id: String,
     input: String,
     current_dir: String,
+    receiver: crossbeam_channel::Receiver<String>,
+    send_stdout: napi::threadsafe_function::ThreadsafeFunction<()>,
 ) -> Result<()> {
     println!("Running command: `{}` in {}", input, current_dir);
 
