@@ -2,13 +2,13 @@ import { Suggestion } from '../types'
 
 declare function getSuggestions(input: string, currentDir: string): Suggestion[]
 
-type SendStdout = (chunk: number[]) => void
+type sendChunk = (chunk: number[]) => void
 
 declare function newCommand(
   id: string,
   input: string,
   currentDir: string,
-  sendStdout: SendStdout,
+  sendChunk: sendChunk,
 ): void
 
 declare function sendStdin(id: string, stdin: string): void

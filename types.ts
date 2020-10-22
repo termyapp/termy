@@ -11,3 +11,8 @@ export type Message =
 export type Suggestion = {
   raw: string
 }
+
+export interface Payload {
+  id: string
+  chunk: Uint8Array
+}

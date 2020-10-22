@@ -3,7 +3,7 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, Error, JsFunction, JsObject, JsString, JsUndefined, Module};
+use napi::{CallContext, Error, JsFunction, JsNumber, JsObject, JsString, JsUndefined, Module};
 
 use suggestions::get_suggestions;
 mod suggestions;
@@ -11,6 +11,7 @@ mod suggestions;
 extern crate base64;
 
 use serde::{Deserialize, Serialize};
+use shell::shell;
 use std::thread;
 
 mod shell;
@@ -60,47 +61,39 @@ fn suggestions(ctx: CallContext) -> napi::Result<JsObject> {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct Event {
+struct NewCommand {
     id: String,
-    event_type: String,
     input: String,
     current_dir: String,
 }
 
 #[js_function(4)]
 fn command(ctx: CallContext) -> napi::Result<JsUndefined> {
-    //   let arg0 = ctx.get::<JsUnknown>(0)?;
-    //   let de_serialized: AnObject = ctx.env.from_js_value(arg0)?;
-
-    // let id: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
-    // let input: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
-    // let current_dir: String = ctx.get::<JsString>(2)?.into_utf8()?.to_owned()?;
-    let func = ctx.get::<JsFunction>(3)?;
+    let id: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
+    let input: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
+    let current_dir: String = ctx.get::<JsString>(2)?.into_utf8()?.to_owned()?;
+    let send_chunk = ctx.get::<JsFunction>(3)?;
 
     // let mut senders = HashMap::new();
     // let (sender, receiver) = unbounded();
     // senders.insert(id.clone(), sender);
     // println!("Senders len: {}", senders.len());
 
-    let send_stdout = ctx.env.create_threadsafe_function(
-        func,
+    let send_chunk = ctx.env.create_threadsafe_function(
+        send_chunk,
         0,
-        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<String>>| {
+        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<u8>>| {
             ctx.value
                 .iter()
-                .map(|arg| ctx.env.create_string(arg))
-                .collect::<Result<Vec<JsString>, Error>>()
+                .map(|arg| ctx.env.create_uint32(*arg as u32))
+                .collect::<Result<Vec<JsNumber>, Error>>()
         },
     )?;
 
     thread::spawn(move || {
-        let output = vec!["hello".to_string()];
-        // rust-analyzer complains, but it compiles ¯\_(ツ)_/¯
-        send_stdout.call(
-            Ok(output.clone()),
-            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
-        );
-        send_stdout.release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
+        if let Err(err) = shell(id, input, current_dir, send_chunk) {
+            println!("Error in shell: {}", err);
+        }
     });
 
     println!("Success!");

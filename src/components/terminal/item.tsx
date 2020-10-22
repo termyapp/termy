@@ -56,7 +56,7 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
     payload => {
       const term = termRef.current
       if (!term) return
-      // console.log('writing chunk', payload.id)
+      console.log('writing chunk', payload)
       term.write(payload.chunk)
     },
     [],

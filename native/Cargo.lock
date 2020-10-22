@@ -710,7 +710,6 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "subprocess",
 ]
 
 [[package]]
@@ -1179,16 +1178,6 @@ dependencies = [
  "cfg-if 0.1.10",
  "libc",
  "redox_syscall",
- "winapi 0.3.9",
-]
-
-[[package]]
-name = "subprocess"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "69b9ad6c3e1b525a55872a4d2f2d404b3c959b7bbcbfd83c364580f68ed157bd"
-dependencies = [
- "libc",
  "winapi 0.3.9",
 ]
 

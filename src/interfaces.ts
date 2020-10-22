@@ -19,11 +19,6 @@ export interface CurrentDirStat extends FileEntry {
   gitBranch?: string
 }
 
-export interface Payload {
-  id: string
-  chunk: Uint8Array
-}
-
 export type ViewType = 'img' | 'dir' | 'text' | 'else'
 
 export type ViewCommand = {

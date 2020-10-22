@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { CurrentDirStat, Payload } from '../interfaces'
-import { listen } from './tauri'
+import { Payload } from '../../types'
+import { CurrentDirStat } from '../interfaces'
+import { ipcRenderer } from './ipc'
 
 export const useListener = (
   id: string,
@@ -9,13 +10,9 @@ export const useListener = (
 ) => {
   useEffect(() => {
     // receive events from shell.rs
-    listen('event', (event: any) => {
-      const rawPayload = event.payload as { id: string; chunk: number[] }
-      if (rawPayload.id === id) {
-        const payload: Payload = {
-          id: rawPayload.id,
-          chunk: Uint8Array.from(rawPayload.chunk),
-        }
+    ipcRenderer.on('event', (event: any, payload: Payload) => {
+      console.log('received event: ', payload)
+      if (payload.id === id) {
         handler(payload)
       }
     }) // eslint-disable-next-line
