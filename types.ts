@@ -7,6 +7,7 @@ export type Message =
       type: 'NEW_COMMAND'
       data: { id: string; input: string; currentDir: string }
     }
+  | { type: 'PIPE_STDIN'; data: Payload }
 
 export type Suggestion = {
   raw: string
