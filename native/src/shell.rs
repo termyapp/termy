@@ -1,5 +1,6 @@
 use anyhow::Result;
 use io::{BufReader, Read};
+use portable_pty::{native_pty_system, CommandBuilder, PtySize, PtySystem};
 use serde::Serialize;
 use std::env;
 use std::io::Write;
@@ -34,27 +35,32 @@ pub fn shell(
     let args = parts.map(OsStr::new).collect::<Vec<&OsStr>>();
     match command {
         command => {
-            let mut child = Command::new(command)
-                .args(&args)
-                .current_dir(current_dir)
-                .envs(env::vars())
-                .envs(env::vars_os())
-                .stdin(Stdio::piped())
-                .stdout(Stdio::piped())
-                .stderr(Stdio::piped())
-                .spawn()
-                .expect("Command failed to start");
+            let pty_system = native_pty_system();
+            let mut pair = pty_system.openpty(PtySize {
+                rows: 24,
+                cols: 100,
+                // Not all systems support pixel_width, pixel_height,
+                // but it is good practice to set it to something
+                // that matches the size of the selected font.  That
+                // is more complex than can be shown here in this
+                // brief example though!
+                pixel_width: 0,
+                pixel_height: 0,
+            })?;
 
-            // {
-            //     let stdin = child.stdin.as_mut().expect("Failed to open stdin");
-            //     stdin
-            //         .write_all("Hello, world!".as_bytes())
-            //         .expect("Failed to write to stdin");
-            // }
+            // todo: env vars?
+            // Spawn a shell into the pty
+            let mut cmd = CommandBuilder::new(command);
+            cmd.cwd(current_dir);
+            cmd.args(args);
+            let child = pair.slave.spawn_command(cmd)?;
 
-            // let output = child.wait_with_output().expect("Failed to read stdout");
+            // Read and parse output from the pty with reader
+            let mut reader = pair.master.try_clone_reader()?;
 
-            let mut reader = BufReader::new(child.stdout.as_mut().unwrap());
+            // Send data to the pty by writing to the master
+            // writeln!(pair.master, "ls -l\r\n")?;
+
             let mut chunk = [0u8; 1024];
             loop {
                 let read = reader.read(&mut chunk);
