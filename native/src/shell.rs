@@ -2,10 +2,10 @@ use anyhow::Result;
 use io::{BufReader, Read};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize, PtySystem};
 use serde::Serialize;
-use std::env;
-use std::io::Write;
 use std::process::{Command, Stdio};
+use std::{env, path::Path};
 use std::{ffi::OsStr, io};
+use std::{fs, io::Write};
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -34,6 +34,16 @@ pub fn shell(
     let command = parts.next().expect("Failed to parse input");
     let args = parts.map(OsStr::new).collect::<Vec<&OsStr>>();
     match command {
+        "move" => {
+            // move arg1 arg2
+            let mut args = args.iter();
+            let from = current_dir.clone() + args.next().unwrap().to_str().unwrap();
+            let from = Path::new(&from);
+            let to = current_dir.clone() + args.next().unwrap().to_str().unwrap();
+            let to = Path::new(&to);
+            from.canonicalize()?;
+            fs::rename(from, to)?;
+        }
         command => {
             let pty_system = native_pty_system();
             let mut pair = pty_system.openpty(PtySize {
