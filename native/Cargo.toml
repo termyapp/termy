@@ -20,6 +20,7 @@ crossbeam-utils = "0.7.2"
 napi = { git = "https://github.com/napi-rs/napi-rs" }
 napi-derive = { git = "https://github.com/napi-rs/napi-rs" }
 portable-pty = "0.3.1"
+rusqlite = "0.24.1"
 
 [build-dependencies]
 napi-build = "0.2"
