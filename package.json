@@ -6,6 +6,7 @@
   "private": true,
   "homepage": "./",
   "scripts": {
+    "dev": "yarn start",
     "start": "concurrently \"cross-env BROWSER=none yarn react:start\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development webpack --watch\"",
     "build": "cross-env NODE_ENV=production webpack && yarn build:react && electron-builder",
     "release": "yarn build:react && GH_TOKEN=<TOKEN> electron-builder --publish=always",
