@@ -1,20 +1,22 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
+import { Message } from '../../../types'
 import { Command } from '../../interfaces'
 import { getCurrentDir, useListener } from '../../lib'
 import getCommandType from '../../lib/get-command-type'
-import { emit } from '../../lib/tauri'
+import { ipcRenderer } from '../../lib/ipc'
 import { styled } from '../../stitches.config'
 import List from '../custom/list'
 
 const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
-  let termRef = useRef<Terminal>(null)
   const ref = useRef<HTMLDivElement>(null)
+  const [exitStatus, setExitStatus] = useState<null | number>(null)
+  const [terminal, setTerminal] = useState<Terminal | null>(null)
 
   useEffect(() => {
     if (!ref.current) return
-    const term = new Terminal({
+    let term = new Terminal({
       convertEol: true,
       cursorStyle: 'block',
       allowTransparency: true, // this can negatively affect performance
@@ -23,21 +25,12 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
       },
     })
 
-    term.onKey(({ key, domEvent }) => {
-      console.log('onKey', key)
-      console.log(domEvent)
+    // todo: https://xtermjs.org/docs/guides/flowcontrol/
+    term.onData(key => {
+      console.log('key', key)
 
-      switch (domEvent.key) {
-        case 'Enter':
-          key = '\r\n'
-          break
-      }
-
-      emit(
-        'event',
-        JSON.stringify({ id, eventType: 'STDIN', input: key, currentDir }),
-      )
-      term.write(key)
+      const message: Message = { type: 'STDIN', data: { id, key } }
+      console.log(ipcRenderer.sendSync('message', message))
     })
 
     // fit
@@ -47,17 +40,24 @@ const DefaultItem: React.FC<Command> = ({ id, currentDir, input }) => {
 
     term.open(ref.current)
 
-    // @ts-ignore
-    termRef.current = term
+    setTerminal(term)
   }, [currentDir, id])
 
   useListener(
     id,
     payload => {
-      const term = termRef.current
-      if (!term) return
-      console.log('writing chunk', payload)
-      term.write(payload.chunk)
+      if (!terminal) return
+
+      if (typeof payload.chunk !== 'undefined') {
+        console.log('writing chunk', payload)
+        terminal.write(payload.chunk)
+      } else {
+        console.log('Exit status: ', payload.exitStatus)
+        setExitStatus(payload.exitStatus)
+
+        terminal.write('\u001B[?25l') // hide cursor
+        terminal.setOption('disableStdin', true)
+      }
     },
     [],
   )

@@ -7,13 +7,10 @@ export type Message =
       type: 'NEW_COMMAND'
       data: { id: string; input: string; currentDir: string }
     }
-  | { type: 'PIPE_STDIN'; data: Payload }
+  | { type: 'STDIN'; data: { id: string; key: string } }
 
 export type Suggestion = {
   raw: string
 }
 
-export interface Payload {
-  id: string
-  chunk: Uint8Array
-}
+export type Payload = { id: string } & { chunk: Uint8Array; exitStatus: number }

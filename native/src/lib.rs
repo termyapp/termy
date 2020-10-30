@@ -3,15 +3,20 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
-use napi::{CallContext, Error, JsFunction, JsNumber, JsObject, JsString, JsUndefined, Module};
+use crossbeam_channel::{unbounded, Sender};
+use napi::{
+    CallContext, Error, JsBuffer, JsExternal, JsFunction, JsNumber, JsObject, JsString,
+    JsUndefined, Module,
+};
 
-use suggestions::get_suggestions;
+use rusqlite::{Connection, NO_PARAMS};
+
 mod suggestions;
 
 extern crate base64;
 
 use serde::{Deserialize, Serialize};
-use shell::shell;
+use shell::Command;
 use std::thread;
 
 mod shell;
@@ -19,42 +24,55 @@ mod shell;
 register_module!(shell, init);
 
 fn init(module: &mut Module) -> napi::Result<()> {
-    module.create_named_method("getSuggestions", suggestions)?;
+    module.create_named_method("getSuggestions", get_suggestions)?;
 
-    module.create_named_method("newCommand", command)?;
+    module.create_named_method("newCommand", new_command)?;
+
+    module.create_named_method("sendStdin", send_stdin)?;
+
+    // let conn = Connection::open("termy.db").unwrap();
+
+    // conn.execute(
+    //     "create table if not exists history (
+    //             id integer primary key,
+    //             command text not null
+    //          )",
+    //     NO_PARAMS,
+    // )
+    // .unwrap();
 
     Ok(())
 }
 
 #[js_function(2)]
-fn suggestions(ctx: CallContext) -> napi::Result<JsObject> {
+fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
     let input = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
     let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
 
-    let suggestions = get_suggestions(input, current_dir).unwrap();
-    // limit suggestions to a maximum of 10
-    let length = if suggestions.len() > 10 {
-        10
-    } else {
-        suggestions.len()
-    };
+    // let suggestions = suggestions::get_suggestions(input, current_dir).unwrap();
+    // // limit suggestions to a maximum of 10
+    // let length = if suggestions.len() > 10 {
+    //     10
+    // } else {
+    //     suggestions.len()
+    // };
 
-    let mut result = ctx.env.create_array_with_length(length)?;
-    for index in 0..length {
-        let suggestion = suggestions.get(index).unwrap();
-        let mut data = ctx.env.create_object()?;
+    let mut result = ctx.env.create_array_with_length(10)?;
+    // for index in 0..length {
+    //     let suggestion = suggestions.get(index).unwrap();
+    //     let mut data = ctx.env.create_object()?;
 
-        let name = ctx.env.create_string(&suggestion.name)?;
-        let command = ctx.env.create_string(&suggestion.command)?;
-        let score = ctx.env.create_int64(suggestion.score)?;
-        // ctx.env.to_js_value(&value)
+    //     let name = ctx.env.create_string(&suggestion.name)?;
+    //     let command = ctx.env.create_string(&suggestion.command)?;
+    //     let score = ctx.env.create_int64(suggestion.score)?;
+    //     // ctx.env.to_js_value(&value)
 
-        data.set_named_property("name", name)?;
-        data.set_named_property("command", command)?;
-        data.set_named_property("score", score)?;
+    //     data.set_named_property("name", name)?;
+    //     data.set_named_property("command", command)?;
+    //     data.set_named_property("score", score)?;
 
-        result.set_element(index as u32, data)?;
-    }
+    //     result.set_element(index as u32, data)?;
+    // }
 
     Ok(result)
 }
@@ -67,20 +85,19 @@ struct NewCommand {
     current_dir: String,
 }
 
-#[js_function(4)]
-fn command(ctx: CallContext) -> napi::Result<JsUndefined> {
+#[js_function(5)]
+fn new_command(ctx: CallContext) -> napi::Result<JsExternal> {
     let id: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
     let input: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
     let current_dir: String = ctx.get::<JsString>(2)?.into_utf8()?.to_owned()?;
-    let send_chunk = ctx.get::<JsFunction>(3)?;
+    let send_stdout = ctx.get::<JsFunction>(3)?;
+    let send_exit_status = ctx.get::<JsFunction>(4)?;
 
-    // let mut senders = HashMap::new();
-    // let (sender, receiver) = unbounded();
-    // senders.insert(id.clone(), sender);
-    // println!("Senders len: {}", senders.len());
+    let (sender, receiver) = unbounded::<String>();
+    let shell_sender = sender.clone();
 
-    let send_chunk = ctx.env.create_threadsafe_function(
-        send_chunk,
+    let send_stdout = ctx.env.create_threadsafe_function(
+        send_stdout,
         0,
         |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<u8>>| {
             ctx.value
@@ -90,37 +107,58 @@ fn command(ctx: CallContext) -> napi::Result<JsUndefined> {
         },
     )?;
 
+    let send_exit_status = ctx.env.create_threadsafe_function(
+        send_exit_status,
+        0,
+        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<u32>>| {
+            ctx.value
+                .iter()
+                .map(|arg| ctx.env.create_uint32(*arg as u32))
+                .collect::<Result<Vec<JsNumber>, Error>>()
+        },
+    )?;
+
     thread::spawn(move || {
-        if let Err(err) = shell(id, input, current_dir, send_chunk) {
-            println!("Error in shell: {}", err);
+        // if success is true, we send [0], otherwise [1]
+        let mut success = vec![0];
+        match Command::new(id, current_dir, input).exec(send_stdout, receiver, shell_sender) {
+            Ok(true) => {
+                println!("Exit status: 1");
+            }
+            Ok(false) => {
+                println!("Exit status: 0");
+                success = vec![1];
+            }
+            Err(err) => {
+                println!("Error in shell: {}", err);
+                success = vec![1];
+            }
         }
+        send_exit_status.call(
+            Ok(success),
+            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
+        );
+        send_exit_status.release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
     });
 
-    println!("Success!");
+    ctx.env.create_external(sender)
+}
+
+#[js_function(2)]
+fn send_stdin(ctx: CallContext) -> napi::Result<JsUndefined> {
+    let attached_obj = ctx.get::<JsExternal>(0)?;
+    let sender = ctx
+        .env
+        .get_value_external::<Sender<String>>(&attached_obj)?;
+
+    let key: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
+
+    if let Err(err) = sender.send(key) {
+        println!("Failed to send key: {}", err);
+    }
 
     ctx.env.get_undefined()
 }
-
-// let event = arg.unwrap();
-// let event: Event = serde_json::from_str(&event).unwrap();
-// println!("Event: {:?}", event);
-// let id = event.id.clone();
-// let mut remove_sender = || {
-//     senders.remove(&id);
-// };
-// remove_sender();
-
-// "STDIN" => {
-//     if let Some(s) = senders.get(&event.id) {
-//         let copy = event.input.clone();
-//         // communicate to correct thread
-//         if let Err(err) = s.send(event.input) {
-//             println!("Error sending message: {}", err);
-//         } else {
-//             println!("Message sent: {}", copy);
-//         }
-//     }
-// }
 
 // #[derive(Serialize, Debug)]
 // #[serde(rename_all = "camelCase")]
