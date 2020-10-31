@@ -62,9 +62,9 @@ const Nav: React.FC = () => {
           },
         }}
       >
-        Get early access
-        <Key code="KeyA" fn={() => window.open(shortcuts.KeyA.href)} ml>
-          A
+        Download
+        <Key code="KeyO" fn={() => window.open(shortcuts.KeyA.href)} ml>
+          O
         </Key>
       </Button>
     </Flex>

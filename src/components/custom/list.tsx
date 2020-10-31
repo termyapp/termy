@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useKey } from 'react-use'
-import { FileEntry, ViewCommand } from '../../interfaces'
+import { FileEntry, ViewCommand } from '../../../types'
 import { styled } from '../../stitches.config'
 import { File, Folder } from '../svg'
 import View, { viewCommand } from './view'

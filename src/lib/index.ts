@@ -1,28 +1,6 @@
-import { DependencyList, useEffect } from 'react'
-import { CurrentDirStat, Payload } from '../interfaces'
-import { listen } from './tauri'
+import { sendSync } from './ipc'
 
-export const useListener = (
-  id: string,
-  handler: (payload: Payload) => void,
-  deps?: DependencyList,
-) => {
-  useEffect(() => {
-    // receive events from shell.rs
-    listen('event', event => {
-      const rawPayload = event.payload as { id: string; chunk: number[] }
-      if (rawPayload.id === id) {
-        const payload: Payload = {
-          id: rawPayload.id,
-          chunk: Uint8Array.from(rawPayload.chunk),
-        }
-        handler(payload)
-      }
-    })
-  }, [id, handler, ...deps]) // eslint-disable-line
-}
-
-export const getCurrentDir = (currentDir: string) => {
+export const formatCurrentDir = (currentDir: string) => {
   const path = currentDir.split('/')
   if (path.length < 3) {
     return currentDir
@@ -31,7 +9,11 @@ export const getCurrentDir = (currentDir: string) => {
   return (relativePath.length > 0 ? '~/' : '~') + relativePath
 }
 
-// below ones do not work
+export const api = (command: string) => {
+  return sendSync('message', { type: 'api', command })
+}
+
+// todo: replace below ones w/ api
 export const readFile = (path: string): string | null => {
   return null
 }
@@ -42,16 +24,8 @@ export const getLanguage = (path: string): string | undefined => {
   return undefined
 }
 
-export const getCommands = (): string[] => {
-  return []
-}
+// export const isDev = process.env.NODE_ENV === 'development'
+export const isDev = true
 
-export const getCurrentDirStat = (currentDir: string): CurrentDirStat => {
-  return {} as CurrentDirStat
-}
-
-export const getParsedManPage = (cmd: string): any[] => {
-  return []
-}
-
-export const isDev = process.env.NODE_ENV === 'development'
+export * from './ipc'
+export * from './listener'

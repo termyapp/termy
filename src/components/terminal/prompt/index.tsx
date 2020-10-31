@@ -10,8 +10,8 @@ import {
   Slate,
   withReact,
 } from 'slate-react'
-import { v4 as uuidv4 } from 'uuid'
-import { promisified } from '../../../lib/tauri'
+import { CellType, FrontendMessage } from '../../../../types'
+import { formatCurrentDir, sendSync } from '../../../lib'
 import { styled } from '../../../stitches.config'
 import useStore from '../../../store'
 
@@ -28,40 +28,26 @@ const getSuggestions = async (
   try {
     if (input.length < 1) return null
 
-    const data: Suggestion[] = await promisified({
-      cmd: 'prompt',
-      input,
-      currentDir,
-    })
-    console.log(data)
-    return data.slice(0, 10)
+    const message: FrontendMessage = {
+      type: 'get-suggestions',
+      data: { input, currentDir },
+    }
+
+    const data: Suggestion[] = sendSync('message', message)
+    return data
   } catch (error) {
     console.error('Error while getting files: ', error)
     return null
   }
 }
 
-export const getPrompt = (): HTMLDivElement | null => {
-  const prompt = document.querySelector<HTMLDivElement>('#prompt')
-  if (prompt) {
-    return prompt as HTMLDivElement
-  }
-  return null
-}
-
-interface Props {
-  currentDir: string
-  setCurrentDir: (newDir: string) => void
-}
-
-const Prompt = ({ currentDir, setCurrentDir }: Props) => {
-  const { add, history } = useStore()
+const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
+  const { run, setInput } = useStore()
   const editor = useMemo(
     () => withSuggestions(withHistory(withReact(createEditor()))),
     [],
   )
   const [isFocused, setIsFocused] = useState(true)
-  const [historyIndex, setHistoryIndex] = useState(0)
   const [value, setValue] = useState<Node[]>([
     {
       type: 'paragraph',
@@ -77,8 +63,7 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const renderElement = useCallback(props => <Element {...props} />, [])
 
-  const input = value.map(n => Node.string(n)).join('\n')
-
+  // update suggestions
   useEffect(() => {
     ;(async () => {
       const newSuggestions = await getSuggestions(input, currentDir)
@@ -88,11 +73,10 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
     })()
   }, [input, currentDir])
 
-  console.log(value[0], input)
-
   const onKeyDown = useCallback(
     event => {
       if (target && suggestions.length) {
+        // focused on suggestions
         switch (event.key) {
           case 'ArrowUp':
             event.preventDefault()
@@ -118,64 +102,23 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
             break
         }
       } else if (event.key === 'Enter') {
-        const input = value.map(n => Node.string(n)).join('\n')
         event.preventDefault() // don't allow multiline input
         if (!input) return
 
-        const command = { id: uuidv4(), input, currentDir }
+        run(id)
 
-        add(command)
         setValue([
           {
             type: 'paragraph',
             children: [{ text: '' }],
           },
         ])
-
         Editor.deleteBackward(editor, { unit: 'line' })
         ReactEditor.focus(editor)
-      } else {
-        switch (event.key) {
-          case 'ArrowUp':
-            event.preventDefault()
-            if (historyIndex < history.length) setHistoryIndex(historyIndex + 1)
-            break
-          case 'ArrowDown':
-            event.preventDefault()
-            if (historyIndex > 0) setHistoryIndex(historyIndex - 1)
-        }
       }
     },
-    [
-      target,
-      suggestions,
-      index,
-      editor,
-      value,
-      currentDir,
-      history.length,
-      add,
-      historyIndex,
-    ],
+    [target, suggestions, index, editor, id, input, run],
   )
-  console.log('index', historyIndex)
-
-  useEffect(() => {
-    let text = ''
-    if (historyIndex !== 0) {
-      const historyItem = history[history.length - historyIndex]
-      if (!historyItem) return
-      text = historyItem.input
-    }
-    console.log('setting', text)
-    Transforms.select(editor, { path: [0, 0], offset: text.length })
-    setValue([
-      {
-        type: 'paragraph',
-        children: [{ text }],
-      },
-    ])
-  }, [historyIndex, history, editor])
 
   useEffect(() => {
     if (target && suggestions.length > 0 && suggestionRef.current) {
@@ -194,19 +137,15 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
         value={value}
         onChange={newValue => {
           if (isFocused) {
+            // todo: why do we need isFocused?
             setValue(newValue)
+            console.log('val', newValue)
+            setInput(id, newValue.map(n => Node.string(n)).join('\n'))
           }
 
           const { selection } = editor
 
           if (selection && Range.isCollapsed(selection)) {
-            // const text = Editor.string(editor, [])
-            // // prettier-ignore
-            // const fileRegexp = new RegExp('^cd [\\\w\d/\.\-]*$', 'i')
-            // const match = text.match(fileRegexp)
-
-            // if (match) {
-            // }
             const [start] = Range.edges(selection)
             const before = Editor.before(editor, start, { unit: 'word' })
             const beforeRange = before && Editor.range(editor, before, start)
@@ -228,7 +167,9 @@ const Prompt = ({ currentDir, setCurrentDir }: Props) => {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className="h-full"
-          placeholder={isFocused ? '>' : "Press 'Esc' to focus"}
+          placeholder={
+            isFocused ? formatCurrentDir(currentDir) : "Press 'Esc' to focus"
+          }
           onKeyDown={onKeyDown}
           renderElement={renderElement}
         />

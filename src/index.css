@@ -1,0 +1,8 @@
+@import-normalize; /* bring in normalize.css styles (supposedly a cra feature) */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+}
