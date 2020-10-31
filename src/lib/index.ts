@@ -1,4 +1,4 @@
-import { sendSync } from './ipc'
+import { ipc } from './ipc'
 
 export const formatCurrentDir = (currentDir: string) => {
   const path = currentDir.split('/')
@@ -10,7 +10,7 @@ export const formatCurrentDir = (currentDir: string) => {
 }
 
 export const api = (command: string) => {
-  return sendSync('message', { type: 'api', command })
+  return ipc.sendSync('message', { type: 'api', command })
 }
 
 // todo: replace below ones w/ api

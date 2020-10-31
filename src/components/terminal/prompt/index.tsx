@@ -11,7 +11,7 @@ import {
   withReact,
 } from 'slate-react'
 import { CellType, FrontendMessage } from '../../../../types'
-import { formatCurrentDir, sendSync } from '../../../lib'
+import { formatCurrentDir, ipc } from '../../../lib'
 import { styled } from '../../../stitches.config'
 import useStore from '../../../store'
 
@@ -33,7 +33,7 @@ const getSuggestions = async (
       data: { input, currentDir },
     }
 
-    const data: Suggestion[] = sendSync('message', message)
+    const data: Suggestion[] = ipc.sendSync('message', message)
     return data
   } catch (error) {
     console.error('Error while getting files: ', error)

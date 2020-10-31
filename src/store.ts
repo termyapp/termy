@@ -4,7 +4,7 @@ import create from 'zustand'
 import { combine } from 'zustand/middleware'
 import { FrontendMessage } from '../types'
 import { CellType } from './../types'
-import { api, sendSync } from './lib'
+import { api, ipc } from './lib'
 
 const useStore = create(
   combine(
@@ -31,7 +31,7 @@ const useStore = create(
           // handle rest server-side
 
           const message: FrontendMessage = { type: 'run-cell', data: cell }
-          sendSync('message', message)
+          ipc.send('message', message)
         }
       },
       setInput: (id: string, input: string) => {
