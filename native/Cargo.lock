@@ -766,15 +766,12 @@ name = "native"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "base64",
  "crossbeam-channel",
- "crossbeam-utils",
  "fuzzy-matcher",
  "napi",
  "napi-build 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "napi-derive",
  "portable-pty",
- "regex",
  "rusqlite",
  "serde",
  "serde_json",
