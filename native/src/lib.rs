@@ -2,31 +2,26 @@
 extern crate napi;
 #[macro_use]
 extern crate napi_derive;
+extern crate base64;
 
 use crossbeam_channel::{unbounded, Sender};
 use napi::{
     CallContext, Error, JsBuffer, JsExternal, JsFunction, JsNumber, JsObject, JsString,
     JsUndefined, Module,
 };
-
 use rusqlite::{Connection, NO_PARAMS};
-
-mod suggestions;
-
-extern crate base64;
-
-use serde::{Deserialize, Serialize};
-use shell::Command;
+use shell::{Cell, CellType};
 use std::thread;
 
 mod shell;
+mod suggestions;
 
-register_module!(shell, init);
+register_module!(module, init); // only calling it so rust-analyzer thinks it gets called
 
 fn init(module: &mut Module) -> napi::Result<()> {
     module.create_named_method("getSuggestions", get_suggestions)?;
 
-    module.create_named_method("newCommand", new_command)?;
+    module.create_named_method("runCell", run_cell)?;
 
     module.create_named_method("sendStdin", send_stdin)?;
 
@@ -77,38 +72,30 @@ fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
     Ok(result)
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct NewCommand {
-    id: String,
-    input: String,
-    current_dir: String,
-}
-
 #[js_function(5)]
-fn new_command(ctx: CallContext) -> napi::Result<JsExternal> {
+fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
     let id: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
     let input: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
     let current_dir: String = ctx.get::<JsString>(2)?.into_utf8()?.to_owned()?;
-    let send_stdout = ctx.get::<JsFunction>(3)?;
-    let send_exit_status = ctx.get::<JsFunction>(4)?;
+    let send_output = ctx.get::<JsFunction>(3)?;
+    let send_status = ctx.get::<JsFunction>(4)?;
 
     let (sender, receiver) = unbounded::<String>();
     let shell_sender = sender.clone();
 
-    let send_stdout = ctx.env.create_threadsafe_function(
-        send_stdout,
+    let send_output = ctx.env.create_threadsafe_function(
+        send_output,
         0,
-        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<u8>>| {
+        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<String>>| {
             ctx.value
                 .iter()
-                .map(|arg| ctx.env.create_uint32(*arg as u32))
-                .collect::<Result<Vec<JsNumber>, Error>>()
+                .map(|arg| ctx.env.create_string(arg))
+                .collect::<Result<Vec<JsString>, Error>>()
         },
     )?;
 
-    let send_exit_status = ctx.env.create_threadsafe_function(
-        send_exit_status,
+    let send_status = ctx.env.create_threadsafe_function(
+        send_status,
         0,
         |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<u32>>| {
             ctx.value
@@ -119,26 +106,42 @@ fn new_command(ctx: CallContext) -> napi::Result<JsExternal> {
     )?;
 
     thread::spawn(move || {
-        // if success is true, we send [0], otherwise [1]
-        let mut success = vec![0];
-        match Command::new(id, current_dir, input).exec(send_stdout, receiver, shell_sender) {
+        let cell = Cell::new(id, current_dir, input);
+        let cell_type = cell.get_type();
+        let mut status = match cell_type {
+            CellType::PTY => vec![0],
+            CellType::API => vec![1],
+        };
+
+        // send start status
+        send_status.call(
+            Ok(status.clone()),
+            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
+        );
+
+        // run cell
+        match cell.run(send_output, receiver, shell_sender) {
             Ok(true) => {
                 println!("Exit status: 1");
+                status.push(0);
             }
             Ok(false) => {
                 println!("Exit status: 0");
-                success = vec![1];
+                status.push(1);
             }
             Err(err) => {
                 println!("Error in shell: {}", err);
-                success = vec![1];
+                status.push(1);
             }
         }
-        send_exit_status.call(
-            Ok(success),
+
+        // send exit status
+        send_status.call(
+            Ok(status),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
         );
-        send_exit_status.release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
+
+        send_status.release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
     });
 
     ctx.env.create_external(sender)
@@ -160,6 +163,8 @@ fn send_stdin(ctx: CallContext) -> napi::Result<JsUndefined> {
     ctx.env.get_undefined()
 }
 
+// todo: replace below code w/ api
+//
 // #[derive(Serialize, Debug)]
 // #[serde(rename_all = "camelCase")]
 // pub struct DirContent {

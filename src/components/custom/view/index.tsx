@@ -1,20 +1,21 @@
 import Path from 'path'
 import React, { useEffect, useState } from 'react'
-import { FileEntry, ViewCommand, ViewType } from '../../../interfaces'
-import { promisified } from '../../../lib/tauri'
+import { FileEntry, ViewCommand, ViewType } from '../../../../types'
 import { styled } from '../../../stitches.config'
 import Highlight from './highlight'
 
+// @ts-ignore
 export const viewCommand = async (path: string): Promise<ViewCommand> => {
   // use a custom command for now
   // in the future, you'll be able to run a command and capture it's ouput
   try {
-    const data: ViewCommand = await promisified({
-      cmd: 'viewCommand',
-      path,
-    })
-    console.log(data)
-    return data
+    // todo: use api
+    // const data: ViewCommand = await promisified({
+    //   cmd: 'viewCommand',
+    //   path,
+    // })
+    // console.log(data)
+    // return data
   } catch (error) {
     console.error('Error while getting files: ', error)
     return null

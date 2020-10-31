@@ -2,16 +2,14 @@ import { Suggestion } from '../types'
 
 declare function getSuggestions(input: string, currentDir: string): Suggestion[]
 
-type External = any
-
-declare function newCommand(
+declare function runCell(
   id: string,
   input: string,
   currentDir: string,
   sendStdout: (chunk: number[]) => void,
-  sendExitStatus: (exitStatus: number) => void,
+  sendExitStatus: (...args: any[]) => void,
 ): External
 
-declare function sendStdin(external: External, key: string): void
+declare function sendStdin(external: any, key: string): void
 
-export { getSuggestions, newCommand, sendStdin }
+export { getSuggestions, runCell, sendStdin }

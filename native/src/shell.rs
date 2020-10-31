@@ -1,14 +1,14 @@
 use anyhow::Result;
 use crossbeam_channel::{Receiver, Sender};
-use io::{BufReader, Read};
-use portable_pty::{native_pty_system, CommandBuilder, PtySize, PtySystem};
+use io::Read;
+use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Serialize;
+use std::io;
 use std::thread;
 use std::{env, path::Path};
-use std::{ffi::OsStr, io};
 use std::{fs, io::Write};
 
-pub struct Command {
+pub struct Cell {
     id: String,
     current_dir: String,
     input: String,
@@ -16,13 +16,13 @@ pub struct Command {
     args: Vec<String>,
 }
 
-impl Command {
-    pub fn new(id: String, current_dir: String, input: String) -> Command {
+impl Cell {
+    pub fn new(id: String, current_dir: String, input: String) -> Cell {
         let mut parts = input.trim().split_whitespace();
         let command = parts.next().expect("Failed to parse input").to_owned();
         let args = parts.map(|arg| String::from(arg)).collect::<Vec<String>>();
 
-        Command {
+        Cell {
             id,
             current_dir,
             input,
@@ -31,9 +31,16 @@ impl Command {
         }
     }
 
-    pub fn exec(
+    pub fn get_type(&self) -> CellType {
+        match self.command.as_ref() {
+            "move" => return CellType::API,
+            _ => return CellType::PTY,
+        }
+    }
+
+    pub fn run(
         self,
-        send_stdout: napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<u8>>,
+        send_output: napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<String>>,
         receiver: Receiver<String>,
         sender: Sender<String>,
     ) -> Result<bool> {
@@ -41,6 +48,8 @@ impl Command {
             "Executing command: `{}` in {}",
             self.input, self.current_dir
         );
+        let send_output = SendOutput::new(send_output);
+
         match self.command.as_ref() {
             "move" => {
                 // move arg1 arg2
@@ -51,6 +60,9 @@ impl Command {
                 let to = Path::new(&to);
                 from.canonicalize()?;
                 fs::rename(from, to)?;
+
+                send_output.send("Moved file".to_owned());
+                send_output.release();
             }
             command => {
                 let pty_system = native_pty_system();
@@ -72,6 +84,7 @@ impl Command {
 
                 thread::spawn(move || {
                     let mut chunk = [0u8; 1024];
+
                     loop {
                         let read = reader.read(&mut chunk);
 
@@ -80,20 +93,15 @@ impl Command {
                                 break;
                             }
                             let chunk = &chunk[..len];
-
-                            // rust-analyzer complains, but it compiles ¯\_(ツ)_/¯
-                            send_stdout.call(
-                                Ok(chunk.clone().to_vec()),
-                                napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
-                            );
+                            let output =
+                                std::str::from_utf8(chunk).expect("Failed to convert the chunk");
+                            send_output.send(output.to_string());
                         } else {
                             eprintln!("Err: {}", read.unwrap_err());
                         }
                     }
 
-                    send_stdout
-                        .release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
-                    println!("Released send_stdout");
+                    send_output.release();
                     sender
                         .send(KILL_COMMAND_MESSAGE.to_string())
                         .expect("Failed to send Exit");
@@ -129,6 +137,39 @@ impl Command {
         );
         Ok(true)
     }
+}
+
+struct SendOutput {
+    threadsafe_function: napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<String>>,
+}
+
+impl SendOutput {
+    fn new(
+        threadsafe_function: napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<String>>,
+    ) -> SendOutput {
+        SendOutput {
+            threadsafe_function,
+        }
+    }
+
+    fn send(&self, mut output: String) {
+        // rust-analyzer complains, but it compiles ¯\_(ツ)_/¯
+        self.threadsafe_function.call(
+            Ok(vec![output]),
+            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
+        );
+    }
+
+    fn release(self) {
+        self.threadsafe_function
+            .release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
+        println!("Released threadsafe function");
+    }
+}
+
+pub enum CellType {
+    PTY,
+    API,
 }
 
 const KILL_COMMAND_MESSAGE: &'static str = "TERMY_KILL_COMMAND";

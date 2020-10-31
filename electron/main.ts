@@ -1,4 +1,4 @@
-import setupCommunication from './communication'
+import setupMessages from './messages'
 import { app, BrowserWindow } from 'electron'
 import { createWindow } from './window'
 // import installExtension, {
@@ -12,7 +12,7 @@ let mainWindow: BrowserWindow
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   createMainWindow()
-  setupCommunication()
+  setupMessages()
   setupDevtools()
 })
 
