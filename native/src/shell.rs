@@ -2,10 +2,11 @@ use anyhow::Result;
 use crossbeam_channel::{Receiver, Sender};
 use io::Read;
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
+use relative_path::RelativePath;
 use serde::Serialize;
 use std::io;
+use std::path::Path;
 use std::thread;
-use std::{env, path::Path};
 use std::{fs, io::Write};
 
 pub struct Cell {
@@ -45,7 +46,7 @@ impl Cell {
 
     pub fn get_type(&self) -> CellType {
         match self.command.as_ref() {
-            "move" | "home" => return CellType::API,
+            "move" | "home" | "cd" => return CellType::API,
             _ => return CellType::PTY,
         }
     }
@@ -66,6 +67,35 @@ impl Cell {
             "home" => {
                 let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
                 send_output.send(format!("Home Directory: {:?}", home_dir));
+                send_output.release();
+            }
+            "cd" => {
+                // todo: absolute paths and /, ~, ...
+                let path = self.args.iter().next().unwrap();
+                let relative_path = RelativePath::new(path);
+                let cwd = RelativePath::new(&self.current_dir);
+                let absolute_path = cwd.join_normalized(relative_path).to_path(Path::new(""));
+
+                let output = if absolute_path.is_dir() {
+                    ApiOutput {
+                        output: format!(
+                            "Changed current directory to {}",
+                            absolute_path.to_string_lossy()
+                        ),
+                        cd: Some(absolute_path.to_string_lossy().to_string()),
+                    }
+                } else {
+                    ApiOutput {
+                        output: format!(
+                            "{} is not a valid directory",
+                            absolute_path.to_string_lossy()
+                        ),
+                        cd: None,
+                    }
+                };
+                let output = serde_json::to_string(&output)?;
+
+                send_output.send(output);
                 send_output.release();
             }
             "move" => {
@@ -192,7 +222,8 @@ pub enum CellType {
 const KILL_COMMAND_MESSAGE: &'static str = "TERMY_KILL_COMMAND";
 
 #[derive(Serialize, Debug)]
-struct Payload<'a> {
-    id: String,
-    chunk: &'a [u8],
+#[serde(rename_all = "camelCase")]
+pub struct ApiOutput {
+    output: String,
+    cd: Option<String>,
 }

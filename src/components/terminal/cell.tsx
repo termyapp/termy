@@ -7,8 +7,9 @@ import {
   ServerDataMessage,
   ServerStatusMessage,
 } from '../../../types'
-import { sendSync, useListener } from '../../lib'
+import { ipc, useListener } from '../../lib'
 import { styled } from '../../stitches.config'
+import useStore from '../../store'
 import List from '../custom/list'
 import Prompt from './prompt'
 
@@ -56,13 +57,29 @@ const Container = styled('div', {
 })
 
 const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
+  const { setCurrentDir } = useStore()
+  const [output, setOutput] = useState('')
+
+  useListener(
+    'data',
+    id,
+    (message: ServerDataMessage) => {
+      const data = JSON.parse(message.data)
+      if (data.cd) {
+        setCurrentDir(id, data.cd)
+      }
+      setOutput(data.output)
+    },
+    [],
+  )
+
   switch (input) {
     // check if custom renderer is available
     case 'list':
       return <List path={currentDir} />
     default:
-      // default to auto renderer (generate html)
-      return <div>Auto Renderer</div>
+      // default to auto renderer (markdown?)
+      return <div>{output}</div>
   }
 }
 
@@ -87,7 +104,7 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
       console.log('key', key)
 
       const message: FrontendMessage = { type: 'send-stdin', data: { id, key } }
-      console.log(sendSync('message', message))
+      ipc.send('message', message)
     })
 
     // fit

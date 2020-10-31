@@ -2,11 +2,11 @@ export type CellType = {
   id: string
   input: string
   currentDir: string
-  position?: number[] // todo (row, col maybe?)
+  position?: number[] // todo: (row, col maybe?)
 }
 
 export type FrontendMessage =
-  | { type: 'api'; command: string }
+  | { type: 'api'; command: string } // todo: { command: string; args: any[] }  (sending large amounts of text feels awkward)
   | {
       type: 'get-suggestions'
       data: { input: string; currentDir: string }
@@ -26,6 +26,7 @@ export type ServerStatusMessage = {
 export type ServerDataMessage = {
   id: string
   data: string
+  cd?: string
 }
 
 export type ServerChannelType = 'status' | 'data'
