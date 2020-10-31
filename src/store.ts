@@ -4,7 +4,7 @@ import create from 'zustand'
 import { combine } from 'zustand/middleware'
 import { FrontendMessage } from '../types'
 import { CellType } from './../types'
-import { ipcRenderer } from './lib/ipc'
+import { api, sendSync } from './lib'
 
 const useStore = create(
   combine(
@@ -31,7 +31,7 @@ const useStore = create(
           // handle rest server-side
 
           const message: FrontendMessage = { type: 'run-cell', data: cell }
-          ipcRenderer.sendSync('message', message)
+          sendSync('message', message)
         }
       },
       setInput: (id: string, input: string) => {
@@ -55,9 +55,8 @@ export default useStore
 
 function getDefaultCell(): CellType {
   return {
-    // todo: get id & home dir from (future) api
     id: v4(),
-    currentDir: '/Users/martonlanga/Downloads',
+    currentDir: api('home'),
     input: '',
   }
 }

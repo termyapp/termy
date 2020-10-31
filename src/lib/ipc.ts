@@ -6,4 +6,6 @@ declare global {
   }
 }
 
-export const { ipcRenderer } = window
+export const { ipcRenderer: ipc } = window
+
+export const { sendSync } = ipc

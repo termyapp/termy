@@ -4,7 +4,7 @@ import {
   ServerDataMessage,
   ServerStatusMessage,
 } from '../../types'
-import { ipcRenderer } from './ipc'
+import { ipc } from './'
 
 export const useListener = (
   channel: ServerChannelType,
@@ -14,7 +14,7 @@ export const useListener = (
 ) => {
   useEffect(() => {
     // receive events from server
-    ipcRenderer.on(
+    ipc.on(
       channel,
       (event, message: ServerStatusMessage | ServerDataMessage) => {
         console.log('received message', message)

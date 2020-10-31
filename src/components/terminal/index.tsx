@@ -29,6 +29,7 @@ const Grid = styled('div', {
 const Tissue = styled('div', {
   overflow: 'hidden',
   height: '100%',
+  mt: '500px',
 })
 
 export default Terminal

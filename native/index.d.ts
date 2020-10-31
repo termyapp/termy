@@ -1,5 +1,7 @@
 import { Suggestion } from '../types'
 
+declare function api(command: string): any
+
 declare function getSuggestions(input: string, currentDir: string): Suggestion[]
 
 declare function runCell(
@@ -12,4 +14,4 @@ declare function runCell(
 
 declare function sendStdin(external: any, key: string): void
 
-export { getSuggestions, runCell, sendStdin }
+export { api, getSuggestions, runCell, sendStdin }

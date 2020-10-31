@@ -7,8 +7,7 @@ import {
   ServerDataMessage,
   ServerStatusMessage,
 } from '../../../types'
-import { ipcRenderer } from '../../lib/ipc'
-import { useListener } from '../../lib/listener'
+import { sendSync, useListener } from '../../lib'
 import { styled } from '../../stitches.config'
 import List from '../custom/list'
 import Prompt from './prompt'
@@ -88,7 +87,7 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
       console.log('key', key)
 
       const message: FrontendMessage = { type: 'send-stdin', data: { id, key } }
-      console.log(ipcRenderer.sendSync('message', message))
+      console.log(sendSync('message', message))
     })
 
     // fit

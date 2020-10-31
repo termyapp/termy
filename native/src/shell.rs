@@ -31,9 +31,21 @@ impl Cell {
         }
     }
 
+    pub fn api(command: String) -> String {
+        match command.as_ref() {
+            "home" => {
+                let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
+                return home_dir.to_string_lossy().to_string();
+            }
+            command => {
+                return format!("Invalid command: {}", command);
+            }
+        }
+    }
+
     pub fn get_type(&self) -> CellType {
         match self.command.as_ref() {
-            "move" => return CellType::API,
+            "move" | "home" => return CellType::API,
             _ => return CellType::PTY,
         }
     }
@@ -51,6 +63,11 @@ impl Cell {
         let send_output = SendOutput::new(send_output);
 
         match self.command.as_ref() {
+            "home" => {
+                let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
+                send_output.send(format!("Home Directory: {:?}", home_dir));
+                send_output.release();
+            }
             "move" => {
                 // move arg1 arg2
                 let mut args = self.args.iter();

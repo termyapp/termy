@@ -2,7 +2,6 @@ import { ipcMain } from 'electron'
 import native from '../native'
 import {
   FrontendMessage,
-  ServerChannelType,
   ServerDataMessage,
   ServerStatusMessage,
 } from '../types'
@@ -14,7 +13,7 @@ export default () => {
   })
 }
 
-const runningCells = {}
+const runningCells: { [key: string]: any } = {}
 
 const handleMessage = (
   event: Electron.IpcMainEvent,
@@ -23,6 +22,11 @@ const handleMessage = (
   switch (message.type) {
     // always return from cases
 
+    case 'api': {
+      const result = native.api(message.command)
+      console.log('api result', result)
+      return result
+    }
     case 'get-suggestions': {
       const suggestions = native.getSuggestions(
         message.data.input,

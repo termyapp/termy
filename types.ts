@@ -6,6 +6,7 @@ export type CellType = {
 }
 
 export type FrontendMessage =
+  | { type: 'api'; command: string }
   | {
       type: 'get-suggestions'
       data: { input: string; currentDir: string }

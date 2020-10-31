@@ -2,7 +2,6 @@
 extern crate napi;
 #[macro_use]
 extern crate napi_derive;
-extern crate base64;
 
 use crossbeam_channel::{unbounded, Sender};
 use napi::{
@@ -19,6 +18,8 @@ mod suggestions;
 register_module!(module, init); // only calling it so rust-analyzer thinks it gets called
 
 fn init(module: &mut Module) -> napi::Result<()> {
+    module.create_named_method("api", api)?;
+
     module.create_named_method("getSuggestions", get_suggestions)?;
 
     module.create_named_method("runCell", run_cell)?;
@@ -39,35 +40,44 @@ fn init(module: &mut Module) -> napi::Result<()> {
     Ok(())
 }
 
+#[js_function(1)]
+fn api(ctx: CallContext) -> napi::Result<JsString> {
+    let command: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
+
+    let result = Cell::api(command);
+
+    ctx.env.create_string(&result)
+}
+
 #[js_function(2)]
 fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
     let input = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
     let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
 
-    // let suggestions = suggestions::get_suggestions(input, current_dir).unwrap();
-    // // limit suggestions to a maximum of 10
-    // let length = if suggestions.len() > 10 {
-    //     10
-    // } else {
-    //     suggestions.len()
-    // };
+    let suggestions = suggestions::get_suggestions(input, current_dir).unwrap();
+    // limit suggestions to a maximum of 10
+    let length = if suggestions.len() > 10 {
+        10
+    } else {
+        suggestions.len()
+    };
 
     let mut result = ctx.env.create_array_with_length(10)?;
-    // for index in 0..length {
-    //     let suggestion = suggestions.get(index).unwrap();
-    //     let mut data = ctx.env.create_object()?;
+    for index in 0..length {
+        let suggestion = suggestions.get(index).unwrap();
+        let mut data = ctx.env.create_object()?;
 
-    //     let name = ctx.env.create_string(&suggestion.name)?;
-    //     let command = ctx.env.create_string(&suggestion.command)?;
-    //     let score = ctx.env.create_int64(suggestion.score)?;
-    //     // ctx.env.to_js_value(&value)
+        let name = ctx.env.create_string(&suggestion.name)?;
+        let command = ctx.env.create_string(&suggestion.command)?;
+        let score = ctx.env.create_int64(suggestion.score)?;
+        // ctx.env.to_js_value(&value)
 
-    //     data.set_named_property("name", name)?;
-    //     data.set_named_property("command", command)?;
-    //     data.set_named_property("score", score)?;
+        data.set_named_property("name", name)?;
+        data.set_named_property("command", command)?;
+        data.set_named_property("score", score)?;
 
-    //     result.set_element(index as u32, data)?;
-    // }
+        result.set_element(index as u32, data)?;
+    }
 
     Ok(result)
 }

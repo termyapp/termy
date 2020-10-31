@@ -1,4 +1,4 @@
-import { CurrentDirStat } from '../../types'
+import { sendSync } from './ipc'
 
 export const formatCurrentDir = (currentDir: string) => {
   const path = currentDir.split('/')
@@ -7,6 +7,10 @@ export const formatCurrentDir = (currentDir: string) => {
   }
   const relativePath = currentDir.split('/').slice(3).join('/')
   return (relativePath.length > 0 ? '~/' : '~') + relativePath
+}
+
+export const api = (command: string) => {
+  return sendSync('message', { type: 'api', command })
 }
 
 // todo: replace below ones w/ api
@@ -20,17 +24,8 @@ export const getLanguage = (path: string): string | undefined => {
   return undefined
 }
 
-export const getCommands = (): string[] => {
-  return []
-}
-
-export const getCurrentDirStat = (currentDir: string): CurrentDirStat => {
-  return {} as CurrentDirStat
-}
-
-export const getParsedManPage = (cmd: string): any[] => {
-  return []
-}
-
 // export const isDev = process.env.NODE_ENV === 'development'
 export const isDev = true
+
+export * from './ipc'
+export * from './listener'
