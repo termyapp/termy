@@ -23,5 +23,5 @@ export const useListener = (
         }
       },
     )
-  }, [id, eventHandler, ...deps])
+  }, [channel, id, eventHandler, ...deps])
 }

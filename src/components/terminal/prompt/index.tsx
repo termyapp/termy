@@ -117,7 +117,7 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
         ReactEditor.focus(editor)
       }
     },
-    [target, suggestions, index, editor, value, currentDir],
+    [target, suggestions, index, editor, id, input, run],
   )
 
   useEffect(() => {
