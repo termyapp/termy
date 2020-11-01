@@ -105,7 +105,6 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
         event.preventDefault() // don't allow multiline input
         if (!input) return
 
-        console.log(dispatch)
         dispatch({ type: 'run', id })
 
         setValue([
