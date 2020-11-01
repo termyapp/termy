@@ -1,9 +1,11 @@
 import setupMessages from './messages'
 import { app, BrowserWindow } from 'electron'
 import { createWindow } from './window'
-// import installExtension, {
-//   REACT_DEVELOPER_TOOLS,
-// } from 'electron-devtools-installer'
+import installExtension, {
+  REACT_DEVELOPER_TOOLS,
+} from 'electron-devtools-installer'
+
+app.allowRendererProcessReuse = true // default true in >=9
 
 let mainWindow: BrowserWindow
 
@@ -37,9 +39,10 @@ const createMainWindow = async () => {
 
 const setupDevtools = async () => {
   try {
-    // doesn't work: https://github.com/electron/electron/issues/23662
-    // const name = await installExtension(REACT_DEVELOPER_TOOLS)
-    // console.log(`Added Extension:  ${name}`)
+    // doesn't on >=9 work: https://github.com/electron/electron/issues/23662
+    // this is the only reason we're using electron 8
+    const name = await installExtension(REACT_DEVELOPER_TOOLS)
+    console.log(`Added Extension:  ${name}`)
   } catch (error) {
     console.error(error)
   }
