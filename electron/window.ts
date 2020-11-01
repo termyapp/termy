@@ -1,5 +1,10 @@
 import { app, BrowserWindow, shell } from 'electron'
 import isDev from 'electron-is-dev'
+import installExtension, {
+  REACT_DEVELOPER_TOOLS,
+  REDUX_DEVTOOLS,
+} from 'electron-devtools-installer'
+
 import path from 'path'
 
 export const createWindow = async (): Promise<BrowserWindow> => {
@@ -20,8 +25,6 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     },
   })
 
-  window.webContents.openDevTools()
-
   await window.loadURL(
     isDev
       ? 'http://localhost:3000'
@@ -30,10 +33,24 @@ export const createWindow = async (): Promise<BrowserWindow> => {
 
   // open urls in external browser
   window.webContents.on('new-window', (e, url) => {
-    console.log('here')
     e.preventDefault()
     shell.openExternal(url)
   })
+
+  if (isDev) {
+    window.webContents.on('did-frame-finish-load', async () => {
+      window.webContents.openDevTools()
+
+      try {
+        // doesn't on >=9 work: https://github.com/electron/electron/issues/23662
+        // this is the only reason we're using electron 8
+        await installExtension(REACT_DEVELOPER_TOOLS)
+        await installExtension(REDUX_DEVTOOLS)
+      } catch (error) {
+        console.error(error)
+      }
+    })
+  }
 
   return window
 }

@@ -1,9 +1,6 @@
-import setupMessages from './messages'
 import { app, BrowserWindow } from 'electron'
+import setupMessages from './messages'
 import { createWindow } from './window'
-import installExtension, {
-  REACT_DEVELOPER_TOOLS,
-} from 'electron-devtools-installer'
 
 app.allowRendererProcessReuse = true // default true in >=9
 
@@ -15,7 +12,6 @@ let mainWindow: BrowserWindow
 app.on('ready', () => {
   createMainWindow()
   setupMessages()
-  setupDevtools()
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -35,15 +31,4 @@ const createMainWindow = async () => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) await createWindow()
   })
-}
-
-const setupDevtools = async () => {
-  try {
-    // doesn't on >=9 work: https://github.com/electron/electron/issues/23662
-    // this is the only reason we're using electron 8
-    const name = await installExtension(REACT_DEVELOPER_TOOLS)
-    console.log(`Added Extension:  ${name}`)
-  } catch (error) {
-    console.error(error)
-  }
 }
