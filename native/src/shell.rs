@@ -199,7 +199,7 @@ impl SendOutput {
         }
     }
 
-    fn send(&self, mut output: String) {
+    fn send(&self, output: String) {
         // rust-analyzer complains, but it compiles ¯\_(ツ)_/¯
         self.threadsafe_function.call(
             Ok(vec![output]),
@@ -225,5 +225,6 @@ const KILL_COMMAND_MESSAGE: &'static str = "TERMY_KILL_COMMAND";
 #[serde(rename_all = "camelCase")]
 pub struct ApiOutput {
     output: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     cd: Option<String>,
 }
