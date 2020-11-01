@@ -42,7 +42,7 @@ const getSuggestions = async (
 }
 
 const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
-  const { run, setInput } = useStore()
+  const dispatch = useStore(state => state.dispatch)
   const editor = useMemo(
     () => withSuggestions(withHistory(withReact(createEditor()))),
     [],
@@ -105,7 +105,8 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
         event.preventDefault() // don't allow multiline input
         if (!input) return
 
-        run(id)
+        console.log(dispatch)
+        dispatch({ type: 'run', id })
 
         setValue([
           {
@@ -117,7 +118,7 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
         ReactEditor.focus(editor)
       }
     },
-    [target, suggestions, index, editor, id, input, run],
+    [target, suggestions, index, editor, id, input],
   )
 
   useEffect(() => {
@@ -140,7 +141,11 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
             // todo: why do we need isFocused?
             setValue(newValue)
             console.log('val', newValue)
-            setInput(id, newValue.map(n => Node.string(n)).join('\n'))
+            dispatch({
+              type: 'set-input',
+              id,
+              input: newValue.map(n => Node.string(n)).join('\n'),
+            })
           }
 
           const { selection } = editor

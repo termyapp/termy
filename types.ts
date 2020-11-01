@@ -13,7 +13,7 @@ export type FrontendMessage =
     }
   | {
       type: 'run-cell'
-      data: { id: string; input: string; currentDir: string }
+      data: CellType
     }
   | { type: 'send-stdin'; data: { id: string; key: string } }
 

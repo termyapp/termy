@@ -20,7 +20,7 @@ import Prompt from './prompt'
  * Note: Listening for output happens in child components
  */
 const Cell: React.FC<CellType> = cell => {
-  console.log('cell: ', cell)
+  console.log('cell', cell)
   const [status, setStatus] = useState<number | null>(null)
   const [type, setType] = useState<'PTY' | 'API' | null>(null)
 
@@ -57,16 +57,18 @@ const Container = styled('div', {
 })
 
 const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
-  const { setCurrentDir } = useStore()
+  const dispatch = useStore(state => state.dispatch)
   const [output, setOutput] = useState('')
 
   useListener(
     'data',
     id,
     (message: ServerDataMessage) => {
+      console.log('parsing')
+
       const data = JSON.parse(message.data)
       if (data.cd) {
-        setCurrentDir(id, data.cd)
+        dispatch({ type: 'set-current-dir', id, newDir: data.cd })
       }
       setOutput(data.output)
     },

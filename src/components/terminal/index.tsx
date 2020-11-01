@@ -1,18 +1,17 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { styled } from '../../stitches.config'
 import useStore from '../../store'
 import Cell from './cell'
 
 const Terminal: React.FC = () => {
-  const { cells } = useStore()
-  const mainRef = useRef<HTMLDivElement>(null)
+  const cells = useStore(state => state.cells)
 
   // todo: https://github.com/STRML/react-grid-layout
   return (
-    <Grid ref={mainRef}>
+    <Grid>
       <Tissue>
-        {cells.map((command, i) => (
-          <Cell key={command.id} {...command} />
+        {Object.keys(cells).map(key => (
+          <Cell key={key} {...cells[key]} />
         ))}
       </Tissue>
     </Grid>

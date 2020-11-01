@@ -1,63 +1,68 @@
-import path from 'path'
+import { devtools, redux } from 'zustand/middleware'
+import produce from 'immer'
 import { v4 } from 'uuid'
-import create from 'zustand'
-import { combine } from 'zustand/middleware'
+import create, { UseStore } from 'zustand'
 import { FrontendMessage } from '../types'
 import { CellType } from './../types'
 import { api, ipc } from './lib'
 
-const useStore = create(
-  combine(
-    {
-      cells: [getDefaultCell()] as CellType[],
-    },
-    (set, get) => ({
-      clear: () => set({ cells: [getDefaultCell()] }),
-      new: () => {
-        // todo: position as arg (top, bottom, left, right)
-        return set({ cells: [...get().cells, getDefaultCell()] })
-      },
-      run: (id: string) => {
-        const cell = get().cells.find(c => c.id === id)
-        if (!cell) return
+type State = typeof initialState
 
-        const message: FrontendMessage = { type: 'run-cell', data: cell }
-        ipc.send('message', message)
-      },
-      setInput: (id: string, input: string) => {
-        set(state => ({
-          cells: state.cells.map(cell => {
-            if (cell.id !== id) {
-              return cell
-            }
+type Action =
+  | { type: 'clear' }
+  | { type: 'new' }
+  | { type: 'run'; id: string }
+  | { type: 'set-input'; id: string; input: string }
+  | { type: 'set-current-dir'; id: string; newDir: string }
 
-            return { ...cell, input }
-          }),
-        }))
-      },
-      setCurrentDir: (id: string, newDir: string) => {
-        set(state => ({
-          cells: state.cells.map(cell => {
-            if (cell.id !== id) {
-              return cell
-            }
-
-            return { ...cell, currentDir: newDir }
-          }),
-        }))
-      },
-      // remove
-      // changePosition
-    }),
-  ),
-)
-
-export default useStore
-
-function getDefaultCell(): CellType {
+const getDefaultCell = (): CellType => {
   return {
     id: v4(),
     currentDir: api('home'),
     input: '',
   }
 }
+
+const initialState = (() => {
+  const cell = getDefaultCell()
+  return { cells: { [cell.id]: cell } }
+})()
+
+const reducer = (state: State, action: Action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'clear': {
+        draft.cells = initialState.cells
+        break
+      }
+      case 'new': {
+        const newCell = getDefaultCell()
+        draft.cells[newCell.id] = newCell
+        break
+      }
+      case 'run': {
+        const message: FrontendMessage = {
+          type: 'run-cell',
+          data: draft.cells[action.id],
+        }
+        ipc.send('message', message)
+        break
+      }
+      case 'set-input': {
+        draft.cells[action.id].input = action.input
+        break
+      }
+      case 'set-current-dir': {
+        draft.cells[action.id].currentDir = action.newDir
+        break
+      }
+    }
+  })
+}
+
+// @ts-ignore
+const useStore: UseStore<
+  State & { dispatch: (action: Action) => void }
+> = create(devtools(redux(reducer, initialState)))
+
+export default useStore
