@@ -1,27 +1,26 @@
 import { useEffect } from 'react'
-import {
-  ServerChannelType,
-  ServerDataMessage,
-  ServerStatusMessage,
-} from '../../types'
+import { ServerDataMessage, ServerStatusMessage } from '../../types'
 import { ipc } from './'
 
 export const useListener = (
-  channel: ServerChannelType,
-  id: string,
+  channel: string,
   eventHandler: (message: any) => void, // todo: conditional type
-  deps = [],
+  deps = [] as any[],
 ) => {
+  // receive events from server
   useEffect(() => {
-    // receive events from server
-    ipc.on(
-      channel,
-      (event, message: ServerStatusMessage | ServerDataMessage) => {
-        console.log('received message', message)
-        if (message.id === id) {
-          eventHandler(message)
-        }
-      },
-    )
-  }, [channel, id, eventHandler, ...deps])
+    const listener = (
+      event: any,
+      message: ServerStatusMessage | ServerDataMessage,
+    ) => {
+      console.log('received message', message, eventHandler)
+      eventHandler(message)
+    }
+
+    ipc.on(channel, listener)
+
+    return () => {
+      ipc.removeListener(channel, listener)
+    }
+  }, [channel, eventHandler, ...deps])
 }

@@ -25,13 +25,12 @@ const Cell: React.FC<CellType> = cell => {
   const [type, setType] = useState<'PTY' | 'API' | null>(null)
 
   useListener(
-    'status',
-    cell.id,
+    `status-${cell.id}`,
     (message: ServerStatusMessage) => {
       setType(message.type)
       setStatus(message.status)
     },
-    [],
+    [type],
   )
 
   return (
@@ -61,8 +60,7 @@ const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   const [output, setOutput] = useState('')
 
   useListener(
-    'data',
-    id,
+    `data-${id}`,
     (message: ServerDataMessage) => {
       console.log('parsing')
 
@@ -87,8 +85,7 @@ const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
 
 const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   const ref = useRef<HTMLDivElement>(null)
-  const [exitStatus, setExitStatus] = useState<null | number>(null)
-  const [terminal, setTerminal] = useState<Terminal | null>(null)
+  const terminalRef = useRef<Terminal | null>(null)
 
   useEffect(() => {
     if (!ref.current) return
@@ -116,17 +113,19 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
 
     term.open(ref.current)
 
-    setTerminal(term)
+    terminalRef.current = term
   }, [currentDir, id])
 
   useListener(
-    'data',
-    id,
+    `data-${id}`,
     (message: ServerDataMessage) => {
-      if (!terminal) return
+      if (!terminalRef.current) {
+        console.warn('Terminal not available')
+        return
+      }
 
       console.log('writing chunk', message.data)
-      terminal.write(message.data)
+      terminalRef.current.write(message.data)
 
       //   console.log('Exit status: ', message.exitStatus)
       //   setExitStatus(message.exitStatus)

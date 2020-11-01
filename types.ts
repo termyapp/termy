@@ -29,8 +29,6 @@ export type ServerDataMessage = {
   cd?: string
 }
 
-export type ServerChannelType = 'status' | 'data'
-
 export type Suggestion = {
   raw: string
 }

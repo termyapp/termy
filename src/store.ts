@@ -46,6 +46,8 @@ const reducer = (state: State, action: Action) => {
           data: draft.cells[action.id],
         }
         ipc.send('message', message)
+
+        console.log('running', message.data.input)
         break
       }
       case 'set-input': {

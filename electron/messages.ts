@@ -45,12 +45,12 @@ const handleMessage = (
           id,
           data: args[1] as string,
         }
-        event.sender.send('data', message)
+        event.sender.send(`data-${id}`, message)
       }
 
       const sendStatus = (...args: [null, number, number | undefined]) => {
         const [_, type, status] = args
-        event.sender.send('status', {
+        event.sender.send(`status-${id}`, {
           id,
           type: type === 0 ? 'PTY' : 'API',
           status: typeof status === 'undefined' ? -1 : status, // -1 = running
