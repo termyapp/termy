@@ -92,7 +92,7 @@ export const theme = {
   radii: {
     $1: '3px',
     $2: '5px',
-    $3: '15px',
+    $3: '10px',
     $round: '50%',
     $pill: '9999px',
   },

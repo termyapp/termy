@@ -46,9 +46,9 @@ const Cell: React.FC<CellType> = cell => {
 export default Cell
 
 const Container = styled('div', {
-  my: '$3',
-  // border: '1px solid $gray300',
+  my: '$2',
   br: '$3',
+  border: '1px solid $gray300',
 
   ':focus-within': {
     border: '1px solid $gray400',

@@ -200,7 +200,7 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
 }
 
 const Container = styled('div', {
-  py: '$3',
+  p: '$2',
 
   div: {
     backgroundColor: 'transparent',
