@@ -28,3 +28,5 @@ yarn-error.log*
 # public
 public/*.node
 public/*.js
+
+termy.db

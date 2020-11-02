@@ -11,8 +11,8 @@ use std::{fs, io::Write};
 
 pub struct Cell {
     id: String,
-    current_dir: String,
-    input: String,
+    pub current_dir: String,
+    pub input: String,
     command: String,
     args: Vec<String>,
 }

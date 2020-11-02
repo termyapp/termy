@@ -8,10 +8,10 @@ use napi::{
     CallContext, Error, JsBuffer, JsExternal, JsFunction, JsNumber, JsObject, JsString,
     JsUndefined, Module,
 };
-use rusqlite::{Connection, NO_PARAMS};
 use shell::{Cell, CellType};
 use std::thread;
 
+mod db;
 mod shell;
 mod suggestions;
 
@@ -26,16 +26,7 @@ fn init(module: &mut Module) -> napi::Result<()> {
 
     module.create_named_method("sendStdin", send_stdin)?;
 
-    // let conn = Connection::open("termy.db").unwrap();
-
-    // conn.execute(
-    //     "create table if not exists history (
-    //             id integer primary key,
-    //             command text not null
-    //          )",
-    //     NO_PARAMS,
-    // )
-    // .unwrap();
+    db::init().expect("Failed to initialize database");
 
     Ok(())
 }
@@ -132,11 +123,13 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
         // run cell
         match cell.run(send_output, receiver, shell_sender) {
             Ok(true) => {
-                println!("Exit status: 1");
+                println!("Exit status: 0");
                 status.push(0);
+
+                db::add_command(&cell.input, &cell.current_dir);
             }
             Ok(false) => {
-                println!("Exit status: 0");
+                println!("Exit status: 1");
                 status.push(1);
             }
             Err(err) => {
