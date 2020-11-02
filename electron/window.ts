@@ -38,9 +38,8 @@ export const createWindow = async (): Promise<BrowserWindow> => {
   })
 
   if (isDev) {
+    window.webContents.openDevTools()
     window.webContents.on('did-frame-finish-load', async () => {
-      window.webContents.openDevTools()
-
       try {
         // doesn't on >=9 work: https://github.com/electron/electron/issues/23662
         // this is the only reason we're using electron 8
