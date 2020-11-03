@@ -39,8 +39,7 @@ const shortcuts: { [key in Shortcut]: KeyProps } = {
       shortcutText: 'O',
     },
     external: true,
-    href:
-      'https://github.com/termyapp/termy/releases/download/untagged-d71f568835ce574dd09f/termy-0.1.0.dmg',
+    href: 'https://github.com/termyapp/termy/releases/',
   },
 }
 
