@@ -30,7 +30,8 @@ export type ServerDataMessage = {
 }
 
 export type Suggestion = {
-  raw: string
+  score: number
+  command: string
 }
 
 // not sure

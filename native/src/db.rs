@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use anyhow::Result;
 use rusqlite::{Connection, NO_PARAMS};
 
@@ -11,8 +13,9 @@ pub fn init() -> Result<()> {
     conn.execute(
         "create table if not exists commands (
                 id integer primary key,
-                current_dir text not null
+                current_dir text not null,
                 input text not null,
+                creation_date text not null,
              )",
         NO_PARAMS,
     )?;
@@ -23,9 +26,14 @@ pub fn init() -> Result<()> {
 pub fn add_command(current_dir: &str, input: &str) -> Result<()> {
     let conn = connect();
 
+    let creation_date = SystemTime::now()
+        .duration_since(UNIX_EPOCH)?
+        .as_millis()
+        .to_string();
+
     conn.execute(
-        "INSERT INTO commands (current_dir, input) values (?1, ?2)",
-        &[current_dir, input],
+        "INSERT INTO commands (current_dir, input, creation_date) values (?1, ?2, ?3)",
+        &[current_dir, input, &creation_date],
     )?;
 
     Ok(())
@@ -43,6 +51,6 @@ pub fn get_commands() -> Result<Vec<Command>> {
     Ok(commands)
 }
 
-struct Command {
+pub struct Command {
     input: String,
 }

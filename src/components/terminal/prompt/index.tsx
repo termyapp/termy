@@ -10,16 +10,10 @@ import {
   Slate,
   withReact,
 } from 'slate-react'
-import { CellType, FrontendMessage } from '../../../../types'
+import { CellType, FrontendMessage, Suggestion } from '../../../../types'
 import { formatCurrentDir, ipc } from '../../../lib'
 import { styled } from '../../../stitches.config'
 import useStore from '../../../store'
-
-interface Suggestion {
-  name: string
-  score: number
-  command: 'cd' | string
-}
 
 const getSuggestions = async (
   input: string,
@@ -28,13 +22,14 @@ const getSuggestions = async (
   try {
     if (input.length < 1) return null
 
-    const message: FrontendMessage = {
-      type: 'get-suggestions',
-      data: { input, currentDir },
-    }
+    // const message: FrontendMessage = {
+    //   type: 'get-suggestions',
+    //   data: { input, currentDir },
+    // }
 
-    const data: Suggestion[] = ipc.sendSync('message', message)
-    return data
+    // const suggestions: Suggestion[] = ipc.sendSync('message', message)
+    // console.log('suggestions', suggestions)
+    return null
   } catch (error) {
     console.error('Error while getting files: ', error)
     return null
@@ -93,7 +88,7 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
             // suggestion enter
             event.preventDefault()
             Transforms.select(editor, target)
-            insertSuggestion(editor, suggestions[index].name)
+            insertSuggestion(editor, suggestions[index].command)
             setTarget(null)
             break
           case 'Escape':
@@ -182,12 +177,10 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
             <SuggestionsContainer ref={suggestionRef}>
               {suggestions.map((suggestion, i) => (
                 <SuggestionItem
-                  key={suggestion.name + i}
+                  key={i}
                   type={i === index ? 'focused' : 'default'}
                 >
-                  {suggestion.command === 'cd'
-                    ? path.relative(currentDir, suggestion.name)
-                    : suggestion.name}
+                  {suggestion.command}
                 </SuggestionItem>
               ))}
             </SuggestionsContainer>

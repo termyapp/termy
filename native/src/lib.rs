@@ -58,12 +58,9 @@ fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
         let suggestion = suggestions.get(index).unwrap();
         let mut data = ctx.env.create_object()?;
 
-        let name = ctx.env.create_string(&suggestion.name)?;
         let command = ctx.env.create_string(&suggestion.command)?;
         let score = ctx.env.create_int64(suggestion.score)?;
-        // ctx.env.to_js_value(&value)
 
-        data.set_named_property("name", name)?;
         data.set_named_property("command", command)?;
         data.set_named_property("score", score)?;
 
@@ -107,6 +104,8 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
     )?;
 
     thread::spawn(move || {
+        db::add_command(&input, &current_dir).expect("Failed to add command");
+
         let cell = Cell::new(id, current_dir, input);
         let cell_type = cell.get_type();
         let mut status = match cell_type {
@@ -119,14 +118,11 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
             Ok(status.clone()),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
         );
-
         // run cell
         match cell.run(send_output, receiver, shell_sender) {
             Ok(true) => {
                 println!("Exit status: 0");
                 status.push(0);
-
-                db::add_command(&cell.input, &cell.current_dir);
             }
             Ok(false) => {
                 println!("Exit status: 1");
