@@ -1,17 +1,26 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { styled } from '../stitches.config'
+// @ts-ignore
+import click from '../click.mp3'
 
 interface Props {}
 
 const Key: React.FC<Props> = props => {
   const [pressed, setPressed] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
   return (
     <Div
       tabIndex={0}
-      onKeyDown={() => setPressed(true)}
+      onKeyDown={() => {
+        setPressed(true)
+        audioRef.current?.play()
+      }}
       onKeyUp={() => setPressed(false)}
       state={pressed ? 'pressed' : 'default'}
     >
+      <audio ref={audioRef}>
+        <source type="audio/mp3" src={click} />
+      </audio>
       T
     </Div>
   )
