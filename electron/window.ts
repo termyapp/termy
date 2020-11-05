@@ -6,11 +6,13 @@ import installExtension, {
 } from 'electron-devtools-installer'
 
 import path from 'path'
+import debug from 'electron-debug'
 
 export const createWindow = async (): Promise<BrowserWindow> => {
   const window = new BrowserWindow({
     width: 1200,
     height: 1000,
+    titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload: path.resolve(
         app.getAppPath(),
@@ -38,6 +40,8 @@ export const createWindow = async (): Promise<BrowserWindow> => {
   })
 
   if (isDev) {
+    debug()
+
     window.webContents.openDevTools()
     window.webContents.on('did-frame-finish-load', async () => {
       try {
