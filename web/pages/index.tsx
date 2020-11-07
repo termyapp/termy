@@ -199,6 +199,7 @@ const IndexPage = () => {
         ))}
       </Grid>
       <Footer />
+      {/* todo: 0202 © Termy, Inc. */}
     </Layout>
   )
 }
