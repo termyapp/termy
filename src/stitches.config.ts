@@ -12,6 +12,7 @@ export const theme = {
 
     $tileBackgroundColor: '#d6d8e3',
     $accentColor: '#f0773a', // orange OP-1 button
+    $selectionColor: '#90cdf4',
 
     // Tailwind palette: https://tailwindcss.com/docs/customizing-colors#default-color-palette
     $black: '#000000',
@@ -180,8 +181,11 @@ export const theme = {
   },
 }
 
+// creating a copy so that the exported `theme` retains the raw values
+const tokens = JSON.parse(JSON.stringify(theme)) as typeof theme
+
 export const { styled, css } = createStyled({
-  tokens: theme,
+  tokens,
   breakpoints: {
     default: rule => rule,
     bp1: rule => `@media (min-width: 520px) { ${rule} }`,

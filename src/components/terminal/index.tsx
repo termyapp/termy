@@ -1,9 +1,7 @@
 import React, { useState } from 'react'
 import { useKey } from 'react-use'
-import { styled } from '../../stitches.config'
 import useStore from '../../store'
-import Cursor from '../cursor'
-import Key from '../key'
+import { Grid, Tile } from '../shared'
 import Cell from './cell'
 
 const Terminal: React.FC = () => {
@@ -15,46 +13,22 @@ const Terminal: React.FC = () => {
 
   // todo: https://github.com/STRML/react-grid-layout
   return (
-    <>
-      <Tissue>
-        {Object.keys(cells).map(key => (
-          <Cell key={key} {...cells[key]} />
-        ))}
-      </Tissue>
-      <NewCell onClick={() => dispatch({ type: 'new' })}>
-        Insert cell (⌘ + J)
-      </NewCell>
-      <Keys>
-        <Key />
-        <Cursor />
-      </Keys>
-    </>
+    <Grid
+      css={{
+        mt: '1.6rem', // todo: avoid traffic lights colliding
+        minHeight: 'calc(100vh - 1.6rem - 0.5rem * 2)',
+        p: '0.5rem',
+
+        rowGap: '$2',
+      }}
+    >
+      {Object.keys(cells).map(key => (
+        <Tile key={key} css={{}}>
+          <Cell {...cells[key]} />
+        </Tile>
+      ))}
+    </Grid>
   )
 }
-
-// 'cause cells form tissues
-const Tissue = styled('div', {
-  overflow: 'hidden',
-  backgroundColor: '#333',
-  borderRadius: '$2',
-  p: '$1',
-})
-
-// todo: Tile
-
-const NewCell = styled('div', {
-  color: '$gray500',
-  py: '$5',
-  textAlign: 'center',
-  cursor: 'pointer',
-})
-
-const Keys = styled('div', {
-  display: 'inline-grid',
-  gridTemplateColumns: 'auto auto auto',
-  background: '#333',
-  p: '1px',
-  borderRadius: '$2',
-})
 
 export default Terminal

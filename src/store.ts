@@ -25,7 +25,8 @@ const getDefaultCell = (): CellType => {
 
 const initialState = (() => {
   const cell = getDefaultCell()
-  return { cells: { [cell.id]: cell } }
+  const cell2 = getDefaultCell()
+  return { cells: { [cell.id]: cell, [cell2.id]: cell2 } }
 })()
 
 const reducer = (state: State, action: Action) => {

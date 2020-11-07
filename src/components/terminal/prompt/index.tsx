@@ -1,4 +1,3 @@
-import path from 'path'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Portal } from 'react-portal'
 import { createEditor, Editor, Node, Range, Transforms } from 'slate'
@@ -14,6 +13,7 @@ import { CellType, FrontendMessage, Suggestion } from '../../../../types'
 import { formatCurrentDir, ipc } from '../../../lib'
 import { styled } from '../../../stitches.config'
 import useStore from '../../../store'
+import { Div } from '../../shared'
 
 const getSuggestions = async (
   input: string,
@@ -126,7 +126,13 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
   }, [editor, index, search, suggestions.length, target])
 
   return (
-    <Container id="prompt">
+    <Div
+      css={{
+        boxShadow: '-3px -3px 5px #fff, 3px 3px 4px #9ea0a8',
+        borderRadius: '$md',
+        p: '$2',
+      }}
+    >
       <Slate
         editor={editor}
         value={value}
@@ -187,21 +193,9 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
           </Portal>
         )}
       </Slate>
-    </Container>
+    </Div>
   )
 }
-
-const Container = styled('div', {
-  p: '$2',
-  backgroundColor: '#EBECF3',
-  boxShadow: '-3px -3px 5px #FAFBFF, 3px 3px 5px #A6ABBD',
-  borderRadius: '$2',
-  mb: '$2',
-
-  div: {
-    backgroundColor: 'transparent',
-  },
-})
 
 const SuggestionsContainer = styled('div', {
   top: '-9999px',

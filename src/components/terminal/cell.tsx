@@ -8,9 +8,10 @@ import {
   ServerStatusMessage,
 } from '../../../types'
 import { ipc, useListener } from '../../lib'
-import { styled } from '../../stitches.config'
+import { theme } from '../../stitches.config'
 import useStore from '../../store'
 import List from '../custom/list'
+import { Div } from '../shared'
 import Prompt from './prompt'
 
 /**
@@ -34,29 +35,17 @@ const Cell: React.FC<CellType> = cell => {
   )
 
   return (
-    <Container>
+    <Div>
       <Prompt {...cell} />
-      <OutputContainer>
+      <Div css={{ p: '$2' }}>
         {type === 'PTY' && <PtyRenderer {...cell} />}
         {type === 'API' && <ApiRenderer {...cell} />}
-      </OutputContainer>
-    </Container>
+      </Div>
+    </Div>
   )
 }
 
 export default Cell
-
-const Container = styled('div', {
-  backgroundColor: '#EBECF3',
-  p: '$2',
-  borderRadius: '$2',
-
-  '& + &': {
-    mt: '$1',
-  },
-})
-
-const OutputContainer = styled('div', {})
 
 const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   const dispatch = useStore(state => state.dispatch)
@@ -93,15 +82,12 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   useEffect(() => {
     if (!ref.current) return
     let term = new Terminal({
-      convertEol: true,
       cursorStyle: 'block',
-      allowTransparency: true, // this can negatively affect performance
-      // fontFamily: todo: theme.
+      fontFamily: theme.fonts.$mono,
       theme: {
-        foreground: '#333',
-        background: 'rgba(0,0,0,0)',
-        // selection: todo: theme.
-        selection: 'rgba(249, 99, 49, .4)',
+        foreground: theme.colors.$textColor,
+        background: theme.colors.$tileBackgroundColor,
+        selection: theme.colors.$selectionColor, // color looks lighter rendered in xterm, idk why
       },
     })
 
@@ -119,7 +105,6 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
     fitAddon.fit()
 
     term.open(ref.current)
-    console.log(term.getOption('fontFamily'))
     terminalRef.current = term
   }, [currentDir, id])
 
@@ -143,9 +128,5 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
     [],
   )
 
-  return <XtermContainer tabIndex={0} ref={ref}></XtermContainer>
+  return <Div tabIndex={0} ref={ref}></Div>
 }
-
-const XtermContainer = styled.div({
-  px: '$2',
-})
