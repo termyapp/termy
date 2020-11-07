@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useKey } from 'react-use'
-import useStore from '../../store'
-import { Grid, Tile } from '../shared'
+import useStore from '../store'
+import { Grid, Tile } from './shared'
 import Cell from './cell'
 
 const Terminal: React.FC = () => {

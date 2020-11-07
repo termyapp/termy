@@ -9,11 +9,11 @@ import {
   Slate,
   withReact,
 } from 'slate-react'
-import { CellType, FrontendMessage, Suggestion } from '../../../../types'
-import { formatCurrentDir, ipc } from '../../../lib'
-import { styled } from '../../../stitches.config'
-import useStore from '../../../store'
-import { Div } from '../../shared'
+import { CellType, FrontendMessage, Suggestion } from '../../types'
+import { formatCurrentDir, ipc } from '../lib'
+import { styled } from '../stitches.config'
+import useStore from '../store'
+import { Div } from './shared'
 
 const getSuggestions = async (
   input: string,

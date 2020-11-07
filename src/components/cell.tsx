@@ -6,12 +6,12 @@ import {
   FrontendMessage,
   ServerDataMessage,
   ServerStatusMessage,
-} from '../../../types'
-import { ipc, useListener } from '../../lib'
-import { theme } from '../../stitches.config'
-import useStore from '../../store'
-import List from '../custom/list'
-import { Div } from '../shared'
+} from '../../types'
+import { ipc, useListener } from '../lib'
+import { theme } from '../stitches.config'
+import useStore from '../store'
+import List from './custom/list'
+import { Div } from './shared'
 import Prompt from './prompt'
 
 /**
