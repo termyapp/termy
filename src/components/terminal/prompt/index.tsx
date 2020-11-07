@@ -193,6 +193,10 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
 
 const Container = styled('div', {
   p: '$2',
+  backgroundColor: '#EBECF3',
+  boxShadow: '-3px -3px 5px #FAFBFF, 3px 3px 5px #A6ABBD',
+  borderRadius: '$2',
+  mb: '$2',
 
   div: {
     backgroundColor: 'transparent',

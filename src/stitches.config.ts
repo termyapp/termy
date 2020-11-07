@@ -3,7 +3,7 @@ import { createStyled } from '@stitches/react'
 export const theme = {
   colors: {
     $foreground: 'black',
-    $background: 'white',
+    $background: '#EBECF3', // todo: dark
 
     $canvas: 'hsl(0,0%,93%)',
 
@@ -52,9 +52,9 @@ export const theme = {
   },
   fonts: {
     $sans:
-      'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+      'HelveticaNeue, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
     $mono:
-      'Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+      '"Courier New", Courier, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
   },
   space: {
     $1: '3px',
@@ -107,7 +107,7 @@ export const theme = {
 
 export const darkTheme = {
   $foreground: 'hsl(206,2%,93%)',
-  $background: '#020202',
+  $background: 'rgb(10, 10, 30)',
 
   $canvas: 'hsl(0,0%,15%)',
 

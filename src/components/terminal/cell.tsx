@@ -36,8 +36,10 @@ const Cell: React.FC<CellType> = cell => {
   return (
     <Container>
       <Prompt {...cell} />
-      {type === 'PTY' && <PtyRenderer {...cell} />}
-      {type === 'API' && <ApiRenderer {...cell} />}
+      <OutputContainer>
+        {type === 'PTY' && <PtyRenderer {...cell} />}
+        {type === 'API' && <ApiRenderer {...cell} />}
+      </OutputContainer>
     </Container>
   )
 }
@@ -45,15 +47,16 @@ const Cell: React.FC<CellType> = cell => {
 export default Cell
 
 const Container = styled('div', {
-  my: '$2',
-  br: '$3',
-  border: '1px solid $gray300',
+  backgroundColor: '#EBECF3',
+  p: '$2',
+  borderRadius: '$2',
 
-  ':focus-within': {
-    border: '1px solid $gray400',
-    background: '$gray200',
+  '& + &': {
+    mt: '$1',
   },
 })
+
+const OutputContainer = styled('div', {})
 
 const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   const dispatch = useStore(state => state.dispatch)
@@ -93,8 +96,12 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
       convertEol: true,
       cursorStyle: 'block',
       allowTransparency: true, // this can negatively affect performance
+      // fontFamily: todo: theme.
       theme: {
+        foreground: '#333',
         background: 'rgba(0,0,0,0)',
+        // selection: todo: theme.
+        selection: 'rgba(249, 99, 49, .4)',
       },
     })
 
@@ -112,7 +119,7 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
     fitAddon.fit()
 
     term.open(ref.current)
-
+    console.log(term.getOption('fontFamily'))
     terminalRef.current = term
   }, [currentDir, id])
 
@@ -139,4 +146,6 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   return <XtermContainer tabIndex={0} ref={ref}></XtermContainer>
 }
 
-const XtermContainer = styled.div({ px: '$2' })
+const XtermContainer = styled.div({
+  px: '$2',
+})
