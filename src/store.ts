@@ -26,7 +26,7 @@ const getDefaultCell = (): CellType => {
 const initialState = (() => {
   const cell = getDefaultCell()
   const cell2 = getDefaultCell()
-  return { cells: { [cell.id]: cell, [cell2.id]: cell2 } }
+  return { cells: [cell, cell2], focused: cell.id }
 })()
 
 const reducer = (state: State, action: Action) => {
@@ -38,25 +38,34 @@ const reducer = (state: State, action: Action) => {
       }
       case 'new': {
         const newCell = getDefaultCell()
-        draft.cells[newCell.id] = newCell
+        draft.cells.push(newCell)
         break
       }
       case 'run': {
+        const cell = draft.cells.find(c => c.id === action.id)
+        if (!cell) return
+
         const message: FrontendMessage = {
           type: 'run-cell',
-          data: draft.cells[action.id],
+          data: cell,
         }
-        ipc.send('message', message)
-
         console.log('running', message.data.input)
+
+        ipc.send('message', message)
         break
       }
       case 'set-input': {
-        draft.cells[action.id].input = action.input
+        const index = draft.cells.findIndex(c => c.id === action.id)
+        if (!index) return
+
+        draft.cells[index].input = action.input
         break
       }
       case 'set-current-dir': {
-        draft.cells[action.id].currentDir = action.newDir
+        const index = draft.cells.findIndex(c => c.id === action.id)
+        if (!index) return
+
+        draft.cells[index].currentDir = action.newDir
         break
       }
     }

@@ -4,5 +4,5 @@ import { styled } from '../../stitches.config'
 export const Tile = styled.div({
   backgroundColor: '$tileBackgroundColor',
   borderRadius: '$md',
-  p: '$2',
+  p: '$1',
 })

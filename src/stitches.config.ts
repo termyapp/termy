@@ -7,7 +7,8 @@ import { createStyled } from '@stitches/react'
 
 export const theme = {
   colors: {
-    $textColor: '#1a202c',
+    $primaryTextColor: '#1a202c',
+    $secondaryTextColor: '#4a5568',
     $backgroundColor: '#141418',
 
     $tileBackgroundColor: '#d6d8e3',

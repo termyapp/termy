@@ -85,7 +85,7 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
       cursorStyle: 'block',
       fontFamily: theme.fonts.$mono,
       theme: {
-        foreground: theme.colors.$textColor,
+        foreground: theme.colors.$primaryTextColor,
         background: theme.colors.$tileBackgroundColor,
         selection: theme.colors.$selectionColor, // color looks lighter rendered in xterm, idk why
       },

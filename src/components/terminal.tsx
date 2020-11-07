@@ -3,13 +3,15 @@ import { useKey } from 'react-use'
 import useStore from '../store'
 import { Grid, Tile } from './shared'
 import Cell from './cell'
+import { styled } from '../stitches.config'
 
 const Terminal: React.FC = () => {
   const cells = useStore(state => state.cells)
+  const focused = useStore(state => state.focused)
   const dispatch = useStore(state => state.dispatch)
-  const [focused, setFocused] = useState(Object.keys(cells)[0])
 
   useKey('j', e => e.metaKey && dispatch({ type: 'new' }))
+  useKey('ArrowDown', e => e.metaKey && dispatch({ type: 'new' }))
 
   // todo: https://github.com/STRML/react-grid-layout
   return (
@@ -22,13 +24,30 @@ const Terminal: React.FC = () => {
         rowGap: '$2',
       }}
     >
-      {Object.keys(cells).map(key => (
-        <Tile key={key} css={{}}>
-          <Cell {...cells[key]} />
-        </Tile>
+      {cells.map(cell => (
+        <CellTile
+          key={cell.id}
+          state={focused === cell.id ? 'focused' : 'default'}
+        >
+          <Cell {...cell} />
+        </CellTile>
       ))}
     </Grid>
   )
 }
+
+const CellTile = styled(Tile, {
+  variants: {
+    state: {
+      default: {
+        border: '3px solid transparent',
+        color: '$secondaryTextColor',
+      },
+      focused: {
+        border: '3px solid $accentColor',
+      },
+    },
+  },
+})
 
 export default Terminal
