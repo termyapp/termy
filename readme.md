@@ -32,10 +32,8 @@ Terminals can be scary at first. Termy aims to be a beginner-friendly, easy to u
 
 > ⚠️ **Termy is currently in alpha.** Many features don't work yet. Click on _watch_ to get notified about new releases.
 
-<br />
-
 #### License
 
 <sup>
-Termy is [MIT-licensed](./LICENSE).
+Termy is <a href="LICENSE">MIT licensed</a>.
 </sup>
