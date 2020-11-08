@@ -3,6 +3,7 @@ import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import {
   CellType,
+  CellTypeWithFocused,
   FrontendMessage,
   ServerDataMessage,
   ServerStatusMessage,
@@ -20,13 +21,16 @@ import Prompt from './prompt'
  *
  * Note: Listening for output happens in child components
  */
-const Cell: React.FC<CellType> = cell => {
-  console.log('cell', cell)
+const Cell: React.FC<CellTypeWithFocused> = cell => {
+  const dispatch = useStore(state => state.dispatch)
+  const { id } = cell
   const [status, setStatus] = useState<number | null>(null)
   const [type, setType] = useState<'PTY' | 'API' | null>(null)
 
+  console.log('cell', cell)
+
   useListener(
-    `status-${cell.id}`,
+    `status-${id}`,
     (message: ServerStatusMessage) => {
       setType(message.type)
       setStatus(message.status)
@@ -35,7 +39,11 @@ const Cell: React.FC<CellType> = cell => {
   )
 
   return (
-    <Div>
+    <Div
+      onFocus={() => {
+        dispatch({ type: 'focus', id })
+      }}
+    >
       <Prompt {...cell} />
       <Div css={{ p: '$2' }}>
         {type === 'PTY' && <PtyRenderer {...cell} />}

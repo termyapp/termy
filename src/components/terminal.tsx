@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useKey } from 'react-use'
-import useStore from '../store'
-import { Text, Grid, Tile } from './shared'
-import Cell from './cell'
 import { styled } from '../stitches.config'
+import useStore from '../store'
+import Cell from './cell'
+import { Grid, Text, Tile } from './shared'
 
 const Terminal: React.FC = () => {
   const cells = useStore(state => state.cells)
@@ -11,7 +11,9 @@ const Terminal: React.FC = () => {
   const dispatch = useStore(state => state.dispatch)
 
   useKey('j', e => e.metaKey && dispatch({ type: 'new' }))
-  useKey('ArrowDown', e => e.metaKey && dispatch({ type: 'new' }))
+
+  useKey('ArrowDown', () => dispatch({ type: 'focus-down' }))
+  useKey('ArrowUp', () => dispatch({ type: 'focus-up' }))
 
   // todo: https://github.com/STRML/react-grid-layout
   return (
@@ -29,7 +31,7 @@ const Terminal: React.FC = () => {
           key={cell.id}
           state={focused === cell.id ? 'focused' : 'default'}
         >
-          <Cell {...cell} />
+          <Cell {...cell} focused={focused === cell.id} />
         </CellTile>
       ))}
       <Text

@@ -9,7 +9,12 @@ import {
   Slate,
   withReact,
 } from 'slate-react'
-import { CellType, FrontendMessage, Suggestion } from '../../types'
+import {
+  CellType,
+  CellTypeWithFocused,
+  FrontendMessage,
+  Suggestion,
+} from '../../types'
 import { formatCurrentDir, ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
@@ -36,13 +41,17 @@ const getSuggestions = async (
   }
 }
 
-const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
+const Prompt: React.FC<CellTypeWithFocused> = ({
+  id,
+  currentDir,
+  input,
+  focused,
+}) => {
   const dispatch = useStore(state => state.dispatch)
   const editor = useMemo(
     () => withSuggestions(withHistory(withReact(createEditor()))),
     [],
   )
-  const [isFocused, setIsFocused] = useState(true)
   const [value, setValue] = useState<Node[]>([
     {
       type: 'paragraph',
@@ -54,9 +63,19 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
 
   const [target, setTarget] = useState<null | Range>(null)
   const [index, setIndex] = useState(0)
-  const [search, setSearch] = useState('')
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+
   const renderElement = useCallback(props => <Element {...props} />, [])
+
+  // focus input if cell becomes focused
+  useEffect(() => {
+    if (focused) {
+      ReactEditor.focus(editor)
+
+      // move cursor to the end
+      Transforms.select(editor, Editor.end(editor, []))
+    }
+  }, [focused])
 
   // update suggestions
   useEffect(() => {
@@ -67,6 +86,17 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
       }
     })()
   }, [input, currentDir])
+
+  // update suggestions box position
+  useEffect(() => {
+    if (target && suggestions.length > 0 && suggestionRef.current) {
+      const el = suggestionRef.current
+      const domRange = ReactEditor.toDOMRange(editor, target)
+      const rect = domRange.getBoundingClientRect()
+      el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight - 10}px`
+      el.style.left = `${rect.left + window.pageXOffset}px`
+    }
+  }, [editor, index, suggestions.length, target])
 
   const onKeyDown = useCallback(
     event => {
@@ -97,33 +127,16 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
             break
         }
       } else if (event.key === 'Enter') {
+        // run cell
+
         event.preventDefault() // don't allow multiline input
         if (!input) return
 
         dispatch({ type: 'run', id })
-
-        setValue([
-          {
-            type: 'paragraph',
-            children: [{ text: '' }],
-          },
-        ])
-        Editor.deleteBackward(editor, { unit: 'line' })
-        ReactEditor.focus(editor)
       }
     },
     [target, suggestions, index, editor, id, input],
   )
-
-  useEffect(() => {
-    if (target && suggestions.length > 0 && suggestionRef.current) {
-      const el = suggestionRef.current
-      const domRange = ReactEditor.toDOMRange(editor, target)
-      const rect = domRange.getBoundingClientRect()
-      el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight - 10}px`
-      el.style.left = `${rect.left + window.pageXOffset}px`
-    }
-  }, [editor, index, search, suggestions.length, target])
 
   return (
     <Div
@@ -137,16 +150,13 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
         editor={editor}
         value={value}
         onChange={newValue => {
-          if (isFocused) {
-            // todo: why do we need isFocused?
-            setValue(newValue)
-            console.log('val', newValue)
-            dispatch({
-              type: 'set-input',
-              id,
-              input: newValue.map(n => Node.string(n)).join('\n'),
-            })
-          }
+          // console.log('val', newValue)
+          setValue(newValue)
+          dispatch({
+            type: 'set-input',
+            id,
+            input: newValue.map(n => Node.string(n)).join('\n'),
+          })
 
           const { selection } = editor
 
@@ -158,7 +168,6 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
 
             if (beforeRange && beforeText) {
               setTarget(beforeRange)
-              setSearch(beforeText)
               setIndex(0)
               return
             }
@@ -168,13 +177,7 @@ const Prompt: React.FC<CellType> = ({ id, currentDir, input }) => {
         }}
       >
         <Editable
-          // autoFocus
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          className="h-full"
-          placeholder={
-            isFocused ? formatCurrentDir(currentDir) : "Press 'Esc' to focus"
-          }
+          placeholder={formatCurrentDir(currentDir)}
           onKeyDown={onKeyDown}
           renderElement={renderElement}
         />

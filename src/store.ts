@@ -14,12 +14,16 @@ type Action =
   | { type: 'run'; id: string }
   | { type: 'set-input'; id: string; input: string }
   | { type: 'set-current-dir'; id: string; newDir: string }
+  | { type: 'focus'; id: string }
+  | { type: 'focus-up' }
+  | { type: 'focus-down' }
 
 const getDefaultCell = (): CellType => {
   return {
     id: v4(),
     currentDir: api('home'),
     input: '',
+    size: 'small',
   }
 }
 
@@ -39,6 +43,7 @@ const reducer = (state: State, action: Action) => {
       case 'new': {
         const newCell = getDefaultCell()
         draft.cells.push(newCell)
+        draft.focused = newCell.id
         break
       }
       case 'run': {
@@ -56,16 +61,44 @@ const reducer = (state: State, action: Action) => {
       }
       case 'set-input': {
         const index = draft.cells.findIndex(c => c.id === action.id)
-        if (!index) return
+        if (typeof index !== 'number') return
 
         draft.cells[index].input = action.input
         break
       }
       case 'set-current-dir': {
         const index = draft.cells.findIndex(c => c.id === action.id)
-        if (!index) return
+        if (typeof index !== 'number') return
 
         draft.cells[index].currentDir = action.newDir
+        break
+      }
+      case 'focus': {
+        draft.focused = action.id
+        break
+      }
+      case 'focus-up': {
+        const index = draft.cells.findIndex(c => c.id === draft.focused)
+        if (typeof index !== 'number') return
+
+        if (index < 1) {
+          draft.focused = draft.cells[draft.cells.length - 1].id
+        } else {
+          draft.focused = draft.cells[index - 1].id
+        }
+
+        break
+      }
+      case 'focus-down': {
+        const index = draft.cells.findIndex(c => c.id === draft.focused)
+        if (typeof index !== 'number') return
+
+        if (index > draft.cells.length - 2) {
+          draft.focused = draft.cells[0].id
+        } else {
+          draft.focused = draft.cells[index + 1].id
+        }
+
         break
       }
     }

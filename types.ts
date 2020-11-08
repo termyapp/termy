@@ -2,8 +2,11 @@ export type CellType = {
   id: string
   input: string
   currentDir: string
-  position?: number[] // todo: (row, col maybe?)
+  size: 'small' | 'big'
+  // position?: number[] // todo: (row, col maybe?)
 }
+
+export type CellTypeWithFocused = CellType & { focused: boolean }
 
 export type FrontendMessage =
   | { type: 'api'; command: string } // todo: { command: string; args: any[] }  (sending large amounts of text feels awkward)
