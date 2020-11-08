@@ -8,6 +8,7 @@ import { api, ipc } from './lib'
 
 type State = typeof initialState
 
+// todo: https://artsy.github.io/blog/2018/11/21/conditional-types-in-typescript/
 type Action =
   | { type: 'clear' }
   | { type: 'new' }
