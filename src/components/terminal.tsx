@@ -56,7 +56,7 @@ const CellTile = styled(Tile, {
         color: '$secondaryTextColor',
       },
       focused: {
-        border: '3px solid $accentColor',
+        border: '3px solid $blue500',
       },
     },
   },
