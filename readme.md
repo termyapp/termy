@@ -34,12 +34,8 @@ Terminals can be scary at first. Termy aims to be a beginner-friendly, easy to u
 
 <br />
 
-## Development
+#### License
 
-1. Install [yarn](https://classic.yarnpkg.com/en/docs/install)
-2. Install [tauri](https://tauri.studio)
-3. Run `yarn dev`
-
-## License
-
+<sup>
 Termy is [MIT-licensed](./LICENSE).
+</sup>
