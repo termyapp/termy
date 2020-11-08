@@ -153,9 +153,9 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
           // console.log('val', newValue)
           setValue(newValue)
           dispatch({
-            type: 'set-input',
+            type: 'set-cell',
             id,
-            input: newValue.map(n => Node.string(n)).join('\n'),
+            cell: { input: newValue.map(n => Node.string(n)).join('\n') },
           })
 
           const { selection } = editor

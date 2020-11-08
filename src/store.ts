@@ -11,9 +11,8 @@ type State = typeof initialState
 type Action =
   | { type: 'clear' }
   | { type: 'new' }
+  | { type: 'set-cell'; id: string; cell: Partial<CellType> }
   | { type: 'run'; id: string }
-  | { type: 'set-input'; id: string; input: string }
-  | { type: 'set-current-dir'; id: string; newDir: string }
   | { type: 'focus'; id: string }
   | { type: 'focus-up' }
   | { type: 'focus-down' }
@@ -46,6 +45,13 @@ const reducer = (state: State, action: Action) => {
         draft.focused = newCell.id
         break
       }
+      case 'set-cell': {
+        const index = draft.cells.findIndex(c => c.id === action.id)
+        if (typeof index !== 'number') return
+
+        draft.cells[index] = { ...draft.cells[index], ...action.cell }
+        break
+      }
       case 'run': {
         const cell = draft.cells.find(c => c.id === action.id)
         if (!cell) return
@@ -57,20 +63,6 @@ const reducer = (state: State, action: Action) => {
         console.log('running', message.data.input)
 
         ipc.send('message', message)
-        break
-      }
-      case 'set-input': {
-        const index = draft.cells.findIndex(c => c.id === action.id)
-        if (typeof index !== 'number') return
-
-        draft.cells[index].input = action.input
-        break
-      }
-      case 'set-current-dir': {
-        const index = draft.cells.findIndex(c => c.id === action.id)
-        if (typeof index !== 'number') return
-
-        draft.cells[index].currentDir = action.newDir
         break
       }
       case 'focus': {

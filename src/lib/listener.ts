@@ -13,7 +13,7 @@ export const useListener = (
       event: any,
       message: ServerStatusMessage | ServerDataMessage,
     ) => {
-      console.log('received message', message, eventHandler)
+      console.log('received message', message)
       eventHandler(message)
     }
 

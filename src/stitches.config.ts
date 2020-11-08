@@ -16,6 +16,7 @@ export const theme = {
     $selectionColor: '#90cdf4',
 
     // Tailwind palette: https://tailwindcss.com/docs/customizing-colors#default-color-palette
+    // todo: extract these to baseTheme or palette?
     $black: '#000000',
     $white: '#ffffff',
 

@@ -53,7 +53,12 @@ const handleMessage = (
         event.sender.send(`status-${id}`, {
           id,
           type: type === 0 ? 'PTY' : 'API',
-          status: typeof status === 'undefined' ? -1 : status, // -1 = running
+          status:
+            typeof status === 'undefined'
+              ? 'running'
+              : status === 0
+              ? 'exited'
+              : 'error',
         } as ServerStatusMessage)
       }
 

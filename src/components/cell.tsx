@@ -1,3 +1,4 @@
+import { type } from 'process'
 import React, { useEffect, useRef, useState } from 'react'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
@@ -12,30 +13,21 @@ import { ipc, useListener } from '../lib'
 import { theme } from '../stitches.config'
 import useStore from '../store'
 import List from './custom/list'
-import { Div } from './shared'
 import Prompt from './prompt'
+import { Div } from './shared'
 
-/**
- * 1. Render PTY/API based on type
- * 2. Show status
- *
- * Note: Listening for output happens in child components
- */
 const Cell: React.FC<CellTypeWithFocused> = cell => {
   const dispatch = useStore(state => state.dispatch)
   const { id } = cell
-  const [status, setStatus] = useState<number | null>(null)
-  const [type, setType] = useState<'PTY' | 'API' | null>(null)
 
   console.log('cell', cell)
 
   useListener(
     `status-${id}`,
-    (message: ServerStatusMessage) => {
-      setType(message.type)
-      setStatus(message.status)
+    ({ type, status }: ServerStatusMessage) => {
+      dispatch({ type: 'set-cell', id, cell: { type, status } })
     },
-    [type],
+    [],
   )
 
   return (
@@ -46,8 +38,8 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
     >
       <Prompt {...cell} />
       <Div css={{ p: '$2' }}>
-        {type === 'PTY' && <PtyRenderer {...cell} />}
-        {type === 'API' && <ApiRenderer {...cell} />}
+        {cell.type === 'PTY' && <PtyRenderer {...cell} />}
+        {cell.type === 'API' && <ApiRenderer {...cell} />}
       </Div>
     </Div>
   )
@@ -59,15 +51,19 @@ const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   const dispatch = useStore(state => state.dispatch)
   const [output, setOutput] = useState('')
 
+  // todo: sometimes we miss data because this approach is too slow
   useListener(
     `data-${id}`,
     (message: ServerDataMessage) => {
       console.log('parsing')
 
       const data = JSON.parse(message.data)
+
+      // handle built-in stuff
       if (data.cd) {
-        dispatch({ type: 'set-current-dir', id, newDir: data.cd })
+        dispatch({ type: 'set-cell', id, cell: { currentDir: data.cd } })
       }
+
       setOutput(data.output)
     },
     [],
@@ -83,28 +79,37 @@ const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   }
 }
 
-const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
+const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input, status }) => {
   const ref = useRef<HTMLDivElement>(null)
   const terminalRef = useRef<Terminal | null>(null)
 
   useEffect(() => {
     if (!ref.current) return
+
     let term = new Terminal({
       cursorStyle: 'block',
       fontFamily: theme.fonts.$mono,
       theme: {
         foreground: theme.colors.$primaryTextColor,
         background: theme.colors.$tileBackgroundColor,
-        selection: theme.colors.$selectionColor, // color looks lighter rendered in xterm, idk why
+        selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
+        cursor: theme.colors.$accentColor,
       },
     })
 
     // todo: https://xtermjs.org/docs/guides/flowcontrol/
-    term.onData(key => {
-      console.log('key', key)
+    term.onKey(({ key, domEvent }) => {
+      if (domEvent.ctrlKey && domEvent.key === 'Tab') {
+        terminalRef.current?.blur()
+      } else if (!term.getOption('disableStdin')) {
+        console.log('key', key.charCodeAt(0))
 
-      const message: FrontendMessage = { type: 'send-stdin', data: { id, key } }
-      ipc.send('message', message)
+        const message: FrontendMessage = {
+          type: 'send-stdin',
+          data: { id, key },
+        }
+        ipc.send('message', message)
+      }
     })
 
     // fit
@@ -114,7 +119,29 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
 
     term.open(ref.current)
     terminalRef.current = term
+
+    // messes up focus
+    const xtermFocusElement = ref.current?.children[0] as HTMLDivElement
+    if (xtermFocusElement) {
+      xtermFocusElement.tabIndex = -1
+    }
   }, [currentDir, id])
+
+  useEffect(() => {
+    // todo: reset when re running a cell
+    console.log('status', status)
+
+    // over
+    if (status === 'exited' || status === 'error') {
+      // hide cursor
+      terminalRef.current?.write('\u001B[?25l')
+
+      // disable stdin
+      terminalRef.current?.setOption('disableStdin', true)
+
+      terminalRef.current?.blur()
+    }
+  }, [status])
 
   useListener(
     `data-${id}`,
@@ -126,15 +153,20 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
 
       console.log('writing chunk', message.data)
       terminalRef.current.write(message.data)
-
-      //   console.log('Exit status: ', message.exitStatus)
-      //   setExitStatus(message.exitStatus)
-
-      //   terminal.write('\u001B[?25l') // hide cursor
-      //   terminal.setOption('disableStdin', true)
     },
     [],
   )
 
-  return <Div tabIndex={0} ref={ref}></Div>
+  return (
+    <Div
+      ref={ref}
+      onFocus={e => {
+        if (status === 'exited' || status === 'error') {
+          terminalRef.current?.blur()
+          return
+        }
+        terminalRef.current?.focus()
+      }}
+    />
+  )
 }

@@ -1,8 +1,14 @@
+type Status = 'running' | 'exited' | 'error'
+type OutputType = 'PTY' | 'API'
+
 export type CellType = {
   id: string
   input: string
   currentDir: string
-  size: 'small' | 'big'
+  size: 'small' | 'big' // todo
+  status?: Status // undefined is default (before running anything)
+  type?: OutputType
+
   // position?: number[] // todo: (row, col maybe?)
 }
 
@@ -22,8 +28,8 @@ export type FrontendMessage =
 
 export type ServerStatusMessage = {
   id: string
-  type: 'PTY' | 'API'
-  status: number
+  type: OutputType
+  status: Status
 }
 
 export type ServerDataMessage = {
@@ -37,7 +43,7 @@ export type Suggestion = {
   command: string
 }
 
-// not sure
+// not using these rn
 export type FileEntry = {
   fileName: string
   path: string
