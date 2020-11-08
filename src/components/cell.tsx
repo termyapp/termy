@@ -1,4 +1,3 @@
-import { type } from 'process'
 import React, { useEffect, useRef, useState } from 'react'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
@@ -20,7 +19,7 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
   const dispatch = useStore(state => state.dispatch)
   const { id } = cell
 
-  console.log('cell', cell)
+  // console.log('cell', cell)
 
   useListener(
     `status-${id}`,
@@ -37,7 +36,7 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
       }}
     >
       <Prompt {...cell} />
-      <Div css={{ p: '$2' }}>
+      <Div css={{ m: '$2' }}>
         {cell.type === 'PTY' && <PtyRenderer {...cell} />}
         {cell.type === 'API' && <ApiRenderer {...cell} />}
       </Div>
@@ -52,6 +51,8 @@ const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   const [output, setOutput] = useState('')
 
   // todo: sometimes we miss data because this approach is too slow
+  // maybe just go the ugly but simple way of doing this
+  // call handlers from Cell using child's ref :)))
   useListener(
     `data-${id}`,
     (message: ServerDataMessage) => {
@@ -115,9 +116,12 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input, status }) => {
     // fit
     const fitAddon = new FitAddon()
     term.loadAddon(fitAddon)
+    if (ref.current)
+      // todo: refactor this and update on resize
+      ref.current.style.width = ref.current?.parentElement?.clientWidth + 'px'
+    term.open(ref.current)
     fitAddon.fit()
 
-    term.open(ref.current)
     terminalRef.current = term
 
     // messes up focus
@@ -160,6 +164,8 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input, status }) => {
   return (
     <Div
       ref={ref}
+      // todo: on resize, send new row, col to shell pty
+      css={{ width: ref.current?.parentElement?.clientWidth, height: 300 }}
       onFocus={e => {
         if (status === 'exited' || status === 'error') {
           terminalRef.current?.blur()

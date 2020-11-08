@@ -23,7 +23,6 @@ const getDefaultCell = (): CellType => {
     id: v4(),
     currentDir: api('home'),
     input: '',
-    size: 'small',
   }
 }
 

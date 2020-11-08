@@ -114,8 +114,8 @@ impl Cell {
             command => {
                 let pty_system = native_pty_system();
                 let mut pair = pty_system.openpty(PtySize {
-                    rows: 24,
-                    cols: 100,
+                    rows: 20,
+                    cols: 50,
                     pixel_width: 0,
                     pixel_height: 0,
                 })?;

@@ -5,7 +5,6 @@ export type CellType = {
   id: string
   input: string
   currentDir: string
-  size: 'small' | 'big' // todo
   status?: Status // undefined is default (before running anything)
   type?: OutputType
 

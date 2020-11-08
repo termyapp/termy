@@ -21,9 +21,9 @@ const Terminal: React.FC = () => {
       css={{
         mt: '1.6rem', // todo: avoid traffic lights colliding
         // minHeight: 'calc(100vh - 1.6rem - 0.5rem * 2)',
-        p: '0.5rem',
+        p: '$1',
 
-        rowGap: '$2',
+        rowGap: '$1',
       }}
     >
       {cells.map(cell => (

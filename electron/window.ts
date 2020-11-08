@@ -1,18 +1,19 @@
 import { app, BrowserWindow, shell } from 'electron'
-import isDev from 'electron-is-dev'
+import debug from 'electron-debug'
 import installExtension, {
   REACT_DEVELOPER_TOOLS,
   REDUX_DEVTOOLS,
 } from 'electron-devtools-installer'
-
+import isDev from 'electron-is-dev'
 import path from 'path'
-import debug from 'electron-debug'
 
 // todo: menu — include shift in zoom accelerators
 export const createWindow = async (): Promise<BrowserWindow> => {
   const window = new BrowserWindow({
-    width: 1200,
-    height: 1000,
+    minWidth: 370,
+    minHeight: 190,
+    title: 'Termy',
+    acceptFirstMouse: true,
     titleBarStyle: 'hiddenInset',
     webPreferences: {
       preload: path.resolve(
