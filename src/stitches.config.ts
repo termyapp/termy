@@ -13,7 +13,7 @@ export const theme = {
 
     $tileBackgroundColor: '#d6d8e3',
     $accentColor: '#f0773a', // orange OP-1 button
-    $selectionColor: '#90cdf4',
+    $selectionColor: '#f0773a',
 
     // Tailwind palette: https://tailwindcss.com/docs/customizing-colors#default-color-palette
     // todo: extract these to baseTheme or palette?

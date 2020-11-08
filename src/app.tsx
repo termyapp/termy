@@ -12,6 +12,7 @@ export const globalStyles = css.global({
     '*': {
       '::selection': {
         backgroundColor: '$selectionColor',
+        color: '$white',
       },
     },
   },
