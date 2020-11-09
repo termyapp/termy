@@ -15,7 +15,7 @@ pub fn init() -> Result<()> {
                 id integer primary key,
                 current_dir text not null,
                 input text not null,
-                creation_date text not null,
+                creation_date text not null
              )",
         NO_PARAMS,
     )?;
