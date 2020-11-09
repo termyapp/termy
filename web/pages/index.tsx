@@ -30,11 +30,13 @@ const IndexPage = () => {
           my: '$9',
           textAlign: 'center',
           '& > *': {
-            mt: '$5',
+            mt: '$6',
           },
         }}
       >
         <Text as="h1" size="9" css={{ lineHeight: 0.9 }}>
+          A terminal for the
+          <br />
           <mark
             style={{
               background:
@@ -43,53 +45,10 @@ const IndexPage = () => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            HTML
+            21st
           </mark>{' '}
-          in your <br />
-          terminal
+          century
         </Text>
-        <Text
-          as="h2"
-          size="7"
-          css={{
-            color: '$gray700',
-            fontWeight: 400,
-            maxWidth: 500,
-            mx: 'auto',
-          }}
-        >
-          An open{' '}
-          <Text
-            as="a"
-            href="https://github.com/termyapp/termy"
-            target="_blank"
-            css={{
-              textDecoration: 'underline',
-              color: '$foreground',
-            }}
-          >
-            source
-          </Text>{' '}
-          terminal with a{' '}
-          <mark
-            style={{
-              background:
-                'linear-gradient(to left, rgba(200,220,255,1) 0%, rgba(180,120,255,1) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}
-          >
-            shell
-          </mark>{' '}
-          that provides you with{' '}
-          <Text css={{ color: '$foreground', fontWeight: 600 }}>JSON</Text>,
-          <br />
-          instead of junk text.
-        </Text>
-
-        <Button as="a" href="" variant="blue" css={{ display: 'inline-block' }}>
-          Get access
-        </Button>
 
         <Demo src="/demo3.gif" alt="Demo Gif" />
 
