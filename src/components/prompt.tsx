@@ -9,12 +9,7 @@ import {
   Slate,
   withReact,
 } from 'slate-react'
-import {
-  CellType,
-  CellTypeWithFocused,
-  FrontendMessage,
-  Suggestion,
-} from '../../types'
+import { CellTypeWithFocused, FrontendMessage, Suggestion } from '../../types'
 import { formatCurrentDir, ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
@@ -27,14 +22,14 @@ const getSuggestions = async (
   try {
     if (input.length < 1) return null
 
-    // const message: FrontendMessage = {
-    //   type: 'get-suggestions',
-    //   data: { input, currentDir },
-    // }
+    const message: FrontendMessage = {
+      type: 'get-suggestions',
+      data: { input, currentDir },
+    }
 
-    // const suggestions: Suggestion[] = ipc.sendSync('message', message)
-    // console.log('suggestions', suggestions)
-    return null
+    const suggestions: Suggestion[] = ipc.sendSync('message', message)
+    console.log('suggestions', suggestions)
+    return suggestions
   } catch (error) {
     console.error('Error while getting files: ', error)
     return null
@@ -60,6 +55,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
   ])
 
   const suggestionRef = useRef<HTMLDivElement>(null)
+  const promptRef = useRef<HTMLDivElement>(null)
 
   const [target, setTarget] = useState<null | Range>(null)
   const [index, setIndex] = useState(0)
@@ -89,12 +85,40 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
 
   // update suggestions box position
   useEffect(() => {
-    if (target && suggestions.length > 0 && suggestionRef.current) {
-      const el = suggestionRef.current
+    if (
+      target &&
+      suggestions.length > 0 &&
+      suggestionRef.current &&
+      promptRef.current
+    ) {
+      const suggestionElement = suggestionRef.current
+      const promptElement = promptRef.current
       const domRange = ReactEditor.toDOMRange(editor, target)
       const rect = domRange.getBoundingClientRect()
-      el.style.top = `${rect.top + window.pageYOffset - el.offsetHeight - 10}px`
-      el.style.left = `${rect.left + window.pageXOffset}px`
+
+      // calculate available top/bottom space of the element
+      const topSpace =
+        promptElement.offsetTop -
+        window.pageYOffset +
+        promptElement.offsetHeight
+      const bottomSpace =
+        window.pageYOffset + window.innerHeight - promptElement.offsetTop
+
+      // calculate position of the suggestions box
+      const padding = 10
+      const top =
+        bottomSpace > topSpace
+          ? rect.top + window.pageYOffset + rect.height + padding
+          : rect.top +
+            window.pageYOffset -
+            suggestionElement.offsetHeight -
+            padding
+
+      // update values
+      suggestionElement.style.top = `${top}px`
+      suggestionElement.style.left = `${
+        promptElement.offsetLeft + window.pageXOffset
+      }px`
     }
   }, [editor, index, suggestions.length, target])
 
@@ -128,7 +152,6 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
         }
       } else if (event.key === 'Enter') {
         // run cell
-
         event.preventDefault() // don't allow multiline input
         if (!input) return
 
@@ -140,10 +163,12 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
 
   return (
     <Div
+      ref={promptRef}
       css={{
         boxShadow: '-3px -3px 5px #fff, 3px 3px 4px #9ea0a8',
         borderRadius: '$md',
         p: '$2',
+        position: 'relative',
       }}
     >
       <Slate
@@ -183,7 +208,19 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
         />
         {target && suggestions.length > 0 && (
           <Portal>
-            <SuggestionsContainer ref={suggestionRef}>
+            <Div
+              ref={suggestionRef}
+              css={{
+                position: 'absolute',
+                zIndex: 1,
+                display: 'flex',
+                flexDirection: 'column-reverse',
+                backgroundColor: '$white',
+                borderRadius: '$md',
+                boxShadow: '$3xl',
+                py: '$1',
+              }}
+            >
               {suggestions.map((suggestion, i) => (
                 <SuggestionItem
                   key={i}
@@ -192,7 +229,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
                   {suggestion.command}
                 </SuggestionItem>
               ))}
-            </SuggestionsContainer>
+            </Div>
           </Portal>
         )}
       </Slate>
@@ -200,31 +237,25 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
   )
 }
 
-const SuggestionsContainer = styled('div', {
-  top: '-9999px',
-  left: '-9999px',
-  position: 'absolute',
-  zIndex: 1,
-  display: 'flex',
-  flexDirection: 'column-reverse',
-  backgroundColor: '$gray200',
-  br: '$2',
-})
+const SuggestionItem = styled(Div, {
+  py: '$1',
+  px: '$2',
+  fontSize: '$md',
 
-const SuggestionItem = styled('div', {
-  py: '$2',
-  px: '$3',
-  br: '$2',
+  '& + &': {
+    // not top because flex parent is reversed
+    borderBottom: '1px solid $gray300',
+  },
 
   variants: {
     type: {
       focused: {
-        backgroundColor: '$gray400',
-        color: '$foreground',
+        backgroundColor: '$blue500',
+        color: '$white',
       },
       default: {
         backgroundColor: 'transparent',
-        color: '$gray700',
+        color: '$blue900',
       },
     },
   },
