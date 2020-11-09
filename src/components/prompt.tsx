@@ -131,18 +131,36 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
       if (target && suggestions.length) {
         // focused on suggestions
         switch (event.key) {
-          case 'ArrowUp':
+          case 'ArrowUp': {
             event.preventDefault()
             event.stopPropagation()
-            const prevIndex = index >= suggestions.length - 1 ? 0 : index + 1
-            setIndex(prevIndex)
-            break
-          case 'ArrowDown':
-            event.preventDefault()
-            event.stopPropagation()
-            const nextIndex = index <= 0 ? suggestions.length - 1 : index - 1
+
+            const nextIndex =
+              direction !== 'column-reverse'
+                ? index <= 0
+                  ? suggestions.length - 1
+                  : index - 1
+                : index >= suggestions.length - 1
+                ? 0
+                : index + 1
             setIndex(nextIndex)
             break
+          }
+          case 'ArrowDown': {
+            event.preventDefault()
+            event.stopPropagation()
+
+            const nextIndex =
+              direction === 'column-reverse'
+                ? index <= 0
+                  ? suggestions.length - 1
+                  : index - 1
+                : index >= suggestions.length - 1
+                ? 0
+                : index + 1
+            setIndex(nextIndex)
+            break
+          }
           case 'Tab':
           case 'Enter':
             // suggestion enter
@@ -225,7 +243,9 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
                 backgroundColor: '$white',
                 borderRadius: '$md',
                 boxShadow: '$3xl',
-                overflow: 'hidden',
+                maxHeight: '80vh',
+
+                overflowY: 'auto',
               }}
             >
               {suggestions.map((suggestion, i) => (
@@ -235,7 +255,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
                   state={i === index ? 'focused' : 'default'}
                 >
                   {suggestion.suggestionType === 'dir' && (
-                    <Dir css={{ width: '$4', mr: '$1' }} />
+                    <Dir css={{ width: '$3', height: '100%', mr: '$1' }} />
                   )}
                   {suggestion.display}
                   <Div
@@ -246,7 +266,8 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
                       fontSize: '$xs',
                     }}
                   >
-                    {formatDistanceToNow(parseInt(suggestion.date))}
+                    {suggestion.date &&
+                      formatDistanceToNow(parseInt(suggestion.date))}
                   </Div>
                 </SuggestionItem>
               ))}
@@ -263,6 +284,7 @@ const SuggestionItem = styled(Div, {
   px: '$2',
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'nowrap',
 
   fontSize: '$sm',
 
@@ -276,7 +298,10 @@ const SuggestionItem = styled(Div, {
         backgroundColor: '$blue100',
         color: '$blue600',
         fontWeight: '$normal',
-        letterSpacing: '$wide',
+      },
+      historyExternal: {
+        backgroundColor: '$green100',
+        color: '$green600',
       },
     },
     state: {

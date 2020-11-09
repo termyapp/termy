@@ -41,8 +41,8 @@ export type Suggestion = {
   score: number
   command: string
   display: string
-  suggestionType: 'dir'
-  date: string
+  suggestionType: 'dir' | 'historyExternal'
+  date?: string
 }
 
 // not using these rn
