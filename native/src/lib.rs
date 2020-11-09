@@ -6,7 +6,7 @@ extern crate napi_derive;
 use crossbeam_channel::{unbounded, Sender};
 use napi::{
     CallContext, Error, JsBuffer, JsExternal, JsFunction, JsNumber, JsObject, JsString,
-    JsUndefined, Module,
+    JsUndefined, JsUnknown, Module,
 };
 use shell::{Cell, CellType};
 use std::thread;
@@ -41,33 +41,14 @@ fn api(ctx: CallContext) -> napi::Result<JsString> {
 }
 
 #[js_function(2)]
-fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
+fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
     let input = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
     let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
 
     let suggestions = suggestions::get_suggestions(input, current_dir).unwrap();
-    // limit suggestions to a maximum of 10
-    let length = if suggestions.len() > 10 {
-        10
-    } else {
-        suggestions.len()
-    };
 
-    let mut result = ctx.env.create_array_with_length(10)?;
-    for index in 0..length {
-        let suggestion = suggestions.get(index).unwrap();
-        let mut data = ctx.env.create_object()?;
-
-        let command = ctx.env.create_string(&suggestion.command)?;
-        let score = ctx.env.create_int64(suggestion.score)?;
-
-        data.set_named_property("command", command)?;
-        data.set_named_property("score", score)?;
-
-        result.set_element(index as u32, data)?;
-    }
-
-    Ok(result)
+    // needs "serde-json" feature
+    ctx.env.to_js_value(&suggestions)
 }
 
 #[js_function(5)]
@@ -104,7 +85,7 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
     )?;
 
     thread::spawn(move || {
-        db::add_command(&input, &current_dir).expect("Failed to add command");
+        // db::add_command(&input, &current_dir).expect("Failed to add command");
 
         let cell = Cell::new(id, current_dir, input);
         let cell_type = cell.get_type();

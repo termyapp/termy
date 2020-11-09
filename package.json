@@ -1,7 +1,7 @@
 {
   "name": "termy",
   "description": "An easy to use terminal. Termy has autosuggestions, a modern GUI (HTML), structured data piping and many others.",
-  "author": "Yoshi",
+  "author": "Marton Langa",
   "version": "0.1.0",
   "private": true,
   "homepage": "./",
@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@stitches/react": "^0.0.3-canary.4",
+    "date-fns": "^2.16.1",
     "electron-is-dev": "^1.2.0",
     "immer": "^7.0.14",
     "path": "^0.12.7",

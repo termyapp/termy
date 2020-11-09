@@ -20,8 +20,6 @@ const handleMessage = (
   message: FrontendMessage,
 ) => {
   switch (message.type) {
-    // always return from cases
-
     case 'api': {
       const result = native.api(message.command)
       console.log('api result', result)
@@ -32,7 +30,6 @@ const handleMessage = (
         message.data.input,
         message.data.currentDir,
       )
-      // console.log('suggestions', suggestions)
       return suggestions
     }
     case 'run-cell': {

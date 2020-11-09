@@ -9,11 +9,13 @@ import {
   Slate,
   withReact,
 } from 'slate-react'
+import { formatDistanceToNow } from 'date-fns'
 import { CellTypeWithFocused, FrontendMessage, Suggestion } from '../../types'
 import { formatCurrentDir, ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
-import { Div } from './shared'
+import { Div, Span } from './shared'
+import { Dir } from './svg'
 
 const getSuggestions = async (
   input: string,
@@ -43,10 +45,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
   focused,
 }) => {
   const dispatch = useStore(state => state.dispatch)
-  const editor = useMemo(
-    () => withSuggestions(withHistory(withReact(createEditor()))),
-    [],
-  )
+  const editor = useMemo(() => withHistory(withReact(createEditor())), [])
   const [value, setValue] = useState<Node[]>([
     {
       type: 'paragraph',
@@ -60,8 +59,11 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
   const [target, setTarget] = useState<null | Range>(null)
   const [index, setIndex] = useState(0)
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [direction, setDirection] = useState<'column' | 'column-reverse'>(
+    'column',
+  )
 
-  const renderElement = useCallback(props => <Element {...props} />, [])
+  // const renderElement = useCallback(props => <Element {...props} />, [])
 
   // focus input if cell becomes focused
   useEffect(() => {
@@ -105,7 +107,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
         window.pageYOffset + window.innerHeight - promptElement.offsetTop
 
       // calculate position of the suggestions box
-      const padding = 10
+      const padding = 5
       const top =
         bottomSpace > topSpace
           ? rect.top + window.pageYOffset + rect.height + padding
@@ -113,6 +115,8 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
             window.pageYOffset -
             suggestionElement.offsetHeight -
             padding
+
+      setDirection(bottomSpace > topSpace ? 'column' : 'column-reverse')
 
       // update values
       suggestionElement.style.top = `${top}px`
@@ -123,17 +127,19 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
   }, [editor, index, suggestions.length, target])
 
   const onKeyDown = useCallback(
-    event => {
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (target && suggestions.length) {
         // focused on suggestions
         switch (event.key) {
           case 'ArrowUp':
             event.preventDefault()
+            event.stopPropagation()
             const prevIndex = index >= suggestions.length - 1 ? 0 : index + 1
             setIndex(prevIndex)
             break
           case 'ArrowDown':
             event.preventDefault()
+            event.stopPropagation()
             const nextIndex = index <= 0 ? suggestions.length - 1 : index - 1
             setIndex(nextIndex)
             break
@@ -142,7 +148,8 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
             // suggestion enter
             event.preventDefault()
             Transforms.select(editor, target)
-            insertSuggestion(editor, suggestions[index].command)
+            Transforms.insertText(editor, suggestions[index].command + ' ')
+            // insertSuggestion(editor, suggestions[index].command)
             setTarget(null)
             break
           case 'Escape':
@@ -175,16 +182,16 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
         editor={editor}
         value={value}
         onChange={newValue => {
-          // console.log('val', newValue)
+          console.log('val', newValue)
           setValue(newValue)
           dispatch({
             type: 'set-cell',
             id,
             cell: { input: newValue.map(n => Node.string(n)).join('\n') },
           })
-
           const { selection } = editor
 
+          // setting target (needed for suggestions)
           if (selection && Range.isCollapsed(selection)) {
             const [start] = Range.edges(selection)
             const before = Editor.before(editor, start, { unit: 'word' })
@@ -204,7 +211,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
         <Editable
           placeholder={formatCurrentDir(currentDir)}
           onKeyDown={onKeyDown}
-          renderElement={renderElement}
+          // renderElement={renderElement}
         />
         {target && suggestions.length > 0 && (
           <Portal>
@@ -214,19 +221,33 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
                 position: 'absolute',
                 zIndex: 1,
                 display: 'flex',
-                flexDirection: 'column-reverse',
+                flexDirection: direction,
                 backgroundColor: '$white',
                 borderRadius: '$md',
                 boxShadow: '$3xl',
-                py: '$1',
+                overflow: 'hidden',
               }}
             >
               {suggestions.map((suggestion, i) => (
                 <SuggestionItem
                   key={i}
-                  type={i === index ? 'focused' : 'default'}
+                  type={suggestion.suggestionType}
+                  state={i === index ? 'focused' : 'default'}
                 >
-                  {suggestion.command}
+                  {suggestion.suggestionType === 'dir' && (
+                    <Dir css={{ width: '$4', mr: '$1' }} />
+                  )}
+                  {suggestion.display}
+                  <Div
+                    css={{
+                      ml: 'auto',
+                      pl: '$1',
+                      color: i === index ? '$gray200' : '$gray600',
+                      fontSize: '$xs',
+                    }}
+                  >
+                    {formatDistanceToNow(parseInt(suggestion.date))}
+                  </Div>
                 </SuggestionItem>
               ))}
             </Div>
@@ -238,73 +259,84 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
 }
 
 const SuggestionItem = styled(Div, {
-  py: '$1',
+  py: '0.35rem',
   px: '$2',
-  fontSize: '$md',
+  display: 'flex',
+  alignItems: 'center',
+
+  fontSize: '$sm',
 
   '& + &': {
-    // not top because flex parent is reversed
-    borderBottom: '1px solid $gray300',
+    borderTop: '1px solid $gray300',
   },
 
   variants: {
     type: {
+      dir: {
+        backgroundColor: '$blue100',
+        color: '$blue600',
+        fontWeight: '$normal',
+        letterSpacing: '$wide',
+      },
+    },
+    state: {
       focused: {
         backgroundColor: '$blue500',
         color: '$white',
       },
-      default: {
-        backgroundColor: 'transparent',
-        color: '$blue900',
-      },
+      default: {},
     },
   },
 })
 
-const Element = (props: RenderElementProps) => {
-  switch (props.element.type) {
-    case 'suggestion':
-      return <SuggestionElement {...props} />
-    default:
-      return <p {...props.attributes}>{props.children}</p>
-  }
-}
+// const Element = (props: RenderElementProps) => {
+//   const { attributes, children, element } = props
 
-const SuggestionElement = ({ attributes, children, element }: any) => {
-  return (
-    <span
-      {...attributes}
-      contentEditable={false}
-      style={{ textDecoration: 'underline' }} // todo: this doesn't work. also, set suggestion by command type, not by regex matching
-    >
-      {children}
-    </span>
-  )
-}
+//   switch (element.type) {
+//     case 'suggestion':
+//       return <SuggestionElement {...props} />
+//     default:
+//       return <p {...attributes}>{children}</p>
+//   }
+// }
 
-const insertSuggestion = (editor: ReactEditor, text: string) => {
-  const suggestion = {
-    type: 'suggestion',
-    text,
-  }
+// const SuggestionElement = ({ attributes, children, element }: any) => {
+//   return (
+//     <Span
+//       {...attributes}
+//       contentEditable={false}
+//       css={{ textDecoration: 'underline', backgroundColor: '$blue100' }}
+//     >
+//       {element.display}
+//       {children}
+//     </Span>
+//   )
+// }
 
-  Transforms.insertNodes(editor, suggestion)
-  Transforms.move(editor)
-  Transforms.insertText(editor, ' ')
-}
+// const insertSuggestion = (editor: ReactEditor, display: string) => {
+//   const suggestion = {
+//     type: 'suggestion',
+//     display,
+//     children: [{ text: '' }],
+//   }
 
-const withSuggestions = (editor: ReactEditor) => {
-  const { isInline, isVoid } = editor
+//   Transforms.insertNodes(editor, suggestion)
+//   Transforms.move(editor)
+//   Transforms.insertText(editor, ' ')
+// }
 
-  editor.isInline = element => {
-    return element.type === 'suggestion' ? true : isInline(element)
-  }
+// const withSuggestions = (editor: ReactEditor) => {
+//   const { isInline, isVoid } = editor
 
-  editor.isVoid = element => {
-    return element.type === 'suggestion' ? true : isVoid(element)
-  }
+//   editor.isInline = element => {
+//     return element.type === 'suggestion' ? true : isInline(element)
+//   }
 
-  return editor
-}
+//   editor.isVoid = element => {
+//     return element.type === 'suggestion' ? true : isVoid(element)
+//   }
+
+//   return editor
+// }
 
 export default Prompt

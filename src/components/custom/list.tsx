@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useKey } from 'react-use'
 import { FileEntry, ViewCommand } from '../../../types'
 import { styled } from '../../stitches.config'
-import { File, Folder } from '../svg'
+import { File, Dir } from '../svg'
 import View, { viewCommand } from './view'
 
 const shortenFileName = (fileName: string) =>
@@ -106,7 +106,7 @@ const Files = React.forwardRef<
             type={selectedIndex === i ? 'active' : file.isDir ? 'dir' : 'file'}
           >
             {file.isDir ? (
-              <Folder css={{ mr: '$2', width: '18px', height: '18px' }} />
+              <Dir css={{ mr: '$2', width: '18px', height: '18px' }} />
             ) : (
               <File css={{ mr: '$2', width: '18px', height: '18px' }} />
             )}

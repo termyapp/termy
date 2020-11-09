@@ -40,6 +40,9 @@ export type ServerDataMessage = {
 export type Suggestion = {
   score: number
   command: string
+  display: string
+  suggestionType: 'dir'
+  date: string
 }
 
 // not using these rn

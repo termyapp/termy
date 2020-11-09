@@ -768,6 +768,8 @@ source = "git+https://github.com/napi-rs/napi-rs#5025ffa7917955b3e47fd357858a256
 dependencies = [
  "napi-build 0.2.1 (git+https://github.com/napi-rs/napi-rs)",
  "napi-sys",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

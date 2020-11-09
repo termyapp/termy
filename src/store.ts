@@ -58,7 +58,9 @@ const reducer = (state: State, action: Action) => {
 
         const message: FrontendMessage = {
           type: 'run-cell',
-          data: cell,
+          // electron complains if we include a draft based
+          // object with additional properties on it
+          data: { id: cell.id, input: cell.input, currentDir: cell.currentDir },
         }
         console.log('running', message.data.input)
 

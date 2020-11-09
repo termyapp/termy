@@ -47,6 +47,13 @@ impl Cell {
     pub fn get_type(&self) -> CellType {
         match self.command.as_ref() {
             "move" | "home" | "cd" => return CellType::API,
+            dir if RelativePath::new(&self.current_dir)
+                .join_normalized(RelativePath::new(dir))
+                .to_path(Path::new(""))
+                .is_dir() =>
+            {
+                CellType::API
+            }
             _ => return CellType::PTY,
         }
     }
@@ -67,6 +74,38 @@ impl Cell {
             "home" => {
                 let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
                 send_output.send(format!("Home Directory: {:?}", home_dir));
+                send_output.release();
+            }
+            dir if RelativePath::new(&self.current_dir)
+                .join_normalized(RelativePath::new(dir))
+                .to_path(Path::new(""))
+                .is_dir() =>
+            {
+                let path = dir;
+                let relative_path = RelativePath::new(path);
+                let cwd = RelativePath::new(&self.current_dir);
+                let absolute_path = cwd.join_normalized(relative_path).to_path(Path::new(""));
+
+                let output = if absolute_path.is_dir() {
+                    ApiOutput {
+                        output: format!(
+                            "Changed current directory to {}",
+                            absolute_path.to_string_lossy()
+                        ),
+                        cd: Some(absolute_path.to_string_lossy().to_string()),
+                    }
+                } else {
+                    ApiOutput {
+                        output: format!(
+                            "{} is not a valid directory",
+                            absolute_path.to_string_lossy()
+                        ),
+                        cd: None,
+                    }
+                };
+                let output = serde_json::to_string(&output)?;
+
+                send_output.send(output);
                 send_output.release();
             }
             "cd" => {
@@ -171,7 +210,7 @@ impl Cell {
                     }
                 }
 
-                println!("Finished running processs");
+                println!("Finished running process");
 
                 // portable_pty only has boolean support for now
                 return Ok(child.wait().unwrap().success());

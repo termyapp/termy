@@ -11,7 +11,7 @@ const Svg = styled.svg({
 
 type SvgProps = React.ComponentProps<typeof Svg>
 
-export const Folder: React.FC<SvgProps> = ({ css = {} }) => (
+export const Dir: React.FC<SvgProps> = ({ css = {} }) => (
   <Svg
     css={{
       // @ts-ignore
