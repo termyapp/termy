@@ -1,6 +1,10 @@
 import { app, BrowserWindow } from 'electron'
 import setupMessages from './messages'
 import { createWindow } from './window'
+import fixPath from 'fix-path'
+
+// fixes: https://github.com/termyapp/termy/issues/8
+fixPath()
 
 app.allowRendererProcessReuse = true // default true in >=9
 
