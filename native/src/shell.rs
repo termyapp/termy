@@ -1,6 +1,7 @@
 use anyhow::Result;
 use crossbeam_channel::{Receiver, Sender};
 use io::Read;
+use log::{error, info};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use relative_path::RelativePath;
 use serde::Serialize;
@@ -46,7 +47,7 @@ impl Cell {
 
     pub fn get_type(&self) -> CellType {
         match self.command.as_ref() {
-            "move" | "home" | "cd" => return CellType::API,
+            "move" | "home" | "cd" | "/" => return CellType::API,
             dir if RelativePath::new(&self.current_dir)
                 .join_normalized(RelativePath::new(dir))
                 .to_path(Path::new(""))
@@ -64,13 +65,32 @@ impl Cell {
         receiver: Receiver<String>,
         sender: Sender<String>,
     ) -> Result<bool> {
-        println!(
+        info!(
             "Executing command: `{}` in {}",
             self.input, self.current_dir
         );
         let send_output = SendOutput::new(send_output);
 
         match self.command.as_ref() {
+            "/" => {
+                let path = RelativePath::new("").to_path("/");
+
+                let output = if path.is_dir() {
+                    ApiOutput {
+                        output: format!("Changed current directory to {}", path.to_string_lossy()),
+                        cd: Some(path.to_string_lossy().to_string()),
+                    }
+                } else {
+                    ApiOutput {
+                        output: format!("{} is not a valid directory", path.to_string_lossy()),
+                        cd: None,
+                    }
+                };
+                let output = serde_json::to_string(&output)?;
+
+                send_output.send(output);
+                send_output.release();
+            }
             "home" => {
                 let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
                 send_output.send(format!("Home Directory: {:?}", home_dir));
@@ -183,7 +203,7 @@ impl Cell {
                                 std::str::from_utf8(chunk).expect("Failed to convert the chunk");
                             send_output.send(output.to_string());
                         } else {
-                            eprintln!("Err: {}", read.unwrap_err());
+                            error!("Err: {}", read.unwrap_err());
                         }
                     }
 
@@ -197,27 +217,27 @@ impl Cell {
                     // receive stdin message
                     let received = receiver.recv();
                     if let Ok(message) = received {
-                        println!("Message received: {:?} {:?}", message, message.as_bytes());
+                        info!("Message received: {:?} {:?}", message, message.as_bytes());
 
                         if message == KILL_COMMAND_MESSAGE || child.try_wait()?.is_some() {
-                            println!("Exiting");
+                            info!("Exiting");
                             break;
                         }
                         // Send data to the pty by writing to the master
                         write!(pair.master, "{}", message).expect("Failed to write to master");
                     } else {
-                        println!("No message or error");
+                        info!("No message or error");
                     }
                 }
 
-                println!("Finished running process");
+                info!("Finished running process");
 
                 // portable_pty only has boolean support for now
                 return Ok(child.wait().unwrap().success());
             }
         }
 
-        println!(
+        info!(
             "Finished executing command `{}` in {}",
             self.input, self.current_dir
         );
@@ -249,7 +269,7 @@ impl SendOutput {
     fn release(self) {
         self.threadsafe_function
             .release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
-        println!("Released threadsafe function");
+        info!("Released threadsafe function");
     }
 }
 

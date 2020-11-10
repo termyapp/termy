@@ -117,7 +117,7 @@ pub fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggest
         //     .args(&["-c", "compgen -A function -abck"])
         //     .output();
         // if let Err(err) = output {
-        //     println!("{}", err);
+        //     info!("{}", err);
         // } else {
         //     let mut commands = String::from_utf8(output.unwrap().stdout)?
         //         .lines()

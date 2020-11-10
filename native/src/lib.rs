@@ -4,6 +4,7 @@ extern crate napi;
 extern crate napi_derive;
 
 use crossbeam_channel::{unbounded, Sender};
+use log::{error, info};
 use napi::{
     CallContext, Error, JsBuffer, JsExternal, JsFunction, JsNumber, JsObject, JsString,
     JsUndefined, JsUnknown, Module,
@@ -12,6 +13,7 @@ use shell::{Cell, CellType};
 use std::thread;
 
 mod db;
+mod logger;
 mod shell;
 mod suggestions;
 
@@ -26,7 +28,10 @@ fn init(module: &mut Module) -> napi::Result<()> {
 
     module.create_named_method("sendStdin", send_stdin)?;
 
-    db::init().expect("Failed to initialize database");
+    // todo: this fails in prod
+    // db::init().expect("Failed to initialize database");
+
+    logger::init().unwrap();
 
     Ok(())
 }
@@ -44,6 +49,8 @@ fn api(ctx: CallContext) -> napi::Result<JsString> {
 fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
     let input = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
     let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
+
+    info!("Getting suggestions for {}", input);
 
     let suggestions = suggestions::get_suggestions(input, current_dir).unwrap();
 
@@ -102,15 +109,15 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
         // run cell
         match cell.run(send_output, receiver, shell_sender) {
             Ok(true) => {
-                println!("Exit status: 0");
+                info!("Exit status: 0");
                 status.push(0);
             }
             Ok(false) => {
-                println!("Exit status: 1");
+                info!("Exit status: 1");
                 status.push(1);
             }
             Err(err) => {
-                println!("Error in shell: {}", err);
+                info!("Error in shell: {}", err);
                 status.push(1);
             }
         }
@@ -137,7 +144,7 @@ fn send_stdin(ctx: CallContext) -> napi::Result<JsUndefined> {
     let key: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
 
     if let Err(err) = sender.send(key) {
-        println!("Failed to send key: {}", err);
+        info!("Failed to send key: {}", err);
     }
 
     ctx.env.get_undefined()
@@ -173,7 +180,7 @@ fn send_stdin(ctx: CallContext) -> napi::Result<JsUndefined> {
 // }
 
 // fn view_command(path: String) -> Result<ViewCommand> {
-//     println!("Path: {}", path);
+//     info!("Path: {}", path);
 //     let ospath = OsStr::new(&path);
 //     let metadata = fs::metadata(ospath)?;
 
