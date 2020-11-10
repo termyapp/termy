@@ -1,3 +1,4 @@
+import { darkTheme, lightTheme } from './../stitches.config'
 import { ipc } from './ipc'
 
 export const formatCurrentDir = (currentDir: string) => {
@@ -26,6 +27,8 @@ export const getLanguage = (path: string): string | undefined => {
 
 // export const isDev = process.env.NODE_ENV === 'development'
 export const isDev = true
+
+export const theme = isDev ? lightTheme : darkTheme
 
 export * from './ipc'
 export * from './listener'

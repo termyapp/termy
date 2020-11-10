@@ -66,6 +66,7 @@ const handleMessage = (
         sendOutput,
         sendStatus,
       )
+      // todo: delete when over
       runningCells[id] = sendStdin
       return
     }

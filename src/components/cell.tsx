@@ -8,8 +8,7 @@ import {
   ServerDataMessage,
   ServerStatusMessage,
 } from '../../types'
-import { ipc, useListener } from '../lib'
-import { theme } from '../stitches.config'
+import { theme, ipc, useListener } from '../lib'
 import useStore from '../store'
 import List from './custom/list'
 import Prompt from './prompt'
@@ -36,17 +35,23 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
       }}
     >
       <Prompt {...cell} />
-      <Div css={{ m: '$2' }}>
-        {cell.type === 'PTY' && <PtyRenderer {...cell} />}
-        {cell.type === 'API' && <ApiRenderer {...cell} />}
-      </Div>
+      {cell.type && (
+        <Div css={{ m: '$2' }}>
+          {cell.type === 'PTY' && <PtyRenderer {...cell} />}
+          {cell.type === 'API' && <ApiRenderer {...cell} />}
+        </Div>
+      )}
     </Div>
   )
 }
 
 export default Cell
 
-const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
+const ApiRenderer: React.FC<CellTypeWithFocused> = ({
+  id,
+  currentDir,
+  input,
+}) => {
   const dispatch = useStore(state => state.dispatch)
   const [output, setOutput] = useState('')
 
@@ -80,7 +85,12 @@ const ApiRenderer: React.FC<CellType> = ({ id, currentDir, input }) => {
   }
 }
 
-const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input, status }) => {
+const PtyRenderer: React.FC<CellTypeWithFocused> = ({
+  id,
+  currentDir,
+  focused,
+  status,
+}) => {
   const ref = useRef<HTMLDivElement>(null)
   const terminalRef = useRef<Terminal | null>(null)
 
@@ -90,12 +100,7 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input, status }) => {
     let term = new Terminal({
       cursorStyle: 'block',
       fontFamily: theme.fonts.$mono,
-      theme: {
-        foreground: theme.colors.$primaryTextColor,
-        background: theme.colors.$tileBackgroundColor,
-        selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
-        cursor: theme.colors.$accentColor,
-      },
+      theme: getTerminalTheme(),
     })
 
     // todo: https://xtermjs.org/docs/guides/flowcontrol/
@@ -147,6 +152,10 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input, status }) => {
     }
   }, [status])
 
+  useEffect(() => {
+    terminalRef.current?.setOption('theme', getTerminalTheme(focused))
+  }, [focused])
+
   useListener(
     `data-${id}`,
     (message: ServerDataMessage) => {
@@ -176,3 +185,12 @@ const PtyRenderer: React.FC<CellType> = ({ id, currentDir, input, status }) => {
     />
   )
 }
+
+const getTerminalTheme = (focused = false) => ({
+  background: focused
+    ? theme.colors.$focusedBackgroundColor
+    : theme.colors.$backgroundColor,
+  foreground: theme.colors.$primaryTextColor,
+  selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
+  cursor: theme.colors.$accentColor,
+})

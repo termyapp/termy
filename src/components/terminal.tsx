@@ -3,7 +3,7 @@ import { useKey } from 'react-use'
 import { styled } from '../stitches.config'
 import useStore from '../store'
 import Cell from './cell'
-import { Grid, Text, Tile } from './shared'
+import { Grid, Text, Card } from './shared'
 
 const Terminal: React.FC = () => {
   const cells = useStore(state => state.cells)
@@ -27,12 +27,12 @@ const Terminal: React.FC = () => {
       }}
     >
       {cells.map(cell => (
-        <CellTile
+        <CellCard
           key={cell.id}
           state={focused === cell.id ? 'focused' : 'default'}
         >
           <Cell {...cell} focused={focused === cell.id} />
-        </CellTile>
+        </CellCard>
       ))}
       <Text
         css={{
@@ -48,15 +48,16 @@ const Terminal: React.FC = () => {
   )
 }
 
-const CellTile = styled(Tile, {
+const CellCard = styled(Card, {
   variants: {
     state: {
       default: {
-        border: '3px solid transparent',
+        border: '1px solid transparent',
         color: '$secondaryTextColor',
       },
       focused: {
-        border: '3px solid $blue500',
+        border: '1px solid $accentColor',
+        backgroundColor: '$focusedBackgroundColor',
       },
     },
   },

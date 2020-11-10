@@ -11,7 +11,7 @@ import {
 } from 'slate-react'
 import { formatDistanceToNow } from 'date-fns'
 import { CellTypeWithFocused, FrontendMessage, Suggestion } from '../../types'
-import { formatCurrentDir, ipc } from '../lib'
+import { formatCurrentDir, ipc, theme } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
 import { Div, Span } from './shared'
@@ -190,10 +190,11 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
     <Div
       ref={promptRef}
       css={{
-        boxShadow: '-3px -3px 5px #fff, 3px 3px 4px #9ea0a8',
-        borderRadius: '$md',
         p: '$2',
         position: 'relative',
+        fontWeight: '$semibold',
+        letterSpacing: '$tight',
+        fontSize: '$lg',
       }}
     >
       <Slate
@@ -240,7 +241,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
                 zIndex: 1,
                 display: 'flex',
                 flexDirection: direction,
-                backgroundColor: '$white',
+                backgroundColor: theme.colors.$backgroundColor,
                 borderRadius: '$md',
                 boxShadow: '$3xl',
                 maxHeight: '80vh',
@@ -280,8 +281,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
 }
 
 const SuggestionItem = styled(Div, {
-  py: '0.35rem',
-  px: '$2',
+  p: '$2',
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'nowrap',
