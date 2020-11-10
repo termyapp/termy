@@ -122,9 +122,9 @@ export const theme = {
   },
   fonts: {
     $sans:
-      '"Helvetica", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+      'Inter, "Helvetica", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
     $mono:
-      '"Courier New", Courier, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
+      '"Source Code Pro", "Courier New", Courier, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
     $serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
   },
   space: {
