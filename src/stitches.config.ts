@@ -8,7 +8,7 @@ export const lightTheme = {
 
     $primaryTextColor: baseTheme.colors.$black,
     $secondaryTextColor: baseTheme.colors.$gray700,
-    $backgroundColor: '#eee',
+    $backgroundColor: '#f7fafc',
 
     $accentColor: baseTheme.colors.$black,
     $caretColor: baseTheme.colors.$teal500,
@@ -27,7 +27,8 @@ export const darkTheme = {
     $backgroundColor: baseTheme.colors.$black,
 
     $accentColor: baseTheme.colors.$gray400,
-    $selectionColor: baseTheme.colors.$pink400,
+    $caretColor: '#f42069',
+    $selectionColor: '#f42069',
     $focusedBackgroundColor: '#111',
   },
 }

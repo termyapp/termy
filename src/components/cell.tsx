@@ -93,7 +93,7 @@ const PtyRenderer: React.FC<CellTypeWithFocused> = ({
         : theme.colors.$backgroundColor,
       foreground: theme.colors.$primaryTextColor,
       selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
-      cursor: theme.colors.$accentColor,
+      cursor: theme.colors.$caretColor,
     }),
     [focused, theme],
   )

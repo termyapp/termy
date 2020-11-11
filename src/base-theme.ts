@@ -5,10 +5,10 @@
 
 export default {
   colors: {
+    // Tailwind palette: https://tailwindcss.com/docs/customizing-colors#default-color-palette
     $black: '#000000',
     $white: '#ffffff',
 
-    // Tailwind palette: https://tailwindcss.com/docs/customizing-colors#default-color-palette
     $gray100: '#f7fafc',
     $gray200: '#edf2f7',
     $gray300: '#e2e8f0',
