@@ -14,6 +14,9 @@ export const lightTheme = {
     $caretColor: baseTheme.colors.$teal500,
     $selectionColor: baseTheme.colors.$teal200,
     $focusedBackgroundColor: baseTheme.colors.$white,
+
+    $currentDirColor: baseTheme.colors.$blue900,
+    $currentDirBackgroundColor: baseTheme.colors.$blue100,
   },
 }
 
@@ -29,7 +32,10 @@ export const darkTheme = {
     $accentColor: baseTheme.colors.$gray400,
     $caretColor: '#f42069',
     $selectionColor: '#f42069',
-    $focusedBackgroundColor: '#111',
+    $focusedBackgroundColor: '#222',
+
+    $currentDirColor: baseTheme.colors.$blue100,
+    $currentDirBackgroundColor: '#323555',
   },
 }
 

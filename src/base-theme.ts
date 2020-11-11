@@ -19,6 +19,16 @@ export default {
     $gray800: '#2d3748',
     $gray900: '#1a202c',
 
+    $blue100: '#ebf8ff',
+    $blue200: '#bee3f8',
+    $blue300: '#90cdf4',
+    $blue400: '#63b3ed',
+    $blue500: '#4299e1',
+    $blue600: '#3182ce',
+    $blue700: '#2b6cb0',
+    $blue800: '#2c5282',
+    $blue900: '#2a4365',
+
     $red100: '#fff5f5',
     $red200: '#fed7d7',
     $red300: '#feb2b2',
@@ -68,16 +78,6 @@ export default {
     $teal700: '#2c7a7b',
     $teal800: '#285e61',
     $teal900: '#234e52',
-
-    $blue100: '#ebf8ff',
-    $blue200: '#bee3f8',
-    $blue300: '#90cdf4',
-    $blue400: '#63b3ed',
-    $blue500: '#4299e1',
-    $blue600: '#3182ce',
-    $blue700: '#2b6cb0',
-    $blue800: '#2c5282',
-    $blue900: '#2a4365',
 
     $indigo100: '#ebf4ff',
     $indigo200: '#c3dafe',

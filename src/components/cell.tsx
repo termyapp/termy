@@ -7,9 +7,10 @@ import {
   ServerDataMessage,
   ServerStatusMessage,
 } from '../../types'
-import { ipc, useListener } from '../lib'
+import { formatCurrentDir, ipc, useListener } from '../lib'
+import { styled } from '../stitches.config'
 import useStore from '../store'
-import Prompt from './prompt'
+import Input from './input'
 import { Div } from './shared'
 
 const Cell: React.FC<CellTypeWithFocused> = cell => {
@@ -32,7 +33,17 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
         dispatch({ type: 'focus', id })
       }}
     >
-      <Prompt {...cell} />
+      <Prompt
+        onClick={() => {
+          dispatch({ type: 'focus', id })
+        }}
+        newLine={cell.focused || cell.currentDir.length > 60} // todo: do better with long lines
+      >
+        <CurrentDir focused={cell.focused}>
+          {formatCurrentDir(cell.currentDir)}
+        </CurrentDir>
+        <Input {...cell} />
+      </Prompt>
       {cell.type && (
         <Div css={{ m: '$2' }}>
           {cell.type === 'PTY' && <PtyRenderer {...cell} />}
@@ -42,6 +53,47 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
     </Div>
   )
 }
+
+const Prompt = styled('div', {
+  display: 'flex',
+  cursor: 'text',
+
+  variants: {
+    newLine: {
+      false: {
+        alignItems: 'center',
+        flexDirection: 'row',
+      },
+      true: {
+        alignItems: 'flex-start',
+        flexDirection: 'column',
+      },
+    },
+  },
+})
+
+const CurrentDir = styled('div', {
+  color: '$currentDirColor',
+  py: '$1',
+  px: '$2',
+  borderRadius: '$default',
+  fontSize: '$xs',
+  textDecoration: 'underline',
+  fontFamily: '$mono',
+
+  variants: {
+    focused: {
+      false: {
+        backgroundColor: 'transparent',
+        display: 'inline-block',
+      },
+      true: {
+        backgroundColor: '$currentDirBackgroundColor',
+        display: 'block',
+      },
+    },
+  },
+})
 
 export default Cell
 
@@ -76,7 +128,9 @@ const ApiRenderer: React.FC<CellTypeWithFocused> = ({
 
   // return <List path={currentDir} />
   // default to auto renderer (markdown?)
-  return <div>{output}</div>
+  return (
+    <Div css={{ fontSize: '$sm', color: '$secondaryTextColor' }}>{output}</Div>
+  )
 }
 
 const PtyRenderer: React.FC<CellTypeWithFocused> = ({

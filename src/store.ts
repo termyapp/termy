@@ -70,8 +70,6 @@ const reducer = (state: State, action: Action) => {
         const command = action.input.split(' ')[0]
         if (command === 'theme') {
           // todo: how can I send to output here if the theme does not exist?
-          console.log('t', action.input.split(' ')[1])
-
           draft.theme = getTheme(action.input.split(' ')[1] as ThemeMode)
           break
         }

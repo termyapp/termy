@@ -5,13 +5,13 @@ import { createEditor, Editor, Node, Range, Transforms } from 'slate'
 import { withHistory } from 'slate-history'
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react'
 import { CellTypeWithFocused, FrontendMessage, Suggestion } from '../../types'
-import { formatCurrentDir, ipc } from '../lib'
+import { ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
 import { Div } from './shared'
 import { Dir } from './svg'
 
-const Prompt: React.FC<CellTypeWithFocused> = ({
+const Input: React.FC<CellTypeWithFocused> = ({
   id,
   currentDir,
   value,
@@ -22,7 +22,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
 
   const suggestionRef = useRef<HTMLDivElement>(null)
-  const promptRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLDivElement>(null)
 
   const [target, setTarget] = useState<undefined | null | Range>(null) // undefined to hide after insertion
   const [index, setIndex] = useState(0)
@@ -59,20 +59,18 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
       target &&
       suggestions.length > 0 &&
       suggestionRef.current &&
-      promptRef.current
+      inputRef.current
     ) {
       const suggestionElement = suggestionRef.current
-      const promptElement = promptRef.current
+      const inputElement = inputRef.current
       const domRange = ReactEditor.toDOMRange(editor, target)
       const rect = domRange.getBoundingClientRect()
 
       // calculate available top/bottom space of the element
       const topSpace =
-        promptElement.offsetTop -
-        window.pageYOffset +
-        promptElement.offsetHeight
+        inputElement.offsetTop - window.pageYOffset + inputElement.offsetHeight
       const bottomSpace =
-        window.pageYOffset + window.innerHeight - promptElement.offsetTop
+        window.pageYOffset + window.innerHeight - inputElement.offsetTop
 
       // calculate position of the suggestions box
       const padding = 5
@@ -89,7 +87,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
       // update values
       suggestionElement.style.top = `${top}px`
       suggestionElement.style.left = `${
-        promptElement.offsetLeft + window.pageXOffset
+        inputElement.offsetLeft + window.pageXOffset
       }px`
     }
   }, [editor, index, suggestions.length, target])
@@ -161,7 +159,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
 
   return (
     <Div
-      ref={promptRef}
+      ref={inputRef}
       css={{
         p: '$2',
         position: 'relative',
@@ -203,7 +201,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
         }}
       >
         <Editable
-          placeholder={formatCurrentDir(currentDir)}
+          placeholder=">"
           onKeyDown={onKeyDown}
           // renderElement={renderElement}
         />
@@ -384,4 +382,4 @@ const typedCliPrototype = (input: string): Suggestion[] => {
 //   return editor
 // }
 
-export default Prompt
+export default Input
