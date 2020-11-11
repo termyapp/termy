@@ -36,7 +36,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
   ])
 
   // const renderElement = useCallback(props => <Element {...props} />, [])
-
+  console.log(suggestions)
   // focus input if cell becomes focused
   useEffect(() => {
     if (focused) {
@@ -151,13 +151,6 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
       } else if (event.key === 'Enter') {
         // run cell
         event.preventDefault() // don't allow multiline input
-        const all = Editor.range(
-          editor,
-          Editor.start(editor, []),
-          Editor.end(editor, []),
-        )
-        Transforms.select(editor, all)
-        Transforms.insertText(editor, suggestions[index].command)
 
         if (!input) return
         dispatch({ type: 'run', id, input })

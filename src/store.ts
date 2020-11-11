@@ -18,7 +18,6 @@ type Action =
   | { type: 'focus'; id: string }
   | { type: 'focus-up' }
   | { type: 'focus-down' }
-  | { type: 'set-theme'; theme: ThemeMode }
 
 const getDefaultCell = (): CellType => {
   return {
