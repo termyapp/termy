@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
+import Header from './components/header'
 import Terminal from './components/terminal'
 import { css } from './stitches.config'
 import useStore from './store'
@@ -27,7 +28,12 @@ const App: React.FC = () => {
     document.body.className = themeClass
   }, [themeClass])
 
-  return <Terminal />
+  return (
+    <>
+      <Header />
+      <Terminal />
+    </>
+  )
 }
 
 export default App

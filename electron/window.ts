@@ -13,8 +13,9 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     minWidth: 370,
     minHeight: 190,
     title: 'Termy',
-    acceptFirstMouse: true,
     titleBarStyle: 'hiddenInset',
+    frame: false,
+    acceptFirstMouse: true,
     webPreferences: {
       preload: path.resolve(
         app.getAppPath(),

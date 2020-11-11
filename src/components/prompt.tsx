@@ -36,7 +36,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
   ])
 
   // const renderElement = useCallback(props => <Element {...props} />, [])
-  console.log(suggestions)
+
   // focus input if cell becomes focused
   useEffect(() => {
     if (focused) {

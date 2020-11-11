@@ -19,10 +19,7 @@ const Terminal: React.FC = () => {
   return (
     <Grid
       css={{
-        mt: '1.8rem', // todo: avoid traffic lights colliding
-        // minHeight: 'calc(100vh - 1.6rem - 0.5rem * 2)',
         p: '$1',
-
         rowGap: '$1',
       }}
     >
