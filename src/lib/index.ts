@@ -1,3 +1,4 @@
+import { ThemeMode } from './../../types'
 import { darkTheme, lightTheme } from './../stitches.config'
 import { ipc } from './ipc'
 
@@ -28,7 +29,8 @@ export const getLanguage = (path: string): string | undefined => {
 // export const isDev = process.env.NODE_ENV === 'development'
 export const isDev = true
 
-export const theme = isDev ? lightTheme : darkTheme
+export const getTheme = (mode: ThemeMode) =>
+  mode === '#fff' ? lightTheme : darkTheme
 
 export * from './ipc'
 export * from './listener'

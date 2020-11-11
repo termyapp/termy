@@ -3,7 +3,7 @@ import { useKey } from 'react-use'
 import { styled } from '../stitches.config'
 import useStore from '../store'
 import Cell from './cell'
-import { Grid, Text, Card } from './shared'
+import { Card, Grid, Text } from './shared'
 
 const Terminal: React.FC = () => {
   const cells = useStore(state => state.cells)
@@ -19,7 +19,7 @@ const Terminal: React.FC = () => {
   return (
     <Grid
       css={{
-        mt: '1.6rem', // todo: avoid traffic lights colliding
+        mt: '1.8rem', // todo: avoid traffic lights colliding
         // minHeight: 'calc(100vh - 1.6rem - 0.5rem * 2)',
         p: '$1',
 

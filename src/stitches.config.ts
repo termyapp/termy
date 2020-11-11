@@ -11,6 +11,7 @@ export const lightTheme = {
     $backgroundColor: '#eee',
 
     $accentColor: baseTheme.colors.$black,
+    $caretColor: baseTheme.colors.$teal500,
     $selectionColor: baseTheme.colors.$teal200,
     $focusedBackgroundColor: baseTheme.colors.$white,
   },
@@ -26,7 +27,7 @@ export const darkTheme = {
     $backgroundColor: baseTheme.colors.$black,
 
     $accentColor: baseTheme.colors.$gray400,
-    $selectionColor: baseTheme.colors.$purple400,
+    $selectionColor: baseTheme.colors.$pink400,
     $focusedBackgroundColor: '#111',
   },
 }
@@ -103,5 +104,3 @@ export const { styled, css } = createStyled({
     }),
   },
 })
-
-export const darkThemeClass = css.theme(darkTheme)

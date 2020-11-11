@@ -1,10 +1,11 @@
-import { devtools, redux } from 'zustand/middleware'
 import produce from 'immer'
 import { v4 } from 'uuid'
 import create, { UseStore } from 'zustand'
-import { FrontendMessage } from '../types'
+import { devtools, redux } from 'zustand/middleware'
+import { FrontendMessage, ThemeMode } from '../types'
 import { CellType } from './../types'
-import { api, ipc } from './lib'
+import { api, getTheme, ipc, isDev } from './lib'
+import { darkTheme, lightTheme } from './stitches.config'
 
 type State = typeof initialState
 
@@ -13,23 +14,34 @@ type Action =
   | { type: 'clear' }
   | { type: 'new' }
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
-  | { type: 'run'; id: string }
+  | { type: 'run'; id: string; input: string }
   | { type: 'focus'; id: string }
   | { type: 'focus-up' }
   | { type: 'focus-down' }
+  | { type: 'set-theme'; theme: ThemeMode }
 
 const getDefaultCell = (): CellType => {
   return {
     id: v4(),
     currentDir: api('home'),
-    input: '',
+    value: [
+      {
+        type: 'paragraph',
+        children: [{ text: '' }],
+      },
+    ],
   }
 }
 
 const initialState = (() => {
+  // todo: init cell input with `help` or `guide` on first launch
   const cell = getDefaultCell()
   const cell2 = getDefaultCell()
-  return { cells: [cell, cell2], focused: cell.id }
+  return {
+    cells: [cell, cell2],
+    focused: cell.id,
+    theme: isDev ? lightTheme : darkTheme,
+  }
 })()
 
 const reducer = (state: State, action: Action) => {
@@ -56,11 +68,24 @@ const reducer = (state: State, action: Action) => {
         const cell = draft.cells.find(c => c.id === action.id)
         if (!cell) return
 
+        const command = action.input.split(' ')[0]
+        if (command === 'theme') {
+          // todo: how can I send to output here if the theme does not exist?
+          console.log('t', action.input.split(' ')[1])
+
+          draft.theme = getTheme(action.input.split(' ')[1] as ThemeMode)
+          break
+        }
+
         const message: FrontendMessage = {
           type: 'run-cell',
           // electron complains if we include a draft based
           // object with additional properties on it
-          data: { id: cell.id, input: cell.input, currentDir: cell.currentDir },
+          data: {
+            id: cell.id,
+            input: action.input,
+            currentDir: cell.currentDir,
+          },
         }
         console.log('running', message.data.input)
 

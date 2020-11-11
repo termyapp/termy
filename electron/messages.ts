@@ -15,6 +15,7 @@ export default () => {
 
 const runningCells: { [key: string]: any } = {}
 
+// todo: https://github.com/napi-rs/napi-rs/issues/246#issuecomment-725270059
 const handleMessage = (
   event: Electron.IpcMainEvent,
   message: FrontendMessage,

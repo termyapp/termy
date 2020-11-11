@@ -1,14 +1,13 @@
-import React, { useMemo } from 'react'
-import useDarkMode from 'use-dark-mode'
+import React, { useEffect, useMemo } from 'react'
 import Terminal from './components/terminal'
-import { isDev } from './lib'
-import { css, darkThemeClass } from './stitches.config'
+import { css } from './stitches.config'
+import useStore from './store'
 
 export const globalStyles = css.global({
   body: {
     color: '$primaryTextColor',
     backgroundColor: '$backgroundColor',
-    caretColor: '$accentColor',
+    caretColor: '$caretColor',
     fontFamily: '$sans',
 
     '*': {
@@ -21,11 +20,12 @@ export const globalStyles = css.global({
 
 const App: React.FC = () => {
   useMemo(() => globalStyles(), [])
+  const theme = useStore(state => state.theme)
+  const themeClass = useMemo(() => css.theme(theme), [theme])
 
-  // todo: >theme #000 | #fff
-  const darkMode = useDarkMode(!isDev, {
-    classNameDark: darkThemeClass,
-  })
+  useEffect(() => {
+    document.body.className = themeClass
+  }, [themeClass])
 
   return <Terminal />
 }

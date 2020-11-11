@@ -1,67 +1,39 @@
+import { formatDistanceToNow } from 'date-fns'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Portal } from 'react-portal'
 import { createEditor, Editor, Node, Range, Transforms } from 'slate'
 import { withHistory } from 'slate-history'
-import {
-  Editable,
-  ReactEditor,
-  RenderElementProps,
-  Slate,
-  withReact,
-} from 'slate-react'
-import { formatDistanceToNow } from 'date-fns'
+import { Editable, ReactEditor, Slate, withReact } from 'slate-react'
 import { CellTypeWithFocused, FrontendMessage, Suggestion } from '../../types'
-import { formatCurrentDir, ipc, theme } from '../lib'
+import { formatCurrentDir, ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
-import { Div, Span } from './shared'
+import { Div } from './shared'
 import { Dir } from './svg'
-
-const getSuggestions = async (
-  input: string,
-  currentDir: string,
-): Promise<Suggestion[] | null> => {
-  try {
-    if (input.length < 1) return null
-
-    const message: FrontendMessage = {
-      type: 'get-suggestions',
-      data: { input, currentDir },
-    }
-
-    const suggestions: Suggestion[] = ipc.sendSync('message', message)
-    console.log('suggestions', suggestions)
-    return suggestions
-  } catch (error) {
-    console.error('Error while getting files: ', error)
-    return null
-  }
-}
 
 const Prompt: React.FC<CellTypeWithFocused> = ({
   id,
   currentDir,
-  input,
+  value,
   focused,
 }) => {
   const dispatch = useStore(state => state.dispatch)
+  const theme = useStore(state => state.theme)
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
-  const [value, setValue] = useState<Node[]>([
-    {
-      type: 'paragraph',
-      children: [{ text: '' }],
-    },
-  ])
 
   const suggestionRef = useRef<HTMLDivElement>(null)
   const promptRef = useRef<HTMLDivElement>(null)
 
-  const [target, setTarget] = useState<null | Range>(null)
+  const [target, setTarget] = useState<undefined | null | Range>(null) // undefined to hide after insertion
   const [index, setIndex] = useState(0)
   const [suggestions, setSuggestions] = useState<Suggestion[]>([])
   const [direction, setDirection] = useState<'column' | 'column-reverse'>(
     'column',
   )
+
+  const input = useMemo(() => value.map(n => Node.string(n)).join('\n'), [
+    value,
+  ])
 
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
@@ -77,13 +49,9 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
 
   // update suggestions
   useEffect(() => {
-    ;(async () => {
-      const newSuggestions = await getSuggestions(input, currentDir)
-      if (newSuggestions) {
-        setSuggestions(newSuggestions)
-      }
-    })()
-  }, [input, currentDir])
+    const newSuggestions = getSuggestions(input, currentDir)
+    if (newSuggestions) setSuggestions(target ? newSuggestions : [])
+  }, [input, currentDir, target])
 
   // update suggestions box position
   useEffect(() => {
@@ -161,26 +129,38 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
             setIndex(nextIndex)
             break
           }
-          case 'Tab':
           case 'Enter':
+          case 'Tab':
             // suggestion enter
             event.preventDefault()
-            Transforms.select(editor, target)
-            Transforms.insertText(editor, suggestions[index].command + ' ')
+            setTarget(undefined)
+            const all = Editor.range(
+              editor,
+              Editor.start(editor, []),
+              Editor.end(editor, []),
+            )
             // insertSuggestion(editor, suggestions[index].command)
-            setTarget(null)
+            Transforms.select(editor, all)
+            Transforms.insertText(editor, suggestions[index].command)
             break
           case 'Escape':
             event.preventDefault()
-            setTarget(null)
+            setTarget(undefined)
             break
         }
       } else if (event.key === 'Enter') {
         // run cell
         event.preventDefault() // don't allow multiline input
-        if (!input) return
+        const all = Editor.range(
+          editor,
+          Editor.start(editor, []),
+          Editor.end(editor, []),
+        )
+        Transforms.select(editor, all)
+        Transforms.insertText(editor, suggestions[index].command)
 
-        dispatch({ type: 'run', id })
+        if (!input) return
+        dispatch({ type: 'run', id, input })
       }
     },
     [target, suggestions, index, editor, id, input],
@@ -192,26 +172,28 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
       css={{
         p: '$2',
         position: 'relative',
-        fontWeight: '$semibold',
+        fontWeight: '$medium',
         letterSpacing: '$tight',
-        fontSize: '$lg',
+        fontSize: '$base',
       }}
     >
       <Slate
         editor={editor}
         value={value}
-        onChange={newValue => {
-          console.log('val', newValue)
-          setValue(newValue)
+        onChange={value => {
+          // console.log('val', value)
           dispatch({
             type: 'set-cell',
             id,
-            cell: { input: newValue.map(n => Node.string(n)).join('\n') },
+            cell: { value },
           })
-          const { selection } = editor
 
           // setting target (needed for suggestions)
-          if (selection && Range.isCollapsed(selection)) {
+          const { selection } = editor
+          if (typeof target == 'undefined') {
+            // very hacky :/
+            setTarget(null)
+          } else if (selection && Range.isCollapsed(selection)) {
             const [start] = Range.edges(selection)
             const before = Editor.before(editor, start, { unit: 'word' })
             const beforeRange = before && Editor.range(editor, before, start)
@@ -242,7 +224,7 @@ const Prompt: React.FC<CellTypeWithFocused> = ({
                 display: 'flex',
                 flexDirection: direction,
                 backgroundColor: theme.colors.$backgroundColor,
-                borderRadius: '$md',
+                borderRadius: '$default',
                 boxShadow: '$3xl',
                 maxHeight: '80vh',
 
@@ -295,14 +277,9 @@ const SuggestionItem = styled(Div, {
   variants: {
     type: {
       dir: {
-        backgroundColor: '$blue100',
-        color: '$blue600',
         fontWeight: '$normal',
       },
-      historyExternal: {
-        backgroundColor: '$green100',
-        color: '$green600',
-      },
+      historyExternal: {},
     },
     state: {
       focused: {
@@ -313,6 +290,56 @@ const SuggestionItem = styled(Div, {
     },
   },
 })
+
+// todo: use tokio to make this async
+const getSuggestions = (input: string, currentDir: string) => {
+  if (input.length < 1) return null
+
+  const message: FrontendMessage = {
+    type: 'get-suggestions',
+    data: { input, currentDir },
+  }
+
+  const suggestions: Suggestion[] = [
+    ...ipc.sendSync('message', message),
+    ...typedCliPrototype(input),
+  ]
+
+  return suggestions
+}
+
+const themeCommand = {
+  name: 'theme',
+  description: "Change Termy's theme",
+  subCommands: [
+    {
+      name: '#fff',
+      description: '🌞 Light theme',
+    },
+    {
+      name: '#000',
+      description: '🌚 Dark theme',
+    },
+  ],
+}
+
+const typedCliPrototype = (input: string): Suggestion[] => {
+  let args = input.split(' ')
+  const command = args.shift()
+  switch (command) {
+    case 'theme':
+      return themeCommand.subCommands
+        .filter(({ name }) => name.includes(args.join(' ')))
+        .map(c => ({
+          score: 100,
+          command: command + ' ' + c.name,
+          display: c.name,
+          suggestionType: 'dir',
+        }))
+    default:
+      return []
+  }
+}
 
 // const Element = (props: RenderElementProps) => {
 //   const { attributes, children, element } = props

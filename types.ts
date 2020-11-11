@@ -1,9 +1,13 @@
+import { Node } from 'slate'
+
 type Status = 'running' | 'exited' | 'error'
 type OutputType = 'PTY' | 'API'
 
+export type ThemeMode = '#fff' | '#000'
+
 export type CellType = {
   id: string
-  input: string
+  value: Node[]
   currentDir: string
   status?: Status // undefined is default (before running anything)
   type?: OutputType
@@ -21,7 +25,7 @@ export type FrontendMessage =
     }
   | {
       type: 'run-cell'
-      data: CellType
+      data: { id: string; input: string; currentDir: string }
     }
   | { type: 'send-stdin'; data: { id: string; key: string } }
 

@@ -1,16 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import {
-  CellType,
   CellTypeWithFocused,
   FrontendMessage,
   ServerDataMessage,
   ServerStatusMessage,
 } from '../../types'
-import { theme, ipc, useListener } from '../lib'
+import { ipc, useListener } from '../lib'
 import useStore from '../store'
-import List from './custom/list'
 import Prompt from './prompt'
 import { Div } from './shared'
 
@@ -50,7 +48,7 @@ export default Cell
 const ApiRenderer: React.FC<CellTypeWithFocused> = ({
   id,
   currentDir,
-  input,
+  // todo: last run command field: string,
 }) => {
   const dispatch = useStore(state => state.dispatch)
   const [output, setOutput] = useState('')
@@ -58,6 +56,7 @@ const ApiRenderer: React.FC<CellTypeWithFocused> = ({
   // todo: sometimes we miss data because this approach is too slow
   // maybe just go the ugly but simple way of doing this
   // call handlers from Cell using child's ref :)))
+  // update: they probably won't be initialized either, so this won't work
   useListener(
     `data-${id}`,
     (message: ServerDataMessage) => {
@@ -75,14 +74,9 @@ const ApiRenderer: React.FC<CellTypeWithFocused> = ({
     [],
   )
 
-  switch (input) {
-    // check if custom renderer is available
-    case 'list':
-      return <List path={currentDir} />
-    default:
-      // default to auto renderer (markdown?)
-      return <div>{output}</div>
-  }
+  // return <List path={currentDir} />
+  // default to auto renderer (markdown?)
+  return <div>{output}</div>
 }
 
 const PtyRenderer: React.FC<CellTypeWithFocused> = ({
@@ -91,6 +85,18 @@ const PtyRenderer: React.FC<CellTypeWithFocused> = ({
   focused,
   status,
 }) => {
+  const theme = useStore(state => state.theme)
+  const terminalTheme = useMemo(
+    () => ({
+      background: focused
+        ? theme.colors.$focusedBackgroundColor
+        : theme.colors.$backgroundColor,
+      foreground: theme.colors.$primaryTextColor,
+      selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
+      cursor: theme.colors.$accentColor,
+    }),
+    [focused, theme],
+  )
   const ref = useRef<HTMLDivElement>(null)
   const terminalRef = useRef<Terminal | null>(null)
 
@@ -99,8 +105,9 @@ const PtyRenderer: React.FC<CellTypeWithFocused> = ({
 
     let term = new Terminal({
       cursorStyle: 'block',
+      // @ts-ignore
       fontFamily: theme.fonts.$mono,
-      theme: getTerminalTheme(),
+      theme: terminalTheme,
     })
 
     // todo: https://xtermjs.org/docs/guides/flowcontrol/
@@ -153,8 +160,8 @@ const PtyRenderer: React.FC<CellTypeWithFocused> = ({
   }, [status])
 
   useEffect(() => {
-    terminalRef.current?.setOption('theme', getTerminalTheme(focused))
-  }, [focused])
+    terminalRef.current?.setOption('theme', terminalTheme)
+  }, [terminalTheme])
 
   useListener(
     `data-${id}`,
@@ -185,12 +192,3 @@ const PtyRenderer: React.FC<CellTypeWithFocused> = ({
     />
   )
 }
-
-const getTerminalTheme = (focused = false) => ({
-  background: focused
-    ? theme.colors.$focusedBackgroundColor
-    : theme.colors.$backgroundColor,
-  foreground: theme.colors.$primaryTextColor,
-  selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
-  cursor: theme.colors.$accentColor,
-})
