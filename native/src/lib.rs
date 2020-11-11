@@ -12,10 +12,10 @@ use napi::{
 use shell::{Cell, CellType};
 use std::thread;
 
+mod autocomplete;
 mod db;
 mod logger;
 mod shell;
-mod suggestions;
 
 register_module!(module, init); // only calling it so rust-analyzer thinks it gets called
 
@@ -52,7 +52,7 @@ fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
 
     info!("Getting suggestions for {}", input);
 
-    let suggestions = suggestions::get_suggestions(input, current_dir).unwrap();
+    let suggestions = autocomplete::get_suggestions(input, current_dir).unwrap();
 
     // needs "serde-json" feature
     ctx.env.to_js_value(&suggestions)
