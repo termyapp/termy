@@ -21,6 +21,7 @@ const Terminal: React.FC = () => {
       css={{
         p: '$1',
         rowGap: '$1',
+        overflowY: 'scroll',
       }}
     >
       {cells.map(cell => (

@@ -10,6 +10,7 @@ export const globalStyles = css.global({
     backgroundColor: '$backgroundColor',
     caretColor: '$caretColor',
     fontFamily: '$sans',
+    overflowY: 'hidden',
 
     '*': {
       '::selection': {
