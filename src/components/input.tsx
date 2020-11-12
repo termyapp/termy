@@ -4,7 +4,7 @@ import { Portal } from 'react-portal'
 import { createEditor, Editor, Node, Range, Transforms } from 'slate'
 import { withHistory } from 'slate-history'
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react'
-import { CellTypeWithFocused, FrontendMessage, Suggestion } from '../../types'
+import { CellTypeWithFocused, Message, Suggestion } from '../../types'
 import { ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
@@ -45,6 +45,8 @@ const Input: React.FC<CellTypeWithFocused> = ({
 
       // move cursor to the end
       Transforms.select(editor, Editor.end(editor, []))
+    } else {
+      setSuggestions(() => [])
     }
   }, [focused, editor])
 
@@ -163,10 +165,10 @@ const Input: React.FC<CellTypeWithFocused> = ({
     <Div
       ref={inputRef}
       css={{
-        p: '$2',
+        py: '$2',
         position: 'relative',
-        fontWeight: '$medium',
-        letterSpacing: '$tight',
+        fontWeight: '$semibold',
+        letterSpacing: '$snug',
         fontSize: '$base',
       }}
     >
@@ -201,11 +203,12 @@ const Input: React.FC<CellTypeWithFocused> = ({
                 zIndex: 1,
                 display: 'flex',
                 flexDirection: direction,
-                backgroundColor: theme.colors.$backgroundColor,
+                backgroundColor: theme.colors.$focusedBackgroundColor,
                 borderRadius: '$default',
                 boxShadow: '$3xl',
-                maxHeight: '80vh',
+                maxHeight: '60vh',
                 overflowY: 'auto',
+                border: '1px solid $accentColor',
               }}
             >
               {suggestions.map((suggestion, i) => (
@@ -248,22 +251,22 @@ const SuggestionItem = styled(Div, {
   fontSize: '$sm',
 
   '& + &': {
-    borderTop: '1px solid $gray300',
+    borderTop: '1px solid $accentColor',
   },
 
   variants: {
     type: {
-      dir: {
-        fontWeight: '$normal',
-      },
+      dir: {},
       historyExternal: {},
     },
     state: {
       focused: {
-        backgroundColor: '$blue500',
-        color: '$white',
+        backgroundColor: '$selectedSuggestionBackgroundColor',
+        color: '$selectedSuggestionColor',
       },
-      default: {},
+      default: {
+        color: '$secondaryTextColor',
+      },
     },
   },
 })
@@ -272,9 +275,10 @@ const SuggestionItem = styled(Div, {
 const getSuggestions = (input: string, currentDir: string) => {
   if (input.length < 1) return []
 
-  const message: FrontendMessage = {
+  const message: Message = {
     type: 'get-suggestions',
-    data: { input, currentDir },
+    input,
+    currentDir,
   }
 
   const suggestions: Suggestion[] = [

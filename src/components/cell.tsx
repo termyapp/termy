@@ -1,248 +1,87 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Terminal } from 'xterm'
-import { FitAddon } from 'xterm-addon-fit'
-import {
-  CellTypeWithFocused,
-  FrontendMessage,
-  ServerDataMessage,
-  ServerStatusMessage,
-} from '../../types'
-import { formatCurrentDir, ipc, useListener } from '../lib'
-import { styled } from '../stitches.config'
+import React, { useState } from 'react'
+import { CellTypeWithFocused, OutputType, Message } from '../../types'
+import { useListener, useXterm } from '../lib'
 import useStore from '../store'
-import Input from './input'
+import Prompt from './prompt'
 import { Div } from './shared'
 
 const Cell: React.FC<CellTypeWithFocused> = cell => {
-  const dispatch = useStore(state => state.dispatch)
   const { id } = cell
+  const dispatch = useStore(state => state.dispatch)
+  // api
+  const [output, setOutput] = useState('')
+  const [type, setType] = useState<OutputType>(null)
 
-  // console.log('cell', cell)
+  // pty
+  const { terminalContainerRef, terminalRef } = useXterm({ ...cell, type })
 
-  useListener(
-    `status-${id}`,
-    ({ type, status }: ServerStatusMessage) => {
-      dispatch({ type: 'set-cell', id, cell: { type, status } })
-    },
-    [],
-  )
+  useListener(`message-${id}`, (_, message) => {
+    console.log('Received', message)
+    const { output, status } = message
+    if (status) {
+      dispatch({ type: 'set-cell', id, cell: { status } })
+    }
+
+    if (output) {
+      setType(output.type)
+      if (output.type === 'api') {
+        console.log('parsing')
+
+        // handle built-in stuff
+        if (output.cd) {
+          dispatch({ type: 'set-cell', id, cell: { currentDir: output.cd } })
+        }
+
+        setOutput(output.data)
+      } else if (output.type === 'pty') {
+        if (!terminalRef.current) {
+          console.warn('Terminal not available')
+          return
+        }
+        console.log('writing chunk', output.data)
+        terminalRef.current.write(output.data)
+      }
+    }
+  })
 
   return (
     <Div
-      onFocus={() => {
-        dispatch({ type: 'focus', id })
+      onFocus={() => dispatch({ type: 'focus', id })}
+      onBlur={() => dispatch({ type: 'focus', id: null })}
+      css={{
+        p: '$2',
       }}
     >
-      <Prompt
-        onClick={() => {
-          dispatch({ type: 'focus', id })
+      <Prompt {...cell} />
+
+      <Div css={{ mt: '$2' }}>
+        <Div
+          ref={terminalContainerRef}
+          // todo: on resize, send new row, col to shell pty
+          css={{
+            width: terminalContainerRef.current?.parentElement?.clientWidth,
+            height: type === 'pty' ? 300 : 0,
+          }}
+          onFocus={() => {
+            if (cell.status === 'success' || cell.status === 'error') {
+              terminalRef.current?.blur()
+              return
+            }
+            terminalRef.current?.focus()
+          }}
+        />
+      </Div>
+      <Div
+        css={{
+          // display: type === 'api' ? 'initial' : 'none',
+          fontSize: '$sm',
+          color: '$secondaryTextColor',
         }}
-        newLine={cell.focused || cell.currentDir.length > 60} // todo: do better with long lines
       >
-        <CurrentDir focused={cell.focused}>
-          {formatCurrentDir(cell.currentDir)}
-        </CurrentDir>
-        <Input {...cell} />
-      </Prompt>
-      {cell.type && (
-        <Div css={{ m: '$2' }}>
-          {cell.type === 'PTY' && <PtyRenderer {...cell} />}
-          {cell.type === 'API' && <ApiRenderer {...cell} />}
-        </Div>
-      )}
+        {output}
+      </Div>
     </Div>
   )
 }
 
-const Prompt = styled('div', {
-  display: 'flex',
-  cursor: 'text',
-
-  variants: {
-    newLine: {
-      false: {
-        alignItems: 'center',
-        flexDirection: 'row',
-      },
-      true: {
-        alignItems: 'flex-start',
-        flexDirection: 'column',
-      },
-    },
-  },
-})
-
-const CurrentDir = styled('div', {
-  color: '$currentDirColor',
-  py: '$1',
-  px: '$2',
-  borderRadius: '$default',
-  fontSize: '$xs',
-  textDecoration: 'underline',
-  fontFamily: '$mono',
-
-  variants: {
-    focused: {
-      false: {
-        backgroundColor: 'transparent',
-        display: 'inline-block',
-      },
-      true: {
-        backgroundColor: '$currentDirBackgroundColor',
-        display: 'block',
-      },
-    },
-  },
-})
-
 export default Cell
-
-const ApiRenderer: React.FC<CellTypeWithFocused> = ({
-  id,
-  currentDir,
-  // todo: last run command field: string,
-}) => {
-  const dispatch = useStore(state => state.dispatch)
-  const [output, setOutput] = useState('')
-
-  // todo: sometimes we miss data because this approach is too slow
-  // maybe just go the ugly but simple way of doing this
-  // call handlers from Cell using child's ref :)))
-  // update: they probably won't be initialized either, so this won't work
-  useListener(
-    `data-${id}`,
-    (message: ServerDataMessage) => {
-      console.log('parsing')
-
-      const data = JSON.parse(message.data)
-
-      // handle built-in stuff
-      if (data.cd) {
-        dispatch({ type: 'set-cell', id, cell: { currentDir: data.cd } })
-      }
-
-      setOutput(data.output)
-    },
-    [],
-  )
-
-  // return <List path={currentDir} />
-  // default to auto renderer (markdown?)
-  return (
-    <Div css={{ fontSize: '$sm', color: '$secondaryTextColor' }}>{output}</Div>
-  )
-}
-
-const PtyRenderer: React.FC<CellTypeWithFocused> = ({
-  id,
-  currentDir,
-  focused,
-  status,
-}) => {
-  const theme = useStore(state => state.theme)
-  const terminalTheme = useMemo(
-    () => ({
-      background: focused
-        ? theme.colors.$focusedBackgroundColor
-        : theme.colors.$backgroundColor,
-      foreground: theme.colors.$primaryTextColor,
-      selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
-      cursor: theme.colors.$caretColor,
-    }),
-    [focused, theme],
-  )
-  const ref = useRef<HTMLDivElement>(null)
-  const terminalRef = useRef<Terminal | null>(null)
-
-  useEffect(() => {
-    if (!ref.current) return
-
-    let term = new Terminal({
-      cursorStyle: 'block',
-      // @ts-ignore
-      fontFamily: theme.fonts.$mono,
-      theme: terminalTheme,
-    })
-
-    // todo: https://xtermjs.org/docs/guides/flowcontrol/
-    term.onKey(({ key, domEvent }) => {
-      if (domEvent.ctrlKey && domEvent.key === 'Tab') {
-        terminalRef.current?.blur()
-      } else if (!term.getOption('disableStdin')) {
-        console.log('key', key.charCodeAt(0))
-
-        const message: FrontendMessage = {
-          type: 'send-stdin',
-          data: { id, key },
-        }
-        ipc.send('message', message)
-      }
-    })
-
-    // fit
-    const fitAddon = new FitAddon()
-    term.loadAddon(fitAddon)
-    if (ref.current)
-      // todo: refactor this and update on resize
-      ref.current.style.width = ref.current?.parentElement?.clientWidth + 'px'
-    term.open(ref.current)
-    fitAddon.fit()
-
-    terminalRef.current = term
-
-    // messes up focus
-    const xtermFocusElement = ref.current?.children[0] as HTMLDivElement
-    if (xtermFocusElement) {
-      xtermFocusElement.tabIndex = -1
-    }
-  }, [currentDir, id])
-
-  useEffect(() => {
-    // todo: reset when re running a cell
-    console.log('status', status)
-
-    // over
-    if (status === 'exited' || status === 'error') {
-      // hide cursor
-      terminalRef.current?.write('\u001B[?25l')
-
-      // disable stdin
-      terminalRef.current?.setOption('disableStdin', true)
-
-      terminalRef.current?.blur()
-    }
-  }, [status])
-
-  useEffect(() => {
-    terminalRef.current?.setOption('theme', terminalTheme)
-  }, [terminalTheme])
-
-  useListener(
-    `data-${id}`,
-    (message: ServerDataMessage) => {
-      if (!terminalRef.current) {
-        console.warn('Terminal not available')
-        return
-      }
-
-      console.log('writing chunk', message.data)
-      terminalRef.current.write(message.data)
-    },
-    [],
-  )
-
-  return (
-    <Div
-      ref={ref}
-      // todo: on resize, send new row, col to shell pty
-      css={{ width: ref.current?.parentElement?.clientWidth, height: 300 }}
-      onFocus={e => {
-        if (status === 'exited' || status === 'error') {
-          terminalRef.current?.blur()
-          return
-        }
-        terminalRef.current?.focus()
-      }}
-    />
-  )
-}

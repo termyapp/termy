@@ -29,8 +29,9 @@ export const getLanguage = (path: string): string | undefined => {
 // export const isDev = process.env.NODE_ENV === 'development'
 export const isDev = true
 
-export const getTheme = (mode: ThemeMode) =>
-  mode === '#fff' ? lightTheme : darkTheme
+export const getTheme = (mode?: ThemeMode) =>
+  mode === '#000' ? darkTheme : lightTheme
 
 export * from './ipc'
 export * from './listener'
+export * from './xterm'

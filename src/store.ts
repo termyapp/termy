@@ -2,10 +2,9 @@ import produce from 'immer'
 import { v4 } from 'uuid'
 import create, { UseStore } from 'zustand'
 import { devtools, redux } from 'zustand/middleware'
-import { FrontendMessage, ThemeMode } from '../types'
+import { Message, ThemeMode } from '../types'
 import { CellType } from './../types'
-import { api, getTheme, ipc, isDev } from './lib'
-import { darkTheme, lightTheme } from './stitches.config'
+import { api, getTheme, ipc } from './lib'
 
 type State = typeof initialState
 
@@ -39,7 +38,7 @@ const initialState = (() => {
   return {
     cells: [cell, cell2],
     focused: cell.id as string | null,
-    theme: isDev ? lightTheme : darkTheme,
+    theme: getTheme(),
   }
 })()
 
@@ -74,17 +73,16 @@ const reducer = (state: State, action: Action) => {
           break
         }
 
-        const message: FrontendMessage = {
+        const message: Message = {
           type: 'run-cell',
           // electron complains if we include a draft based
           // object with additional properties on it
-          data: {
-            id: cell.id,
-            input: action.input,
-            currentDir: cell.currentDir,
-          },
+
+          id: cell.id,
+          input: action.input,
+          currentDir: cell.currentDir,
         }
-        console.log('running', message.data.input)
+        console.log('running', message.input)
 
         ipc.send('message', message)
         break
