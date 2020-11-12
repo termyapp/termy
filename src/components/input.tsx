@@ -24,16 +24,17 @@ const Input: React.FC<CellTypeWithFocused> = ({
   const suggestionRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLDivElement>(null)
 
-  const [target, setTarget] = useState<undefined | null | Range>(null) // undefined to hide after insertion
-  const [index, setIndex] = useState(0)
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
-  const [direction, setDirection] = useState<'column' | 'column-reverse'>(
-    'column',
-  )
-
   const input = useMemo(() => value.map(n => Node.string(n)).join('\n'), [
     value,
   ])
+
+  const [suggestions, setSuggestions] = useState<Suggestion[] | null>(
+    getSuggestions(input, currentDir),
+  )
+  const [index, setIndex] = useState(0)
+  const [direction, setDirection] = useState<'column' | 'column-reverse'>(
+    'column',
+  )
 
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
@@ -45,57 +46,57 @@ const Input: React.FC<CellTypeWithFocused> = ({
       // move cursor to the end
       Transforms.select(editor, Editor.end(editor, []))
     }
-  }, [focused])
+  }, [focused, editor])
 
   // update suggestions
   useEffect(() => {
-    const newSuggestions = getSuggestions(input, currentDir)
-    if (newSuggestions) setSuggestions(target ? newSuggestions : [])
-  }, [input, currentDir, target])
+    setSuggestions(suggestions =>
+      // null is a *flag* that is set after inserting
+      // a suggestion to avoid showing a the suggestion box
+      suggestions === null ? [] : getSuggestions(input, currentDir),
+    )
+  }, [input, currentDir])
 
-  // todo: new layout breaks this
   // update suggestions box position
   useEffect(() => {
-    if (
-      target &&
-      suggestions.length > 0 &&
-      suggestionRef.current &&
-      inputRef.current
-    ) {
+    const { selection } = editor
+    const scroller = document.getElementById('scroller') as HTMLDivElement
+    if (suggestionRef.current && inputRef.current && selection && scroller) {
       const suggestionElement = suggestionRef.current
       const inputElement = inputRef.current
-      const domRange = ReactEditor.toDOMRange(editor, target)
+
+      const [start] = Range.edges(selection)
+      const before = Editor.before(editor, start, { unit: 'character' })
+      const beforeRange = before && Editor.range(editor, before, start)
+      if (!beforeRange) return
+
+      const domRange = ReactEditor.toDOMRange(editor, beforeRange)
       const rect = domRange.getBoundingClientRect()
 
       // calculate available top/bottom space of the element
       const topSpace =
-        inputElement.offsetTop - window.pageYOffset + inputElement.offsetHeight
+        inputElement.offsetTop - scroller.scrollTop + inputElement.offsetHeight
       const bottomSpace =
-        window.pageYOffset + window.innerHeight - inputElement.offsetTop
+        scroller.scrollTop + scroller.offsetHeight - inputElement.offsetTop
+
+      setDirection(bottomSpace > topSpace ? 'column' : 'column-reverse')
 
       // calculate position of the suggestions box
       const padding = 5
       const top =
         bottomSpace > topSpace
-          ? rect.top + window.pageYOffset + rect.height + padding
-          : rect.top +
-            window.pageYOffset -
-            suggestionElement.offsetHeight -
-            padding
-
-      setDirection(bottomSpace > topSpace ? 'column' : 'column-reverse')
+          ? rect.top + rect.height + padding
+          : rect.top - suggestionElement.offsetHeight - padding
 
       // update values
       suggestionElement.style.top = `${top}px`
-      suggestionElement.style.left = `${
-        inputElement.offsetLeft + window.pageXOffset
-      }px`
+      suggestionElement.style.left = `${rect.left + scroller.offsetLeft}px`
     }
-  }, [editor, index, suggestions.length, target])
+  }, [editor, index, suggestions])
 
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
-      if (target && suggestions.length) {
+      if (suggestions && suggestions.length > 0) {
         // focused on suggestions
         switch (event.key) {
           case 'ArrowUp': {
@@ -132,7 +133,6 @@ const Input: React.FC<CellTypeWithFocused> = ({
           case 'Tab':
             // suggestion enter
             event.preventDefault()
-            setTarget(undefined)
             const all = Editor.range(
               editor,
               Editor.start(editor, []),
@@ -141,10 +141,11 @@ const Input: React.FC<CellTypeWithFocused> = ({
             // insertSuggestion(editor, suggestions[index].command)
             Transforms.select(editor, all)
             Transforms.insertText(editor, suggestions[index].command)
+            setSuggestions(null)
             break
           case 'Escape':
             event.preventDefault()
-            setTarget(undefined)
+            setSuggestions(null)
             break
         }
       } else if (event.key === 'Enter') {
@@ -155,7 +156,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
         dispatch({ type: 'run', id, input })
       }
     },
-    [target, suggestions, index, editor, id, input],
+    [suggestions, index, editor, id, input, direction, dispatch],
   )
 
   return (
@@ -179,26 +180,6 @@ const Input: React.FC<CellTypeWithFocused> = ({
             id,
             cell: { value },
           })
-
-          // setting target (needed for suggestions)
-          const { selection } = editor
-          if (typeof target == 'undefined') {
-            // very hacky :/
-            setTarget(null)
-          } else if (selection && Range.isCollapsed(selection)) {
-            const [start] = Range.edges(selection)
-            const before = Editor.before(editor, start, { unit: 'word' })
-            const beforeRange = before && Editor.range(editor, before, start)
-            const beforeText = beforeRange && Editor.string(editor, beforeRange)
-
-            if (beforeRange && beforeText) {
-              setTarget(beforeRange)
-              setIndex(0)
-              return
-            }
-          }
-
-          setTarget(null)
         }}
       >
         <Editable
@@ -206,12 +187,17 @@ const Input: React.FC<CellTypeWithFocused> = ({
           onKeyDown={onKeyDown}
           // renderElement={renderElement}
         />
-        {target && suggestions.length > 0 && (
+        {suggestions && (
           <Portal>
             <Div
               ref={suggestionRef}
               css={{
                 position: 'absolute',
+
+                // important to set these to avoid flash
+                top: '-99999px',
+                left: '-99999px',
+
                 zIndex: 1,
                 display: 'flex',
                 flexDirection: direction,
@@ -219,7 +205,6 @@ const Input: React.FC<CellTypeWithFocused> = ({
                 borderRadius: '$default',
                 boxShadow: '$3xl',
                 maxHeight: '80vh',
-
                 overflowY: 'auto',
               }}
             >
@@ -285,7 +270,7 @@ const SuggestionItem = styled(Div, {
 
 // todo: use tokio to make this async
 const getSuggestions = (input: string, currentDir: string) => {
-  if (input.length < 1) return null
+  if (input.length < 1) return []
 
   const message: FrontendMessage = {
     type: 'get-suggestions',
@@ -333,6 +318,7 @@ const typedCliPrototype = (input: string): Suggestion[] => {
   }
 }
 
+// for rich input
 // const Element = (props: RenderElementProps) => {
 //   const { attributes, children, element } = props
 
