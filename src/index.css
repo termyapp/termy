@@ -13,3 +13,7 @@
   -webkit-user-select: none;
   -webkit-app-region: drag;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}

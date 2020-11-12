@@ -15,7 +15,7 @@ type Action =
   | { type: 'new' }
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
   | { type: 'run'; id: string; input: string }
-  | { type: 'focus'; id: string }
+  | { type: 'focus'; id: string | null }
   | { type: 'focus-up' }
   | { type: 'focus-down' }
 
@@ -38,7 +38,7 @@ const initialState = (() => {
   const cell2 = getDefaultCell()
   return {
     cells: [cell, cell2],
-    focused: cell.id,
+    focused: cell.id as string | null,
     theme: isDev ? lightTheme : darkTheme,
   }
 })()
@@ -91,6 +91,10 @@ const reducer = (state: State, action: Action) => {
       }
       case 'focus': {
         draft.focused = action.id
+        if (typeof action.id == 'string') {
+          const el = document.getElementById(action.id)
+          if (el) el.scrollIntoView()
+        }
         break
       }
       case 'focus-up': {

@@ -53,6 +53,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
     if (newSuggestions) setSuggestions(target ? newSuggestions : [])
   }, [input, currentDir, target])
 
+  // todo: new layout breaks this
   // update suggestions box position
   useEffect(() => {
     if (
