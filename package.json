@@ -18,7 +18,8 @@
   "build": {
     "appId": "app.termy",
     "mac": {
-      "category": "public.app-category.developer-tools"
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.png"
     },
     "productName": "Termy",
     "files": [
