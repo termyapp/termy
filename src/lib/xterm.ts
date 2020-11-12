@@ -33,7 +33,6 @@ export const useXterm = ({
 
     let term = new Terminal({
       cursorStyle: 'block',
-      // @ts-ignore
       fontFamily: theme.fonts.$mono,
       theme: terminalTheme,
     })
@@ -62,7 +61,7 @@ export const useXterm = ({
     if (xtermFocusElement) {
       xtermFocusElement.tabIndex = -1
     }
-  }, [currentDir, id])
+  }, [currentDir, id, terminalTheme, theme.fonts.$mono])
 
   useEffect(() => {
     if (!terminalRef.current || !terminalContainerRef.current || type !== 'pty')

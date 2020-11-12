@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { CellTypeWithFocused, OutputType, Message } from '../../types'
+import { CellTypeWithFocused, OutputType } from '../../types'
 import { useListener, useXterm } from '../lib'
 import useStore from '../store'
 import Prompt from './prompt'
