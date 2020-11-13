@@ -1,11 +1,13 @@
-import { OutputType, XtermSize } from './../../types'
+import type { OutputType, XtermSize } from '../../types'
 import { useRef, useMemo, useEffect, useState } from 'react'
-import { Terminal } from 'xterm'
+import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
-import { ipc } from '.'
-import { CellTypeWithFocused, Message } from '../../types'
+import { ipc } from './'
+import type { CellTypeWithFocused, Message } from '../../types'
 import useStore from '../store'
 import { useDebounce, useMeasure } from 'react-use'
+
+const Terminal = xterm.Terminal
 
 export const useXterm = ({
   id,
@@ -17,7 +19,7 @@ export const useXterm = ({
 
   const [size, setSize] = useState<XtermSize>()
 
-  let terminalRef = useRef<Terminal | null>(null)
+  let terminalRef = useRef<typeof Terminal | null>(null)
   let terminalContainerRef = useRef<HTMLDivElement>(null)
 
   const fitAddon = new FitAddon()

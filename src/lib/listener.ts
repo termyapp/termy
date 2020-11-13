@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ServerMessage } from '../../types'
+import type { ServerMessage } from '../../types'
 import { ipc } from './'
 
 export const useListener = (

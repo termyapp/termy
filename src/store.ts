@@ -2,8 +2,8 @@ import produce from 'immer'
 import { v4 } from 'uuid'
 import create, { UseStore } from 'zustand'
 import { devtools, redux } from 'zustand/middleware'
-import { Message, ThemeMode } from '../types'
-import { CellType } from './../types'
+import type { Message, ThemeMode } from '../types'
+import type { CellType } from '../types'
 import { api, getTheme, ipc, isDev } from './lib'
 
 type State = typeof initialState
@@ -17,29 +17,22 @@ type Action =
   | { type: 'focus-up' }
   | { type: 'focus-down' }
 
-const getDefaultCell = (): CellType => {
-  return {
-    id: v4(),
-    currentDir: api('home'),
-    value: [
-      {
-        type: 'paragraph',
-        children: [{ text: '' }],
-      },
-    ],
-    type: null,
-  }
+const initialState = {
+  cells: [
+    {
+      id: v4(),
+      currentDir: api('home'),
+      value: [
+        {
+          type: 'paragraph',
+          children: [{ text: '' }],
+        },
+      ],
+      type: null,
+    } as CellType,
+  ],
+  theme: getTheme(isDev ? '#000' : '#fff'),
 }
-
-const initialState = (() => {
-  // todo: init cell input with `help` or `guide` on first launch
-  const cell = getDefaultCell()
-
-  return {
-    cells: [cell],
-    theme: getTheme(isDev ? '#fff' : '#000'),
-  }
-})()
 
 const reducer = (state: State, action: Action) => {
   return produce(state, draft => {
@@ -49,8 +42,8 @@ const reducer = (state: State, action: Action) => {
         break
       }
       case 'new': {
-        const newCell = getDefaultCell()
-        draft.cells.push(newCell)
+        // const newCell = getDefaultCell()
+        // draft.cells.push(newCell)
         break
       }
       case 'set-cell': {

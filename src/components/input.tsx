@@ -1,3 +1,4 @@
+// @refresh reset
 import { formatDistanceToNow } from 'date-fns'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Portal } from 'react-portal'
@@ -38,10 +39,18 @@ const Input: React.FC<CellTypeWithFocused> = ({
     'column',
   )
 
+  console.log('here')
+
+  // Transforms.select(editor, {
+  //   anchor: { path: [0, 0], offset: 0 },
+  //   focus: { path: [0, 0], offset: 0 },
+  // })
+
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
   // update suggestions
   useEffect(() => {
+    console.log(input)
     setSuggestions(suggestions =>
       // null is a *flag* that is set after inserting
       // a suggestion to avoid showing a the suggestion box

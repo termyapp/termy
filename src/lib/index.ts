@@ -1,6 +1,5 @@
-import { ThemeMode } from './../../types'
+import type { ThemeMode } from '../../types'
 import { darkTheme, lightTheme } from './../stitches.config'
-import { ipc } from './ipc'
 
 export const formatCurrentDir = (currentDir: string) => {
   const path = currentDir.split('/')
@@ -9,10 +8,6 @@ export const formatCurrentDir = (currentDir: string) => {
   }
   const relativePath = currentDir.split('/').slice(3).join('/')
   return (relativePath.length > 0 ? '~/' : '~') + relativePath
-}
-
-export const api = (command: string) => {
-  return ipc.sendSync('message', { type: 'api', command })
 }
 
 export const scrollIntoView = (id: string | any) => {
@@ -39,7 +34,7 @@ export const getLanguage = (path: string): string | undefined => {
   return undefined
 }
 
-export const isDev = process.env.NODE_ENV === 'development'
+export const isDev = import.meta.env.SNOWPACK_PUBLIC_NODE_ENV === 'development'
 
 export const getTheme = (mode?: ThemeMode) =>
   mode === '#000' ? darkTheme : lightTheme

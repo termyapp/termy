@@ -1,20 +1,29 @@
 {
+  "include": ["src", "types"],
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "module": "esnext",
+    "target": "esnext",
     "moduleResolution": "node",
+    "jsx": "preserve",
+    "baseUrl": "./",
+    /* paths - If you configure Snowpack import aliases, add them here. */
+    "paths": {},
+    /* Additional Options */
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react"
-  },
-  "include": ["src"],
-  "exclude": ["electron"]
+    "allowSyntheticDefaultImports": true,
+    "importsNotUsedAsValues": "error",
+
+    "noEmit": true
+    /* noEmit - Snowpack builds (emits) files, not tsc.
+    
+       Need this for references https://www.typescriptlang.org/docs/handbook/project-references.html
+       Not sure if this decreases performance
+    */
+    // "noEmit": false,
+    // "composite": true
+  }
+  // "references": []
 }

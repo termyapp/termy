@@ -1,4 +1,4 @@
-import { IpcRenderer } from 'electron'
+import type { IpcRenderer } from 'electron'
 
 declare global {
   interface Window {
@@ -7,3 +7,7 @@ declare global {
 }
 
 export const { ipcRenderer: ipc } = window
+
+export const api = (command: string) => {
+  return ipc.sendSync('message', { type: 'api', command })
+}
