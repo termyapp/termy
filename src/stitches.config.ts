@@ -35,7 +35,7 @@ export const darkTheme = {
     $accentColor: '#2a2a2a',
     $caretColor: '#f42069',
     $selectionColor: '#f42069',
-    $focusedBackgroundColor: '#1a1a1a',
+    $focusedBackgroundColor: '#161616',
 
     $currentDirColor: baseTheme.colors.$gray300,
     $currentDirBackgroundColor: baseTheme.colors.$gray900,

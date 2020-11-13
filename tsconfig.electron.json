@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "include": ["electron"],
-  "exclude": ["src"],
-  "compilerOptions": {
-    "outDir": "public",
-    "noEmit": false
-  }
-}
