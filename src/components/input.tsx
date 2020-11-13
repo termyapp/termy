@@ -1,11 +1,10 @@
-// @refresh reset
 import { formatDistanceToNow } from 'date-fns'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Portal } from 'react-portal'
 import { createEditor, Editor, Node, Range, Transforms } from 'slate'
 import { withHistory } from 'slate-history'
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react'
-import { CellTypeWithFocused, Message, Suggestion } from '../../types'
+import type { CellTypeWithFocused, Message, Suggestion } from '../../types'
 import { ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
@@ -31,26 +30,16 @@ const Input: React.FC<CellTypeWithFocused> = ({
     value,
   ])
 
-  const [suggestions, setSuggestions] = useState<Suggestion[] | null>(
-    getSuggestions(input, currentDir),
-  )
+  const [suggestions, setSuggestions] = useState<Suggestion[] | null>([])
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState<'column' | 'column-reverse'>(
     'column',
   )
 
-  console.log('here')
-
-  // Transforms.select(editor, {
-  //   anchor: { path: [0, 0], offset: 0 },
-  //   focus: { path: [0, 0], offset: 0 },
-  // })
-
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
   // update suggestions
   useEffect(() => {
-    console.log(input)
     setSuggestions(suggestions =>
       // null is a *flag* that is set after inserting
       // a suggestion to avoid showing a the suggestion box

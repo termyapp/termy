@@ -1,5 +1,5 @@
 import React from 'react'
-import { CellTypeWithFocused } from '../../types'
+import type { CellTypeWithFocused } from '../../types'
 import { formatCurrentDir } from '../lib'
 import { styled } from '../stitches.config'
 import Input from './input'

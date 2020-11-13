@@ -17,21 +17,24 @@ type Action =
   | { type: 'focus-up' }
   | { type: 'focus-down' }
 
+const getDefaultCell = (): CellType => {
+  return {
+    id: v4(),
+    currentDir: api('home'),
+    value: [
+      {
+        type: 'paragraph',
+        children: [{ text: '' }],
+      },
+    ],
+    type: null,
+  }
+}
+
+// todo: init cell input with `help` or `guide` on first launch
 const initialState = {
-  cells: [
-    {
-      id: v4(),
-      currentDir: api('home'),
-      value: [
-        {
-          type: 'paragraph',
-          children: [{ text: '' }],
-        },
-      ],
-      type: null,
-    } as CellType,
-  ],
-  theme: getTheme(isDev ? '#000' : '#fff'),
+  cells: [getDefaultCell()],
+  theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
 }
 
 const reducer = (state: State, action: Action) => {
@@ -42,8 +45,7 @@ const reducer = (state: State, action: Action) => {
         break
       }
       case 'new': {
-        // const newCell = getDefaultCell()
-        // draft.cells.push(newCell)
+        draft.cells.push(getDefaultCell())
         break
       }
       case 'set-cell': {
