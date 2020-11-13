@@ -4,7 +4,7 @@ import create, { UseStore } from 'zustand'
 import { devtools, redux } from 'zustand/middleware'
 import { Message, ThemeMode } from '../types'
 import { CellType } from './../types'
-import { api, getTheme, ipc } from './lib'
+import { api, getTheme, ipc, isDev } from './lib'
 
 type State = typeof initialState
 
@@ -37,7 +37,7 @@ const initialState = (() => {
 
   return {
     cells: [cell],
-    theme: getTheme(),
+    theme: getTheme(isDev ? '#fff' : '#000'),
   }
 })()
 

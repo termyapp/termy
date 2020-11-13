@@ -2,7 +2,7 @@
   "name": "termy",
   "description": "An easy to use terminal. Termy has autosuggestions, a modern GUI (HTML), structured data piping and many others.",
   "author": "Marton Langa",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "homepage": "./",
   "scripts": {

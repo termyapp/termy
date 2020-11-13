@@ -39,8 +39,7 @@ export const getLanguage = (path: string): string | undefined => {
   return undefined
 }
 
-// export const isDev = process.env.NODE_ENV === 'development'
-export const isDev = true
+export const isDev = process.env.NODE_ENV === 'development'
 
 export const getTheme = (mode?: ThemeMode) =>
   mode === '#000' ? darkTheme : lightTheme
