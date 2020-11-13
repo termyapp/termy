@@ -1,25 +1,17 @@
 import { ipcMain } from 'electron'
 import native from '../native'
-import {
-  FrontendMessage,
-  ServerDataMessage,
-  ServerStatusMessage,
-} from '../types'
+import { Message, ServerMessage } from '../types'
 
 export default () => {
   ipcMain.on('message', (event, message) => {
-    console.log('On Message', message)
+    console.log('message', message)
     event.returnValue = handleMessage(event, message)
   })
 }
 
 const runningCells: { [key: string]: any } = {}
 
-// todo: https://github.com/napi-rs/napi-rs/issues/246#issuecomment-725270059
-const handleMessage = (
-  event: Electron.IpcMainEvent,
-  message: FrontendMessage,
-) => {
+const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
   switch (message.type) {
     case 'api': {
       const result = native.api(message.command)
@@ -28,56 +20,50 @@ const handleMessage = (
     }
     case 'get-suggestions': {
       const suggestions = native.getSuggestions(
-        message.data.input,
-        message.data.currentDir,
+        message.input,
+        message.currentDir,
       )
       return suggestions
     }
     case 'run-cell': {
-      const { id, input, currentDir } = message.data
+      const { id, input, currentDir } = message
 
-      const sendOutput = (...args: any[]) => {
-        console.log('out', args)
+      const serverMessage = (...args: [null, ServerMessage]) => {
+        console.log('received message', args)
 
-        const message: ServerDataMessage = {
-          id,
-          data: args[1] as string,
+        const [error, receivedMessage] = args
+
+        if (error || !receivedMessage) {
+          console.error('error receiving message:', args)
+          return
+        } else {
+          if (receivedMessage.status && receivedMessage.status !== 'running') {
+            // remover external fn since it's no longer running
+            console.log('removing external fn for', id)
+            delete runningCells[id]
+          }
+
+          event.sender.send(`message-${id}`, { id, ...receivedMessage })
         }
-        event.sender.send(`data-${id}`, message)
+
+        return
       }
 
-      const sendStatus = (...args: [null, number, number | undefined]) => {
-        const [_, type, status] = args
-        event.sender.send(`status-${id}`, {
-          id,
-          type: type === 0 ? 'PTY' : 'API',
-          status:
-            typeof status === 'undefined'
-              ? 'running'
-              : status === 0
-              ? 'exited'
-              : 'error',
-        } as ServerStatusMessage)
-      }
-
-      const sendStdin = native.runCell(
-        id,
-        input,
-        currentDir,
-        sendOutput,
-        sendStatus,
+      const sendMessage = native.runCell(
+        { id, input, currentDir },
+        serverMessage,
       )
-      // todo: delete when over
-      runningCells[id] = sendStdin
+
+      runningCells[id] = sendMessage
       return
     }
-    case 'send-stdin': {
-      // only used by PTY
-      const { id, key } = message.data
-
-      const external = runningCells[id]
+    case 'frontend-message': {
+      // only used by pty cells
+      const external = runningCells[message.id]
       if (external) {
-        native.sendStdin(external, key)
+        native.frontendMessage(external, message)
+      } else {
+        console.warn('external callback does not exit for cell:', message.id)
       }
       return
     }

@@ -4,12 +4,10 @@ extern crate napi;
 extern crate napi_derive;
 
 use crossbeam_channel::{unbounded, Sender};
-use log::{error, info};
-use napi::{
-    CallContext, Error, JsBuffer, JsExternal, JsFunction, JsNumber, JsObject, JsString,
-    JsUndefined, JsUnknown, Module,
-};
-use shell::{Cell, CellType};
+use log::info;
+use napi::{CallContext, Error, JsExternal, JsFunction, JsString, JsUndefined, JsUnknown, Module};
+
+use shell::{Cell, CellChannel, FrontendMessage, RunCell, ServerMessage};
 use std::thread;
 
 mod autocomplete;
@@ -26,7 +24,7 @@ fn init(module: &mut Module) -> napi::Result<()> {
 
     module.create_named_method("runCell", run_cell)?;
 
-    module.create_named_method("sendStdin", send_stdin)?;
+    module.create_named_method("frontendMessage", frontend_message)?;
 
     // todo: this fails in prod
     // db::init().expect("Failed to initialize database");
@@ -60,90 +58,46 @@ fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
 
 #[js_function(5)]
 fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
-    let id: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
-    let input: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
-    let current_dir: String = ctx.get::<JsString>(2)?.into_utf8()?.to_owned()?;
-    let send_output = ctx.get::<JsFunction>(3)?;
-    let send_status = ctx.get::<JsFunction>(4)?;
+    let props: RunCell = ctx.env.from_js_value(ctx.get::<JsUnknown>(0)?)?;
+    let server_message = ctx.get::<JsFunction>(1)?;
 
-    let (sender, receiver) = unbounded::<String>();
+    let (sender, receiver) = unbounded::<CellChannel>();
     let shell_sender = sender.clone();
 
-    let send_output = ctx.env.create_threadsafe_function(
-        send_output,
+    let server_message = ctx.env.create_threadsafe_function(
+        server_message,
         0,
-        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<String>>| {
+        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<ServerMessage>>| {
             ctx.value
                 .iter()
-                .map(|arg| ctx.env.create_string(arg))
-                .collect::<Result<Vec<JsString>, Error>>()
-        },
-    )?;
-
-    let send_status = ctx.env.create_threadsafe_function(
-        send_status,
-        0,
-        |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<u32>>| {
-            ctx.value
-                .iter()
-                .map(|arg| ctx.env.create_uint32(*arg as u32))
-                .collect::<Result<Vec<JsNumber>, Error>>()
+                .map(|arg| ctx.env.to_js_value(&arg))
+                .collect::<Result<Vec<JsUnknown>, Error>>()
         },
     )?;
 
     thread::spawn(move || {
         // db::add_command(&input, &current_dir).expect("Failed to add command");
 
-        let cell = Cell::new(id, current_dir, input);
-        let cell_type = cell.get_type();
-        let mut status = match cell_type {
-            CellType::PTY => vec![0],
-            CellType::API => vec![1],
-        };
+        let cell = Cell::new(props);
 
-        // send start status
-        send_status.call(
-            Ok(status.clone()),
-            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
-        );
         // run cell
-        match cell.run(send_output, receiver, shell_sender) {
-            Ok(true) => {
-                info!("Exit status: 0");
-                status.push(0);
-            }
-            Ok(false) => {
-                info!("Exit status: 1");
-                status.push(1);
-            }
-            Err(err) => {
-                info!("Error in shell: {}", err);
-                status.push(1);
-            }
-        }
-
-        // send exit status
-        send_status.call(
-            Ok(status),
-            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
-        );
-
-        send_status.release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
+        // todo: when refactoring handle error returned from here (send 'error' status)
+        cell.run(server_message, receiver, shell_sender)
     });
 
     ctx.env.create_external(sender)
 }
 
 #[js_function(2)]
-fn send_stdin(ctx: CallContext) -> napi::Result<JsUndefined> {
+fn frontend_message(ctx: CallContext) -> napi::Result<JsUndefined> {
     let attached_obj = ctx.get::<JsExternal>(0)?;
     let sender = ctx
         .env
-        .get_value_external::<Sender<String>>(&attached_obj)?;
+        .get_value_external::<Sender<CellChannel>>(&attached_obj)?;
 
-    let key: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
+    let message: FrontendMessage = ctx.env.from_js_value(ctx.get::<JsUnknown>(1)?)?;
 
-    if let Err(err) = sender.send(key) {
+    if let Err(err) = sender.send(CellChannel::FrontendMessage(message)) {
         info!("Failed to send key: {}", err);
     }
 

@@ -1,14 +1,17 @@
 use anyhow::Result;
 use crossbeam_channel::{Receiver, Sender};
 use io::Read;
-use log::{error, info};
+use log::{error, info, warn};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use relative_path::RelativePath;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::io;
 use std::path::Path;
 use std::thread;
 use std::{fs, io::Write};
+
+// todo: refactor this huge mess
+// https://stackoverflow.com/questions/57649032/returning-a-value-from-a-function-that-spawns-threads
 
 pub struct Cell {
     id: String,
@@ -19,7 +22,12 @@ pub struct Cell {
 }
 
 impl Cell {
-    pub fn new(id: String, current_dir: String, input: String) -> Cell {
+    pub fn new(props: RunCell) -> Cell {
+        let RunCell {
+            input,
+            id,
+            current_dir,
+        } = props;
         let mut parts = input.trim().split_whitespace();
         let command = parts.next().expect("Failed to parse input").to_owned();
         let args = parts.map(|arg| String::from(arg)).collect::<Vec<String>>();
@@ -45,56 +53,45 @@ impl Cell {
         }
     }
 
-    pub fn get_type(&self) -> CellType {
-        match self.command.as_ref() {
-            "move" | "home" | "cd" | "/" => return CellType::API,
-            dir if RelativePath::new(&self.current_dir)
-                .join_normalized(RelativePath::new(dir))
-                .to_path(Path::new(""))
-                .is_dir() =>
-            {
-                CellType::API
-            }
-            _ => return CellType::PTY,
-        }
-    }
-
     pub fn run(
         self,
-        send_output: napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<String>>,
-        receiver: Receiver<String>,
-        sender: Sender<String>,
-    ) -> Result<bool> {
+        shell_sender: ThreadsafeFunctionType,
+        receiver: Receiver<CellChannel>,
+        sender: Sender<CellChannel>,
+    ) -> Result<()> {
         info!(
             "Executing command: `{}` in {}",
             self.input, self.current_dir
         );
-        let send_output = SendOutput::new(send_output);
+        let send_message = SendMessage::new(shell_sender);
 
-        match self.command.as_ref() {
+        send_message.send(ServerMessage::status(Status::Running));
+
+        if let Some(server_message) = match self.command.as_ref() {
             "/" => {
                 let path = RelativePath::new("").to_path("/");
 
-                let output = if path.is_dir() {
-                    ApiOutput {
-                        output: format!("Changed current directory to {}", path.to_string_lossy()),
-                        cd: Some(path.to_string_lossy().to_string()),
-                    }
+                if path.is_dir() {
+                    ServerMessage::api(
+                        format!("Changed current directory to {}", path.to_string_lossy()),
+                        Some(path.to_string_lossy().to_string()),
+                        Status::Success,
+                    )
                 } else {
-                    ApiOutput {
-                        output: format!("{} is not a valid directory", path.to_string_lossy()),
-                        cd: None,
-                    }
-                };
-                let output = serde_json::to_string(&output)?;
-
-                send_output.send(output);
-                send_output.release();
+                    ServerMessage::api(
+                        format!("{} is not a valid directory", path.to_string_lossy()),
+                        None,
+                        Status::Error,
+                    )
+                }
             }
             "home" => {
                 let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
-                send_output.send(format!("Home Directory: {:?}", home_dir));
-                send_output.release();
+                ServerMessage::api(
+                    format!("Home Directory: {:?}", home_dir),
+                    None,
+                    Status::Success,
+                )
             }
             dir if RelativePath::new(&self.current_dir)
                 .join_normalized(RelativePath::new(dir))
@@ -106,27 +103,25 @@ impl Cell {
                 let cwd = RelativePath::new(&self.current_dir);
                 let absolute_path = cwd.join_normalized(relative_path).to_path(Path::new(""));
 
-                let output = if absolute_path.is_dir() {
-                    ApiOutput {
-                        output: format!(
+                if absolute_path.is_dir() {
+                    ServerMessage::api(
+                        format!(
                             "Changed current directory to {}",
                             absolute_path.to_string_lossy()
                         ),
-                        cd: Some(absolute_path.to_string_lossy().to_string()),
-                    }
+                        Some(absolute_path.to_string_lossy().to_string()),
+                        Status::Success,
+                    )
                 } else {
-                    ApiOutput {
-                        output: format!(
+                    ServerMessage::api(
+                        format!(
                             "{} is not a valid directory",
                             absolute_path.to_string_lossy()
                         ),
-                        cd: None,
-                    }
-                };
-                let output = serde_json::to_string(&output)?;
-
-                send_output.send(output);
-                send_output.release();
+                        None,
+                        Status::Error,
+                    )
+                }
             }
             "cd" => {
                 // todo: absolute paths and /, ~, ...
@@ -135,27 +130,25 @@ impl Cell {
                 let cwd = RelativePath::new(&self.current_dir);
                 let absolute_path = cwd.join_normalized(relative_path).to_path(Path::new(""));
 
-                let output = if absolute_path.is_dir() {
-                    ApiOutput {
-                        output: format!(
+                if absolute_path.is_dir() {
+                    ServerMessage::api(
+                        format!(
                             "Changed current directory to {}",
                             absolute_path.to_string_lossy()
                         ),
-                        cd: Some(absolute_path.to_string_lossy().to_string()),
-                    }
+                        Some(absolute_path.to_string_lossy().to_string()),
+                        Status::Success,
+                    )
                 } else {
-                    ApiOutput {
-                        output: format!(
+                    ServerMessage::api(
+                        format!(
                             "{} is not a valid directory",
                             absolute_path.to_string_lossy()
                         ),
-                        cd: None,
-                    }
-                };
-                let output = serde_json::to_string(&output)?;
-
-                send_output.send(output);
-                send_output.release();
+                        None,
+                        Status::Error,
+                    )
+                }
             }
             "move" => {
                 // move arg1 arg2
@@ -167,101 +160,127 @@ impl Cell {
                 from.canonicalize()?;
                 fs::rename(from, to)?;
 
-                send_output.send("Moved file".to_owned());
-                send_output.release();
+                ServerMessage::api("Moved file".to_owned(), None, Status::Success)
             }
-            command => {
-                let pty_system = native_pty_system();
-                let mut pair = pty_system.openpty(PtySize {
-                    rows: 20,
-                    cols: 50,
-                    pixel_width: 0,
-                    pixel_height: 0,
-                })?;
+            _ => None,
+        } {
+            send_message.send(server_message);
+            send_message.release();
+        } else {
+            let command = self.command;
+            let pty_system = native_pty_system();
+            let mut pair = pty_system.openpty(PtySize {
+                rows: 15,
+                cols: 80,
+                pixel_width: 0,
+                pixel_height: 0,
+            })?;
 
-                // todo: env vars?
-                let mut cmd = CommandBuilder::new(command);
-                cmd.cwd(self.current_dir);
-                cmd.args(self.args);
-                let mut child = pair.slave.spawn_command(cmd)?;
+            // todo: env vars?
+            let mut cmd = CommandBuilder::new(command);
+            cmd.cwd(self.current_dir);
+            cmd.args(self.args);
+            let mut child = pair.slave.spawn_command(cmd)?;
 
-                // Read and parse output from the pty with reader
-                let mut reader = pair.master.try_clone_reader()?;
+            // Read and parse output from the pty with reader
+            let mut reader = pair.master.try_clone_reader()?;
 
-                thread::spawn(move || {
-                    let mut chunk = [0u8; 1024];
+            thread::spawn(move || {
+                let mut chunk = [0u8; 1024];
 
-                    loop {
-                        let read = reader.read(&mut chunk);
+                loop {
+                    let read = reader.read(&mut chunk);
 
-                        if let Ok(len) = read {
-                            if len == 0 {
-                                break;
-                            }
-                            let chunk = &chunk[..len];
-                            let output =
-                                std::str::from_utf8(chunk).expect("Failed to convert the chunk");
-                            send_output.send(output.to_string());
-                        } else {
-                            error!("Err: {}", read.unwrap_err());
-                        }
-                    }
-
-                    send_output.release();
-                    sender
-                        .send(KILL_COMMAND_MESSAGE.to_string())
-                        .expect("Failed to send Exit");
-                });
-
-                while child.try_wait()?.is_none() {
-                    // receive stdin message
-                    let received = receiver.recv();
-                    if let Ok(message) = received {
-                        info!("Message received: {:?} {:?}", message, message.as_bytes());
-
-                        if message == KILL_COMMAND_MESSAGE || child.try_wait()?.is_some() {
-                            info!("Exiting");
+                    if let Ok(len) = read {
+                        if len == 0 {
                             break;
                         }
-                        // Send data to the pty by writing to the master
-                        write!(pair.master, "{}", message).expect("Failed to write to master");
+                        let chunk = &chunk[..len];
+                        let output =
+                            std::str::from_utf8(chunk).expect("Failed to convert the chunk");
+                        send_message.send(ServerMessage {
+                            output: Some(Output {
+                                data: output.to_string(),
+                                cell_type: CellType::Pty,
+                                cd: None,
+                            }),
+                            status: None,
+                        });
                     } else {
-                        info!("No message or error");
+                        error!("Err: {}", read.unwrap_err());
                     }
                 }
 
-                info!("Finished running process");
+                sender
+                    .send(CellChannel::SendMessage(send_message))
+                    .expect("Failed to pass send_message over");
+            });
 
-                // portable_pty only has boolean support for now
-                return Ok(child.wait().unwrap().success());
+            while child.try_wait()?.is_none() {
+                // receive stdin message
+                let received = receiver.recv();
+                match received {
+                    Ok(CellChannel::FrontendMessage(FrontendMessage { id, stdin, size })) => {
+                        if let Some(message) = stdin {
+                            // Send data to the pty by writing to the master
+                            write!(pair.master, "{}", message).expect("Failed to write to master");
+
+                            info!("Stdin written: {:?}", message);
+                        } else if let Some(Size { rows, cols }) = size {
+                            pair.master
+                                .resize(PtySize {
+                                    rows,
+                                    cols,
+                                    pixel_width: 0,
+                                    pixel_height: 0,
+                                })
+                                .expect("Failed to resize pty");
+
+                            info!("Resized pty: {} {}", rows, cols);
+                        } else {
+                            warn!("Invalid frontend message")
+                        }
+                    }
+                    Ok(CellChannel::SendMessage(send_message)) => {
+                        info!("Exiting");
+                        // portable_pty only has boolean support for now
+                        send_message.send(ServerMessage {
+                            output: None,
+                            status: Some(if child.wait().unwrap().success() {
+                                Status::Success
+                            } else {
+                                Status::Error
+                            }),
+                        });
+                        send_message.release();
+                    }
+                    _ => {
+                        error!("Received no message or error");
+                    }
+                }
             }
         }
 
         info!(
-            "Finished executing command `{}` in {}",
-            self.input, self.current_dir
+            "Finished running cell `{}` with input {}",
+            self.id, self.input
         );
-        Ok(true)
+
+        Ok(())
     }
 }
 
-struct SendOutput {
-    threadsafe_function: napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<String>>,
-}
-
-impl SendOutput {
-    fn new(
-        threadsafe_function: napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<String>>,
-    ) -> SendOutput {
-        SendOutput {
+impl SendMessage {
+    fn new(threadsafe_function: ThreadsafeFunctionType) -> SendMessage {
+        SendMessage {
             threadsafe_function,
         }
     }
 
-    fn send(&self, output: String) {
+    fn send(&self, message: ServerMessage) {
         // rust-analyzer complains, but it compiles ¯\_(ツ)_/¯
         self.threadsafe_function.call(
-            Ok(vec![output]),
+            Ok(vec![message]),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
         );
     }
@@ -273,17 +292,89 @@ impl SendOutput {
     }
 }
 
-pub enum CellType {
-    PTY,
-    API,
+struct SendMessage {
+    threadsafe_function: ThreadsafeFunctionType,
 }
 
-const KILL_COMMAND_MESSAGE: &'static str = "TERMY_KILL_COMMAND";
+type ThreadsafeFunctionType =
+    napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<ServerMessage>>;
+
+pub enum CellChannel {
+    SendMessage(SendMessage),
+    FrontendMessage(FrontendMessage),
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct RunCell {
+    id: String,
+    current_dir: String,
+    input: String,
+}
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct Size {
+    rows: u16,
+    cols: u16,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct FrontendMessage {
+    id: String,
+    stdin: Option<String>,
+    size: Option<Size>,
+}
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ApiOutput {
-    output: String,
+pub struct ServerMessage {
     #[serde(skip_serializing_if = "Option::is_none")]
+    output: Option<Output>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    status: Option<Status>,
+}
+
+impl ServerMessage {
+    fn api(data: String, cd: Option<String>, status: Status) -> Option<Self> {
+        Some(Self {
+            output: Some(Output {
+                data,
+                cell_type: CellType::Api,
+                cd,
+            }),
+            status: Some(status),
+        })
+    }
+
+    fn status(status: Status) -> Self {
+        Self {
+            output: None,
+            status: Some(status),
+        }
+    }
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct Output {
+    data: String,
+    #[serde(rename = "type")]
+    cell_type: CellType,
     cd: Option<String>,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+enum Status {
+    Running,
+    Success,
+    Error,
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum CellType {
+    Pty,
+    Api,
 }

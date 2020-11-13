@@ -1,13 +1,11 @@
 import React from 'react'
 import { useKey } from 'react-use'
-import { styled } from '../stitches.config'
 import useStore from '../store'
 import Cell from './cell'
-import { Card, Grid, Text } from './shared'
+import { Grid, Text } from './shared'
 
 const Terminal: React.FC = () => {
   const cells = useStore(state => state.cells)
-  const focused = useStore(state => state.focused)
   const dispatch = useStore(state => state.dispatch)
 
   useKey('j', e => e.metaKey && dispatch({ type: 'new' }))
@@ -24,13 +22,7 @@ const Terminal: React.FC = () => {
       }}
     >
       {cells.map(cell => (
-        <CellCard
-          id={cell.id}
-          key={cell.id}
-          state={focused === cell.id ? 'focused' : 'default'}
-        >
-          <Cell {...cell} focused={focused === cell.id} />
-        </CellCard>
+        <Cell key={cell.id} {...cell} />
       ))}
       <Text
         css={{
@@ -45,20 +37,5 @@ const Terminal: React.FC = () => {
     </Grid>
   )
 }
-
-const CellCard = styled(Card, {
-  variants: {
-    state: {
-      default: {
-        border: '1px solid transparent',
-        color: '$secondaryTextColor',
-      },
-      focused: {
-        border: '1px solid $accentColor',
-        backgroundColor: '$focusedBackgroundColor',
-      },
-    },
-  },
-})
 
 export default Terminal

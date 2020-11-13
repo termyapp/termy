@@ -8,15 +8,18 @@ export const lightTheme = {
 
     $primaryTextColor: baseTheme.colors.$black,
     $secondaryTextColor: baseTheme.colors.$gray700,
-    $backgroundColor: '#f7fafc',
+    $backgroundColor: baseTheme.colors.$gray100,
 
-    $accentColor: baseTheme.colors.$black,
+    $accentColor: baseTheme.colors.$gray300,
     $caretColor: baseTheme.colors.$teal500,
     $selectionColor: baseTheme.colors.$teal200,
     $focusedBackgroundColor: baseTheme.colors.$white,
 
     $currentDirColor: baseTheme.colors.$blue900,
     $currentDirBackgroundColor: baseTheme.colors.$blue100,
+
+    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue500,
+    $selectedSuggestionColor: baseTheme.colors.$white,
   },
 }
 
@@ -29,13 +32,16 @@ export const darkTheme = {
     $secondaryTextColor: baseTheme.colors.$gray400,
     $backgroundColor: baseTheme.colors.$black,
 
-    $accentColor: baseTheme.colors.$gray400,
+    $accentColor: '#2a2a2a',
     $caretColor: '#f42069',
     $selectionColor: '#f42069',
-    $focusedBackgroundColor: '#222',
+    $focusedBackgroundColor: '#1a1a1a',
 
-    $currentDirColor: baseTheme.colors.$blue100,
-    $currentDirBackgroundColor: '#323555',
+    $currentDirColor: baseTheme.colors.$gray300,
+    $currentDirBackgroundColor: baseTheme.colors.$gray900,
+
+    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue700,
+    $selectedSuggestionColor: baseTheme.colors.$white,
   },
 }
 
@@ -43,6 +49,7 @@ export const darkTheme = {
 const tokens = JSON.parse(JSON.stringify(lightTheme)) as typeof lightTheme
 
 export const { styled, css } = createStyled({
+  prefix: 'Termy',
   tokens,
   breakpoints: {
     default: rule => rule,

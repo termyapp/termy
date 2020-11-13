@@ -4,12 +4,14 @@ import { Portal } from 'react-portal'
 import { createEditor, Editor, Node, Range, Transforms } from 'slate'
 import { withHistory } from 'slate-history'
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react'
-import { CellTypeWithFocused, FrontendMessage, Suggestion } from '../../types'
+import { CellTypeWithFocused, Message, Suggestion } from '../../types'
 import { ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
 import { Div } from './shared'
 import { Dir } from './svg'
+
+// todo: refactor
 
 const Input: React.FC<CellTypeWithFocused> = ({
   id,
@@ -37,16 +39,6 @@ const Input: React.FC<CellTypeWithFocused> = ({
   )
 
   // const renderElement = useCallback(props => <Element {...props} />, [])
-
-  // focus input if cell becomes focused
-  useEffect(() => {
-    if (focused) {
-      ReactEditor.focus(editor)
-
-      // move cursor to the end
-      Transforms.select(editor, Editor.end(editor, []))
-    }
-  }, [focused, editor])
 
   // update suggestions
   useEffect(() => {
@@ -129,18 +121,11 @@ const Input: React.FC<CellTypeWithFocused> = ({
             setIndex(nextIndex)
             break
           }
-          case 'Enter':
           case 'Tab':
-            // suggestion enter
+            // expand suggestion
             event.preventDefault()
-            const all = Editor.range(
-              editor,
-              Editor.start(editor, []),
-              Editor.end(editor, []),
-            )
-            // insertSuggestion(editor, suggestions[index].command)
-            Transforms.select(editor, all)
-            Transforms.insertText(editor, suggestions[index].command)
+            insertSuggestion(editor, suggestions[index].command)
+
             setSuggestions(null)
             break
           case 'Escape':
@@ -148,12 +133,27 @@ const Input: React.FC<CellTypeWithFocused> = ({
             setSuggestions(null)
             break
         }
-      } else if (event.key === 'Enter') {
+      }
+
+      if (event.key === 'Enter') {
         // run cell
         event.preventDefault() // don't allow multiline input
 
-        if (!input) return
-        dispatch({ type: 'run', id, input })
+        const suggestion =
+          suggestions && suggestions[index] && suggestions[index].command
+        if (typeof suggestion === 'string') {
+          insertSuggestion(editor, suggestion)
+          dispatch({
+            type: 'run-cell',
+            id,
+            input: suggestion,
+          })
+
+          // todo: doesn't work again... maybe blur would fix it
+          setSuggestions(() => null)
+        } else {
+          dispatch({ type: 'run-cell', id, input })
+        }
       }
     },
     [suggestions, index, editor, id, input, direction, dispatch],
@@ -163,10 +163,11 @@ const Input: React.FC<CellTypeWithFocused> = ({
     <Div
       ref={inputRef}
       css={{
-        p: '$2',
+        width: '100%',
+        py: '$2',
         position: 'relative',
-        fontWeight: '$medium',
-        letterSpacing: '$tight',
+        fontWeight: '$semibold',
+        letterSpacing: '$snug',
         fontSize: '$base',
       }}
     >
@@ -183,11 +184,13 @@ const Input: React.FC<CellTypeWithFocused> = ({
         }}
       >
         <Editable
+          autoFocus
           placeholder=">"
           onKeyDown={onKeyDown}
           // renderElement={renderElement}
+          onFocus={() => focusInput(editor)}
         />
-        {suggestions && (
+        {focused && suggestions && (
           <Portal>
             <Div
               ref={suggestionRef}
@@ -201,11 +204,12 @@ const Input: React.FC<CellTypeWithFocused> = ({
                 zIndex: 1,
                 display: 'flex',
                 flexDirection: direction,
-                backgroundColor: theme.colors.$backgroundColor,
+                backgroundColor: theme.colors.$focusedBackgroundColor,
                 borderRadius: '$default',
                 boxShadow: '$3xl',
-                maxHeight: '80vh',
+                maxHeight: '60vh',
                 overflowY: 'auto',
+                border: '1px solid $accentColor',
               }}
             >
               {suggestions.map((suggestion, i) => (
@@ -248,33 +252,51 @@ const SuggestionItem = styled(Div, {
   fontSize: '$sm',
 
   '& + &': {
-    borderTop: '1px solid $gray300',
+    borderTop: '1px solid $accentColor',
   },
 
   variants: {
     type: {
-      dir: {
-        fontWeight: '$normal',
-      },
+      dir: {},
       historyExternal: {},
     },
     state: {
       focused: {
-        backgroundColor: '$blue500',
-        color: '$white',
+        backgroundColor: '$selectedSuggestionBackgroundColor',
+        color: '$selectedSuggestionColor',
       },
-      default: {},
+      default: {
+        color: '$secondaryTextColor',
+      },
     },
   },
 })
+
+const insertSuggestion = (editor: Editor, input: string) => {
+  const all = Editor.range(
+    editor,
+    Editor.start(editor, []),
+    Editor.end(editor, []),
+  )
+  Transforms.select(editor, all)
+  Transforms.insertText(editor, input)
+}
+
+const focusInput = (editor: ReactEditor) => {
+  // move cursor to the end
+  Transforms.select(editor, Editor.end(editor, []))
+
+  ReactEditor.focus(editor)
+}
 
 // todo: use tokio to make this async
 const getSuggestions = (input: string, currentDir: string) => {
   if (input.length < 1) return []
 
-  const message: FrontendMessage = {
+  const message: Message = {
     type: 'get-suggestions',
-    data: { input, currentDir },
+    input,
+    currentDir,
   }
 
   const suggestions: Suggestion[] = [

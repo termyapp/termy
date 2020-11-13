@@ -1,44 +1,54 @@
 import { Node } from 'slate'
 
-type Status = 'running' | 'exited' | 'error'
-type OutputType = 'PTY' | 'API'
+type Status = 'running' | 'success' | 'error'
+
+export type OutputType = 'pty' | 'api' | null
 
 export type ThemeMode = '#fff' | '#000'
+
+export type XtermSize = {
+  rows: number
+  cols: number
+}
 
 export type CellType = {
   id: string
   value: Node[]
   currentDir: string
+  type: OutputType
   status?: Status // undefined is default (before running anything)
-  type?: OutputType
 
   // position?: number[] // todo: (row, col maybe?)
 }
 
 export type CellTypeWithFocused = CellType & { focused: boolean }
 
-export type FrontendMessage =
-  | { type: 'api'; command: string } // todo: { command: string; args: any[] }  (sending large amounts of text feels awkward)
-  | {
-      type: 'get-suggestions'
-      data: { input: string; currentDir: string }
-    }
-  | {
-      type: 'run-cell'
-      data: { id: string; input: string; currentDir: string }
-    }
-  | { type: 'send-stdin'; data: { id: string; key: string } }
-
-export type ServerStatusMessage = {
+export type RunCell = {
   id: string
-  type: OutputType
-  status: Status
+  input: string
+  currentDir: string
 }
 
-export type ServerDataMessage = {
+export type FrontendMessage = {
   id: string
-  data: string
-  cd?: string
+  stdin?: string
+  size?: XtermSize
+}
+
+export type Message =
+  | { type: 'api'; command: string } // todo: create types for the api
+  | {
+      type: 'get-suggestions'
+      input: string
+      currentDir: string
+    }
+  | ({ type: 'run-cell' } & RunCell)
+  | ({ type: 'frontend-message' } & FrontendMessage)
+
+export type ServerMessage = {
+  id: string
+  output?: { data: string; type: OutputType; cd?: string }
+  status?: Status
 }
 
 export type Suggestion = {
