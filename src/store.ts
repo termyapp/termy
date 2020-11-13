@@ -13,7 +13,7 @@ type Action =
   | { type: 'clear' }
   | { type: 'new' }
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
-  | { type: 'run'; id: string; input: string }
+  | { type: 'run-cell'; id: string; input: string }
   | { type: 'focus'; id: string | null }
   | { type: 'focus-up' }
   | { type: 'focus-down' }
@@ -28,15 +28,16 @@ const getDefaultCell = (): CellType => {
         children: [{ text: '' }],
       },
     ],
+    type: null,
   }
 }
 
 const initialState = (() => {
   // todo: init cell input with `help` or `guide` on first launch
   const cell = getDefaultCell()
-  const cell2 = getDefaultCell()
+
   return {
-    cells: [cell, cell2],
+    cells: [cell],
     focused: cell.id as string | null,
     theme: getTheme(),
   }
@@ -62,27 +63,27 @@ const reducer = (state: State, action: Action) => {
         draft.cells[index] = { ...draft.cells[index], ...action.cell }
         break
       }
-      case 'run': {
+      case 'run-cell': {
         const cell = draft.cells.find(c => c.id === action.id)
-        if (!cell) return
+        if (!cell || !action.input) return
+        console.log('running', action.input)
 
+        // reset
+        cell.type = null
+
+        // todo: move this to cell
         const command = action.input.split(' ')[0]
         if (command === 'theme') {
-          // todo: how can I send to output here if the theme does not exist?
           draft.theme = getTheme(action.input.split(' ')[1] as ThemeMode)
           break
         }
 
         const message: Message = {
           type: 'run-cell',
-          // electron complains if we include a draft based
-          // object with additional properties on it
-
           id: cell.id,
           input: action.input,
           currentDir: cell.currentDir,
         }
-        console.log('running', message.input)
 
         ipc.send('message', message)
         break

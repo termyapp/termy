@@ -4,7 +4,7 @@ import { Message, ServerMessage } from '../types'
 
 export default () => {
   ipcMain.on('message', (event, message) => {
-    console.log('On Message', message)
+    console.log('message', message)
     event.returnValue = handleMessage(event, message)
   })
 }
@@ -34,12 +34,12 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
         const [error, receivedMessage] = args
 
         if (error || !receivedMessage) {
-          console.error('Error receiving message:', args)
+          console.error('error receiving message:', args)
           return
         } else {
           if (receivedMessage.status && receivedMessage.status !== 'running') {
             // remover external fn since it's no longer running
-            console.log('Removing external fn for', id)
+            console.log('removing external fn for', id)
             delete runningCells[id]
           }
 
@@ -57,13 +57,13 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
       runningCells[id] = sendMessage
       return
     }
-    case 'send-message': {
+    case 'frontend-message': {
       // only used by pty cells
       const external = runningCells[message.id]
       if (external) {
-        native.sendMessage(external, message)
+        native.frontendMessage(external, message)
       } else {
-        console.warn('External callback does not exit for cell:', message.id)
+        console.warn('external callback does not exit for cell:', message.id)
       }
       return
     }

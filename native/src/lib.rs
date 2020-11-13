@@ -4,13 +4,10 @@ extern crate napi;
 extern crate napi_derive;
 
 use crossbeam_channel::{unbounded, Sender};
-use log::{error, info};
-use napi::{
-    CallContext, Error, JsBuffer, JsExternal, JsFunction, JsNumber, JsObject, JsString,
-    JsUndefined, JsUnknown, Module,
-};
-use serde::Deserialize;
-use shell::{Cell, CellChannel, CellType, RunCellProps, ServerMessage};
+use log::info;
+use napi::{CallContext, Error, JsExternal, JsFunction, JsString, JsUndefined, JsUnknown, Module};
+
+use shell::{Cell, CellChannel, FrontendMessage, RunCell, ServerMessage};
 use std::thread;
 
 mod autocomplete;
@@ -27,7 +24,7 @@ fn init(module: &mut Module) -> napi::Result<()> {
 
     module.create_named_method("runCell", run_cell)?;
 
-    module.create_named_method("sendMessage", send_message)?;
+    module.create_named_method("frontendMessage", frontend_message)?;
 
     // todo: this fails in prod
     // db::init().expect("Failed to initialize database");
@@ -61,7 +58,7 @@ fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
 
 #[js_function(5)]
 fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
-    let props: RunCellProps = ctx.env.from_js_value(ctx.get::<JsUnknown>(0)?)?;
+    let props: RunCell = ctx.env.from_js_value(ctx.get::<JsUnknown>(0)?)?;
     let server_message = ctx.get::<JsFunction>(1)?;
 
     let (sender, receiver) = unbounded::<CellChannel>();
@@ -92,15 +89,15 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
 }
 
 #[js_function(2)]
-fn send_message(ctx: CallContext) -> napi::Result<JsUndefined> {
+fn frontend_message(ctx: CallContext) -> napi::Result<JsUndefined> {
     let attached_obj = ctx.get::<JsExternal>(0)?;
     let sender = ctx
         .env
         .get_value_external::<Sender<CellChannel>>(&attached_obj)?;
 
-    let stdin: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
+    let message: FrontendMessage = ctx.env.from_js_value(ctx.get::<JsUnknown>(1)?)?;
 
-    if let Err(err) = sender.send(CellChannel::String(stdin)) {
+    if let Err(err) = sender.send(CellChannel::FrontendMessage(message)) {
         info!("Failed to send key: {}", err);
     }
 

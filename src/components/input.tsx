@@ -131,18 +131,11 @@ const Input: React.FC<CellTypeWithFocused> = ({
             setIndex(nextIndex)
             break
           }
-          case 'Enter':
           case 'Tab':
-            // suggestion enter
+            // expand suggestion
             event.preventDefault()
-            const all = Editor.range(
-              editor,
-              Editor.start(editor, []),
-              Editor.end(editor, []),
-            )
-            // insertSuggestion(editor, suggestions[index].command)
-            Transforms.select(editor, all)
-            Transforms.insertText(editor, suggestions[index].command)
+            insertSuggestion(editor, suggestions[index].command)
+
             setSuggestions(null)
             break
           case 'Escape':
@@ -150,12 +143,27 @@ const Input: React.FC<CellTypeWithFocused> = ({
             setSuggestions(null)
             break
         }
-      } else if (event.key === 'Enter') {
+      }
+
+      if (event.key === 'Enter') {
         // run cell
         event.preventDefault() // don't allow multiline input
 
-        if (!input) return
-        dispatch({ type: 'run', id, input })
+        const suggestion =
+          suggestions && suggestions[index] && suggestions[index].command
+        if (typeof suggestion === 'string') {
+          insertSuggestion(editor, suggestion)
+          dispatch({
+            type: 'run-cell',
+            id,
+            input: suggestion,
+          })
+
+          // todo: doesn't work again... maybe blur would fix it
+          setSuggestions(() => null)
+        } else {
+          dispatch({ type: 'run-cell', id, input })
+        }
       }
     },
     [suggestions, index, editor, id, input, direction, dispatch],
@@ -320,6 +328,16 @@ const typedCliPrototype = (input: string): Suggestion[] => {
     default:
       return []
   }
+}
+
+const insertSuggestion = (editor: Editor, input: string) => {
+  const all = Editor.range(
+    editor,
+    Editor.start(editor, []),
+    Editor.end(editor, []),
+  )
+  Transforms.select(editor, all)
+  Transforms.insertText(editor, input)
 }
 
 // for rich input

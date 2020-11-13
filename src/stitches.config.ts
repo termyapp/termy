@@ -10,7 +10,7 @@ export const lightTheme = {
     $secondaryTextColor: baseTheme.colors.$gray700,
     $backgroundColor: baseTheme.colors.$gray100,
 
-    $accentColor: baseTheme.colors.$gray200,
+    $accentColor: baseTheme.colors.$gray300,
     $caretColor: baseTheme.colors.$teal500,
     $selectionColor: baseTheme.colors.$teal200,
     $focusedBackgroundColor: baseTheme.colors.$white,
@@ -49,6 +49,7 @@ export const darkTheme = {
 const tokens = JSON.parse(JSON.stringify(lightTheme)) as typeof lightTheme
 
 export const { styled, css } = createStyled({
+  prefix: 'Termy',
   tokens,
   breakpoints: {
     default: rule => rule,

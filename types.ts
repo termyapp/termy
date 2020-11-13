@@ -7,14 +7,15 @@ export type OutputType = 'pty' | 'api' | null
 export type ThemeMode = '#fff' | '#000'
 
 export type XtermSize = {
-  row: number
-  column: number
+  rows: number
+  cols: number
 }
 
 export type CellType = {
   id: string
   value: Node[]
   currentDir: string
+  type: OutputType
   status?: Status // undefined is default (before running anything)
 
   // position?: number[] // todo: (row, col maybe?)
@@ -22,13 +23,13 @@ export type CellType = {
 
 export type CellTypeWithFocused = CellType & { focused: boolean }
 
-export type RunCellProps = {
+export type RunCell = {
   id: string
   input: string
   currentDir: string
 }
 
-export type SendMessageProps = {
+export type FrontendMessage = {
   id: string
   stdin?: string
   size?: XtermSize
@@ -41,8 +42,8 @@ export type Message =
       input: string
       currentDir: string
     }
-  | ({ type: 'run-cell' } & RunCellProps)
-  | ({ type: 'send-message' } & SendMessageProps)
+  | ({ type: 'run-cell' } & RunCell)
+  | ({ type: 'frontend-message' } & FrontendMessage)
 
 export type ServerMessage = {
   id: string

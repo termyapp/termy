@@ -1,7 +1,7 @@
-use anyhow::{Error, Result};
-use crossbeam_channel::{unbounded, Receiver, Sender};
+use anyhow::Result;
+use crossbeam_channel::{Receiver, Sender};
 use io::Read;
-use log::{error, info};
+use log::{error, info, warn};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use relative_path::RelativePath;
 use serde::{Deserialize, Serialize};
@@ -22,8 +22,8 @@ pub struct Cell {
 }
 
 impl Cell {
-    pub fn new(props: RunCellProps) -> Cell {
-        let RunCellProps {
+    pub fn new(props: RunCell) -> Cell {
+        let RunCell {
             input,
             id,
             current_dir,
@@ -50,20 +50,6 @@ impl Cell {
             command => {
                 return format!("Invalid command: {}", command);
             }
-        }
-    }
-
-    pub fn get_type(&self) -> CellType {
-        match self.command.as_ref() {
-            "move" | "home" | "cd" | "/" => return CellType::Api,
-            dir if RelativePath::new(&self.current_dir)
-                .join_normalized(RelativePath::new(dir))
-                .to_path(Path::new(""))
-                .is_dir() =>
-            {
-                CellType::Api
-            }
-            _ => return CellType::Pty,
         }
     }
 
@@ -184,8 +170,8 @@ impl Cell {
             let command = self.command;
             let pty_system = native_pty_system();
             let mut pair = pty_system.openpty(PtySize {
-                rows: 20,
-                cols: 50,
+                rows: 15,
+                cols: 80,
                 pixel_width: 0,
                 pixel_height: 0,
             })?;
@@ -234,11 +220,26 @@ impl Cell {
                 // receive stdin message
                 let received = receiver.recv();
                 match received {
-                    Ok(CellChannel::String(message)) => {
-                        info!("Message received: {:?} {:?}", message, message.as_bytes());
+                    Ok(CellChannel::FrontendMessage(FrontendMessage { id, stdin, size })) => {
+                        if let Some(message) = stdin {
+                            // Send data to the pty by writing to the master
+                            write!(pair.master, "{}", message).expect("Failed to write to master");
 
-                        // Send data to the pty by writing to the master
-                        write!(pair.master, "{}", message).expect("Failed to write to master");
+                            info!("Stdin written: {:?}", message);
+                        } else if let Some(Size { rows, cols }) = size {
+                            pair.master
+                                .resize(PtySize {
+                                    rows,
+                                    cols,
+                                    pixel_width: 0,
+                                    pixel_height: 0,
+                                })
+                                .expect("Failed to resize pty");
+
+                            info!("Resized pty: {} {}", rows, cols);
+                        } else {
+                            warn!("Invalid frontend message")
+                        }
                     }
                     Ok(CellChannel::SendMessage(send_message)) => {
                         info!("Exiting");
@@ -299,16 +300,30 @@ type ThreadsafeFunctionType =
     napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<ServerMessage>>;
 
 pub enum CellChannel {
-    String(String),
     SendMessage(SendMessage),
+    FrontendMessage(FrontendMessage),
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct RunCellProps {
+pub struct RunCell {
     id: String,
     current_dir: String,
     input: String,
+}
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct Size {
+    rows: u16,
+    cols: u16,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct FrontendMessage {
+    id: String,
+    stdin: Option<String>,
+    size: Option<Size>,
 }
 
 #[derive(Serialize, Debug)]

@@ -10,20 +10,19 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
   const dispatch = useStore(state => state.dispatch)
   // api
   const [output, setOutput] = useState('')
-  const [type, setType] = useState<OutputType>(null)
 
   // pty
-  const { terminalContainerRef, terminalRef } = useXterm({ ...cell, type })
+  const { terminalContainerRef, terminalRef } = useXterm(cell)
 
   useListener(`message-${id}`, (_, message) => {
-    console.log('Received', message)
+    console.log('received', message)
     const { output, status } = message
     if (status) {
       dispatch({ type: 'set-cell', id, cell: { status } })
     }
 
     if (output) {
-      setType(output.type)
+      dispatch({ type: 'set-cell', id, cell: { type: output.type } })
       if (output.type === 'api') {
         console.log('parsing')
 
@@ -34,12 +33,9 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
 
         setOutput(output.data)
       } else if (output.type === 'pty') {
-        if (!terminalRef.current) {
-          console.warn('Terminal not available')
-          return
-        }
+        terminalRef.current?.write(output.data)
+        console.log('terminalRef.current', !!terminalRef.current)
         console.log('writing chunk', output.data)
-        terminalRef.current.write(output.data)
       }
     }
   })
@@ -54,24 +50,34 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
     >
       <Prompt {...cell} />
 
-      <Div css={{ mt: '$2' }}>
+      <Div
+        css={{
+          mt: '$2',
+          position: 'relative',
+          height: cell.type === 'pty' ? 300 : 0, // todo: variable cell size (auto on new line?)
+          visibility: cell.type === 'pty' ? 'visible' : 'hidden',
+        }}
+      >
         <Div
+          id={`cell-${cell.id}`}
           ref={terminalContainerRef}
-          // todo: on resize, send new row, col to shell pty
+          style={{}}
           css={{
-            width: terminalContainerRef.current?.parentElement?.clientWidth,
-            height: type === 'pty' ? 300 : 0,
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'red',
           }}
-          onFocus={() => {
-            if (cell.status === 'success' || cell.status === 'error') {
-              terminalRef.current?.blur()
-              return
-            }
-            terminalRef.current?.focus()
-          }}
+          // onFocus={() => {
+          //   if (cell.status === 'success' || cell.status === 'error') {
+          //     terminalRef.current?.blur()
+          //     return
+          //   }
+          //   terminalRef.current?.focus()
+          // }}
         />
       </Div>
-      <Div
+      {/* <Div
         css={{
           // display: type === 'api' ? 'initial' : 'none',
           fontSize: '$sm',
@@ -79,7 +85,7 @@ const Cell: React.FC<CellTypeWithFocused> = cell => {
         }}
       >
         {output}
-      </Div>
+      </Div> */}
     </Div>
   )
 }
