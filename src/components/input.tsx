@@ -11,6 +11,8 @@ import useStore from '../store'
 import { Div } from './shared'
 import { Dir } from './svg'
 
+// todo: refactor
+
 const Input: React.FC<CellTypeWithFocused> = ({
   id,
   currentDir,
@@ -37,18 +39,6 @@ const Input: React.FC<CellTypeWithFocused> = ({
   )
 
   // const renderElement = useCallback(props => <Element {...props} />, [])
-
-  // focus input if cell becomes focused
-  useEffect(() => {
-    if (focused) {
-      ReactEditor.focus(editor)
-
-      // move cursor to the end
-      Transforms.select(editor, Editor.end(editor, []))
-    } else {
-      setSuggestions(() => [])
-    }
-  }, [focused, editor])
 
   // update suggestions
   useEffect(() => {
@@ -173,6 +163,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
     <Div
       ref={inputRef}
       css={{
+        width: '100%',
         py: '$2',
         position: 'relative',
         fontWeight: '$semibold',
@@ -193,11 +184,13 @@ const Input: React.FC<CellTypeWithFocused> = ({
         }}
       >
         <Editable
+          autoFocus
           placeholder=">"
           onKeyDown={onKeyDown}
           // renderElement={renderElement}
+          onFocus={() => focusInput(editor)}
         />
-        {suggestions && (
+        {focused && suggestions && (
           <Portal>
             <Div
               ref={suggestionRef}
@@ -279,6 +272,23 @@ const SuggestionItem = styled(Div, {
   },
 })
 
+const insertSuggestion = (editor: Editor, input: string) => {
+  const all = Editor.range(
+    editor,
+    Editor.start(editor, []),
+    Editor.end(editor, []),
+  )
+  Transforms.select(editor, all)
+  Transforms.insertText(editor, input)
+}
+
+const focusInput = (editor: ReactEditor) => {
+  // move cursor to the end
+  Transforms.select(editor, Editor.end(editor, []))
+
+  ReactEditor.focus(editor)
+}
+
 // todo: use tokio to make this async
 const getSuggestions = (input: string, currentDir: string) => {
   if (input.length < 1) return []
@@ -328,16 +338,6 @@ const typedCliPrototype = (input: string): Suggestion[] => {
     default:
       return []
   }
-}
-
-const insertSuggestion = (editor: Editor, input: string) => {
-  const all = Editor.range(
-    editor,
-    Editor.start(editor, []),
-    Editor.end(editor, []),
-  )
-  Transforms.select(editor, all)
-  Transforms.insertText(editor, input)
 }
 
 // for rich input

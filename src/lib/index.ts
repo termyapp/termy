@@ -15,6 +15,19 @@ export const api = (command: string) => {
   return ipc.sendSync('message', { type: 'api', command })
 }
 
+export const scrollIntoView = (id: string | any) => {
+  if (typeof id == 'string') {
+    const el = document.getElementById(id)
+    if (!el) {
+      console.warn("couldn't find element with id", id)
+      return
+    }
+    // okay to use this, since we literally ship our own browser which supports this feature
+    // @ts-ignore
+    el.scrollIntoViewIfNeeded(false) // `false` means do not center
+  }
+}
+
 // todo: replace below ones w/ api
 export const readFile = (path: string): string | null => {
   return null

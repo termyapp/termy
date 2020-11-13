@@ -9,7 +9,7 @@ import { useDebounce, useMeasure } from 'react-use'
 
 export const useXterm = ({
   id,
-  currentDir,
+  status,
   focused,
   type,
 }: CellTypeWithFocused & { type: OutputType }) => {
@@ -47,12 +47,12 @@ export const useXterm = ({
       }
     })
 
-    // messes up focus
-    // const xtermFocusElement = terminalContainerRef.current
-    //   ?.children[0] as HTMLDivElement
-    // if (xtermFocusElement) {
-    //   xtermFocusElement.tabIndex = -1
-    // }
+    // adds an extra layer to focus...
+    const xtermElemntThatMessesUpFocus = terminalContainerRef.current
+      ?.children[0] as HTMLDivElement
+    if (xtermElemntThatMessesUpFocus) {
+      xtermElemntThatMessesUpFocus.tabIndex = -1
+    }
 
     terminalRef.current = terminal
   }, [])
@@ -80,16 +80,15 @@ export const useXterm = ({
   // update theme
   useEffect(() => {
     terminalRef.current?.setOption('theme', {
-      // background: focused
-      //   ? theme.colors.$focusedBackgroundColor
-      //   : theme.colors.$backgroundColor,
-      background: 'blue',
+      background: focused
+        ? theme.colors.$focusedBackgroundColor
+        : theme.colors.$backgroundColor,
       foreground: theme.colors.$primaryTextColor,
       selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
       cursor: theme.colors.$caretColor,
     })
     terminalRef.current?.setOption('fontFamily', theme.fonts.$mono)
-  }, [theme])
+  }, [theme, focused])
 
   // resize listener
   useEffect(() => {
@@ -107,21 +106,28 @@ export const useXterm = ({
     return () => window.removeEventListener('resize', updateSize)
   }, [])
 
-  // useEffect(() => {
-  //   // todo: reset when re running a cell
-  //   console.log('status', status)
+  useEffect(() => {
+    // todo: reset when re running a cell
+    console.log('status', status)
 
-  //   // over
-  //   if (status === 'success' || status === 'error') {
-  //     // hide cursor
-  //     terminalRef.current?.write('\u001B[?25l')
+    if (typeof status === 'undefined') {
+      // remove previous content
+      terminalRef.current?.reset()
+      terminalRef.current?.setOption('disableStdin', false)
+    } else if (status === 'running') {
+      terminalRef.current?.focus()
+    } else if (status === 'success' || status === 'error') {
+      console.log('disabling terminal')
 
-  //     // disable stdin
-  //     terminalRef.current?.setOption('disableStdin', true)
+      // hide cursor (don't hide, because we don't know how to restore it)
+      // terminalRef.current?.write('\u001B[?25l')
 
-  //     terminalRef.current?.blur()
-  //   }
-  // }, [status])
+      // disable stdin
+      terminalRef.current?.setOption('disableStdin', true)
+
+      terminalRef.current?.blur()
+    }
+  }, [status])
 
   return { terminalContainerRef, terminalRef }
 }

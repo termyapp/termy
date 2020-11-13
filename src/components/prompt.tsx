@@ -2,19 +2,14 @@ import React from 'react'
 import { CellTypeWithFocused } from '../../types'
 import { formatCurrentDir } from '../lib'
 import { styled } from '../stitches.config'
-import useStore from '../store'
 import Input from './input'
 
 const Prompt: React.FC<CellTypeWithFocused> = cell => {
-  const { id, focused, currentDir } = cell
-  const dispatch = useStore(state => state.dispatch)
+  const { focused, currentDir } = cell
 
   return (
     <Wrapper
-      onClick={() => {
-        dispatch({ type: 'focus', id })
-      }}
-      newLine={focused || currentDir.length > 60} // todo: do better with long lines
+      newLine={currentDir.length > 60} // todo: do better with long lines (decrease fontSize)
     >
       <CurrentDir focused={focused}>{formatCurrentDir(currentDir)}</CurrentDir>
       <Input {...cell} />
@@ -47,7 +42,7 @@ const CurrentDir = styled('div', {
   py: '$1',
   px: '$2',
   ml: '-$2',
-  mr: '$1',
+  mr: '$2',
   borderRadius: '$default',
   fontSize: '$xs',
   textDecoration: 'underline',
