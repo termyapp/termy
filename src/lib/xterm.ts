@@ -81,16 +81,21 @@ export const useXterm = ({
 
   // update theme
   useEffect(() => {
+    const background = focused
+      ? theme.colors.$focusedBackgroundColor
+      : theme.colors.$backgroundColor
+    const cursor =
+      status === 'success' || status === 'error'
+        ? background
+        : theme.colors.$caretColor
     terminalRef.current?.setOption('theme', {
-      background: focused
-        ? theme.colors.$focusedBackgroundColor
-        : theme.colors.$backgroundColor,
+      background,
       foreground: theme.colors.$primaryTextColor,
       selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
-      cursor: theme.colors.$caretColor,
+      cursor,
     })
     terminalRef.current?.setOption('fontFamily', theme.fonts.$mono)
-  }, [theme, focused])
+  }, [theme, focused, status])
 
   // resize listener
   useEffect(() => {
@@ -120,9 +125,6 @@ export const useXterm = ({
       terminalRef.current?.focus()
     } else if (status === 'success' || status === 'error') {
       console.log('disabling terminal')
-
-      // hide cursor (don't hide, because we don't know how to restore it)
-      // terminalRef.current?.write('\u001B[?25l')
 
       // disable stdin
       terminalRef.current?.setOption('disableStdin', true)
