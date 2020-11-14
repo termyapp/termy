@@ -1,0 +1,9 @@
+{
+  "extends": "../app/tsconfig.json",
+  "include": ["**/*"],
+  "compilerOptions": {
+    "target": "es2015",
+    "moduleResolution": "node",
+    "noEmit": false
+  }
+}

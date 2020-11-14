@@ -1,0 +1,42 @@
+{
+  "name": "termy-electron",
+  "private": true,
+  "version": "0.1.1",
+  "main": "build/electron.js",
+  "scripts": {
+    "dev": "wait-on http://localhost:8080 && cross-env NODE_ENV=development webpack --watch",
+    "build-webpack": "cross-env NODE_ENV=production webpack",
+    "build": "electron-builder",
+    "release": "yarn build:react && GH_TOKEN=<TOKEN> electron-builder --publish=always",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "productName": "Termy",
+    "appId": "app.termy",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.png"
+    },
+    "files": [
+      "build/**/*"
+    ]
+  },
+  "devDependencies": {
+    "@types/electron-devtools-installer": "^2.2.0",
+    "copy-webpack-plugin": "^6.3.1",
+    "cross-env": "^7.0.2",
+    "electron": "8.5.3",
+    "electron-builder": "^22.9.1",
+    "electron-debug": "^3.1.0",
+    "electron-devtools-installer": "^3.1.1",
+    "electron-is-dev": "^1.2.0",
+    "fix-path": "^3.0.0",
+    "node-loader": "^1.0.2",
+    "ts-loader": "^8.0.11",
+    "typescript": "^4.0.5",
+    "wait-on": "^5.2.0",
+    "webpack": "^5.4.0",
+    "webpack-cli": "^4.2.0",
+    "webpack-electron-reload": "^1.0.1"
+  }
+}

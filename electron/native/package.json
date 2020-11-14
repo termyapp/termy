@@ -1,0 +1,10 @@
+{
+  "package": "native",
+  "devDependencies": {
+    "napi-rs": "latest"
+  },
+  "scripts": {
+    "build": "rm ../../public/*.node && cargo build && napi build",
+    "build-release": "cargo build --release && napi build --release"
+  }
+}
