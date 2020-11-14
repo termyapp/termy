@@ -7,7 +7,7 @@ import type { CellTypeWithFocused, Message } from '../../types'
 import useStore from '../store'
 import { useDebounce, useMeasure } from 'react-use'
 
-const Terminal = xterm.Terminal
+import type { Terminal } from 'xterm'
 
 export const useXterm = ({
   id,
@@ -19,14 +19,14 @@ export const useXterm = ({
 
   const [size, setSize] = useState<XtermSize>()
 
-  let terminalRef = useRef<typeof Terminal | null>(null)
+  let terminalRef = useRef<Terminal | null>(null)
   let terminalContainerRef = useRef<HTMLDivElement>(null)
 
   const fitAddon = new FitAddon()
 
   // init
   useEffect(() => {
-    const terminal = new Terminal({
+    const terminal = new xterm.Terminal({
       cursorStyle: 'block',
     })
 

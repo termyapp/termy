@@ -13,9 +13,9 @@ module.exports = {
   install: [
     /* ... */
   ],
-  installOptions: {
-    namedExports: ['xterm'],
-  },
+  // installOptions: { https://github.com/snowpackjs/snowpack/discussions/1606
+  //   namedExports: ['xterm'],
+  // },
   devOptions: {
     port: 8080,
     open: 'none',

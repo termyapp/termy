@@ -13,6 +13,10 @@ import { Dir } from './svg'
 
 // todo: refactor
 
+if (import.meta.hot) {
+  import.meta.hot.decline()
+}
+
 const Input: React.FC<CellTypeWithFocused> = ({
   id,
   currentDir,
@@ -22,6 +26,12 @@ const Input: React.FC<CellTypeWithFocused> = ({
   const dispatch = useStore(state => state.dispatch)
   const theme = useStore(state => state.theme)
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
+  const [val, setVal] = useState([
+    {
+      type: 'paragraph',
+      children: [{ text: '' }],
+    },
+  ] as Node[])
 
   const suggestionRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLDivElement>(null)
@@ -171,9 +181,10 @@ const Input: React.FC<CellTypeWithFocused> = ({
     >
       <Slate
         editor={editor}
-        value={value}
+        value={val}
         onChange={value => {
           // console.log('val', value)
+          setVal(value)
           dispatch({
             type: 'set-cell',
             id,
