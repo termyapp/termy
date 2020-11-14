@@ -8,7 +8,7 @@ let plugins = [
     patterns: [
       {
         from: 'src/preload.js',
-        to: path.resolve(__dirname + '../../public/preload.js'),
+        to: path.resolve(__dirname + '../../app/public/preload.js'),
       },
     ],
   }),
@@ -16,7 +16,7 @@ let plugins = [
 
 if (isDev) {
   const ElectronReloadPlugin = require('webpack-electron-reload')({
-    path: path.resolve(__dirname, '../public/electron.js'),
+    path: path.resolve(__dirname, '../app/public/electron.js'),
   })
   plugins.push(ElectronReloadPlugin())
 }
@@ -51,7 +51,7 @@ module.exports = {
   },
   output: {
     // putting them in public, so it gets copied along with the other static files
-    path: path.resolve(__dirname + '../../public'),
+    path: path.resolve(__dirname + '../../app/public'),
     filename: 'electron.js',
   },
   plugins,

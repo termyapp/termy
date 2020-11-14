@@ -6,11 +6,11 @@
   "homepage": "./",
   "scripts": {
     "dev": "SNOWPACK_PUBLIC_NODE_ENV=development snowpack dev",
-    "build": "snowpack build",
+    "build": "snowpack build && rm -rf ../electron/build && mv build ../electron",
     "test": "web-test-runner \"src/**/*.test.tsx\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
-    "sync": "cp types/shared.d.ts electron/shared.d.ts"
+    "sync": "cp types/shared.d.ts ../electron/shared.d.ts"
   },
   "dependencies": {
     "@stitches/react": "^0.0.3-canary.4",
@@ -34,6 +34,7 @@
     "@snowpack/plugin-dotenv": "^2.0.4",
     "@snowpack/plugin-react-refresh": "^2.3.7",
     "@snowpack/plugin-typescript": "^1.1.0",
+    "@snowpack/plugin-webpack": "^2.1.1",
     "@snowpack/web-test-runner-plugin": "^0.1.4",
     "@testing-library/react": "^11.0.0",
     "@types/chai": "^4.2.13",

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { CellType } from '../../types'
+import type { CellType } from '../../types'
 import { scrollIntoView, useListener, useXterm } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'

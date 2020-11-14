@@ -16,8 +16,9 @@ web_modules
 node_modules/
 
 # termy
-/dist
+dist
+app/public/*.node
+app/public/*.js
+app/public/electron.js.LICENSE.txt
 .env
-public/*.node
-public/*.js
 termy.db

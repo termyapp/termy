@@ -8,7 +8,7 @@ module.exports = {
     '@snowpack/plugin-react-refresh',
     '@snowpack/plugin-dotenv',
     '@snowpack/plugin-typescript',
-    // '@snowpack/plugin-webpack',
+    '@snowpack/plugin-webpack',
   ],
   install: [
     /* ... */
@@ -21,7 +21,15 @@ module.exports = {
     open: 'none',
   },
   buildOptions: {
-    /* ... */
+    // out: '../electron/build', has issues with babel-loader
+    /**
+     * Current build process
+     *
+     * 0. /electron/native: yarn build-release
+     * 1. /electron: yarn build-webpack
+     * 2. /app: yarn build
+     * 3. /electronL: yarn build
+     */
   },
   proxy: {
     /* ... */

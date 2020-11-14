@@ -1,6 +1,6 @@
 // import Editor from '@monaco-editor/react'
 import React, { useRef } from 'react'
-import { PortalFunctionParams } from 'react-portal'
+import type { PortalFunctionParams } from 'react-portal'
 import { useKey } from 'react-use'
 import { getLanguage, readFile, writeFile } from '../../lib'
 
