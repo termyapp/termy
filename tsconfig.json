@@ -8,22 +8,14 @@
     "baseUrl": "./",
     /* paths - If you configure Snowpack import aliases, add them here. */
     "paths": {},
+    /* noEmit - Snowpack builds (emits) files, not tsc. */
+    "noEmit": true,
     /* Additional Options */
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "importsNotUsedAsValues": "error",
-
-    "noEmit": true
-    /* noEmit - Snowpack builds (emits) files, not tsc.
-    
-       Need this for references https://www.typescriptlang.org/docs/handbook/project-references.html
-       Not sure if this decreases performance
-    */
-    // "noEmit": false,
-    // "composite": true
+    "importsNotUsedAsValues": "error"
   }
-  // "references": []
 }

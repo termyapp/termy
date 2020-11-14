@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import native from '../native'
-import type { Message, ServerMessage } from '../types'
+import type { Message, ServerMessage } from '../shared'
 
 export default () => {
   ipcMain.on('message', (event, message) => {

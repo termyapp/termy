@@ -1,4 +1,4 @@
-import { RunCell, FrontendMessage, Suggestion } from '../types'
+import { RunCell, FrontendMessage, Suggestion } from '../shared'
 
 declare function api(command: string): any
 

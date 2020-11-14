@@ -1,13 +1,6 @@
-type Status = 'running' | 'success' | 'error'
-
-export type OutputType = 'pty' | 'api' | null
+import type { Node } from 'slate'
 
 export type ThemeMode = '#fff' | '#000'
-
-export type XtermSize = {
-  rows: number
-  cols: number
-}
 
 export type CellType = {
   id: string
@@ -20,34 +13,6 @@ export type CellType = {
 }
 
 export type CellTypeWithFocused = CellType & { focused: boolean }
-
-export type RunCell = {
-  id: string
-  input: string
-  currentDir: string
-}
-
-export type FrontendMessage = {
-  id: string
-  stdin?: string
-  size?: XtermSize
-}
-
-export type Message =
-  | { type: 'api'; command: string } // todo: create types for the api
-  | {
-      type: 'get-suggestions'
-      input: string
-      currentDir: string
-    }
-  | ({ type: 'run-cell' } & RunCell)
-  | ({ type: 'frontend-message' } & FrontendMessage)
-
-export type ServerMessage = {
-  id: string
-  output?: { data: string; type: OutputType; cd?: string }
-  status?: Status
-}
 
 export type Suggestion = {
   score: number
@@ -76,3 +41,5 @@ export type ViewCommand = {
   path: string
   content: string
 } | null
+
+export * from './shared'

@@ -9,7 +9,8 @@
     "build": "snowpack build",
     "test": "web-test-runner \"src/**/*.test.tsx\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-    "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\""
+    "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx}\"",
+    "sync": "cp types/shared.d.ts electron/shared.d.ts"
   },
   "dependencies": {
     "@stitches/react": "^0.0.3-canary.4",

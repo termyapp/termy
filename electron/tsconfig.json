@@ -6,5 +6,4 @@
     "moduleResolution": "node",
     "noEmit": false
   }
-  // "references": [{ "path": "../" }]
 }
