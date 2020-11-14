@@ -24,6 +24,8 @@ export const useXterm = ({
 
   const fitAddon = new FitAddon()
 
+  const over = status === 'success' || status === 'error'
+
   // init
   useEffect(() => {
     const terminal = new xterm.Terminal({
@@ -68,6 +70,8 @@ export const useXterm = ({
       terminalRef.current.loadAddon(fitAddon)
       fitAddon.fit()
 
+      // pty only lives as long as it's not over
+      if (over) return
       const message: Message = {
         type: 'frontend-message',
         id,
@@ -84,10 +88,7 @@ export const useXterm = ({
     const background = focused
       ? theme.colors.$focusedBackgroundColor
       : theme.colors.$backgroundColor
-    const cursor =
-      status === 'success' || status === 'error'
-        ? background
-        : theme.colors.$caretColor
+    const cursor = over ? background : theme.colors.$caretColor
     terminalRef.current?.setOption('theme', {
       background,
       foreground: theme.colors.$primaryTextColor,
@@ -95,7 +96,7 @@ export const useXterm = ({
       cursor,
     })
     terminalRef.current?.setOption('fontFamily', theme.fonts.$mono)
-  }, [theme, focused, status])
+  }, [theme, focused, over])
 
   // resize listener
   useEffect(() => {
@@ -123,7 +124,7 @@ export const useXterm = ({
       terminalRef.current?.setOption('disableStdin', false)
     } else if (status === 'running') {
       terminalRef.current?.focus()
-    } else if (status === 'success' || status === 'error') {
+    } else if (over) {
       console.log('disabling terminal')
 
       // disable stdin
@@ -131,7 +132,7 @@ export const useXterm = ({
 
       terminalRef.current?.blur()
     }
-  }, [status])
+  }, [status, over])
 
   return { terminalContainerRef, terminalRef }
 }
