@@ -2,8 +2,7 @@ import produce from 'immer'
 import { v4 } from 'uuid'
 import create, { UseStore } from 'zustand'
 import { devtools, redux } from 'zustand/middleware'
-import type { Message, ThemeMode } from '../types'
-import type { CellType } from '../types'
+import type { CellType, Message, ThemeMode } from '../types'
 import { api, getTheme, ipc, isDev } from './lib'
 
 type State = typeof initialState
@@ -12,14 +11,14 @@ type State = typeof initialState
 type Action =
   | { type: 'clear' }
   | { type: 'new' }
+  | { type: 'remove'; id: string }
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
   | { type: 'run-cell'; id: string; input: string }
-  | { type: 'focus-up' }
-  | { type: 'focus-down' }
 
 const getDefaultCell = (): CellType => {
+  const id = v4()
   return {
-    id: v4(),
+    id,
     currentDir: api('home'),
     value: [
       {
@@ -28,14 +27,21 @@ const getDefaultCell = (): CellType => {
       },
     ],
     type: null,
+    status: null,
   }
 }
 
 // todo: init cell input with `help` or `guide` on first launch
-const initialState = {
-  cells: [getDefaultCell()],
-  theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
-}
+const initialState = (() => {
+  const cellA1 = getDefaultCell()
+  const cellB1 = getDefaultCell()
+  const cellB2 = getDefaultCell()
+
+  return {
+    cells: { [cellA1.id]: cellA1, [cellB1.id]: cellB1, [cellB2.id]: cellB2 },
+    theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
+  }
+})()
 
 const reducer = (state: State, action: Action) => {
   return produce(state, draft => {
@@ -45,23 +51,25 @@ const reducer = (state: State, action: Action) => {
         break
       }
       case 'new': {
-        draft.cells.push(getDefaultCell())
+        const cell = getDefaultCell()
+        draft.cells[cell.id] = cell
+        break
+      }
+      case 'remove': {
+        delete draft.cells[action.id]
         break
       }
       case 'set-cell': {
-        const index = draft.cells.findIndex(c => c.id === action.id)
-        if (typeof index !== 'number') return
-
-        draft.cells[index] = { ...draft.cells[index], ...action.cell }
+        draft.cells[action.id] = { ...draft.cells[action.id], ...action.cell }
         break
       }
       case 'run-cell': {
-        const cell = draft.cells.find(c => c.id === action.id)
+        const cell = draft.cells[action.id]
         if (!cell || !action.input) return
         console.log('running', action.input)
 
         // reset
-        cell.status = undefined
+        cell.status = null
 
         // todo: move this to cell
         const command = action.input.split(' ')[0]
@@ -80,32 +88,6 @@ const reducer = (state: State, action: Action) => {
         ipc.send('message', message)
         break
       }
-      // case 'focus-up': {
-      //   const index = draft.cells.findIndex(c => c.id === draft.focused)
-      //   if (typeof index !== 'number') return
-
-      //   const el = document.getElementById(
-      //     index < 1
-      //       ? draft.cells[draft.cells.length - 1].id
-      //       : draft.cells[index - 1].id,
-      //   )
-      //   if (el) el.focus()
-
-      //   break
-      // }
-      // case 'focus-down': {
-      //   const index = draft.cells.findIndex(c => c.id === draft.focused)
-      //   if (typeof index !== 'number') return
-
-      //   const el = document.getElementById(
-      //     index > draft.cells.length - 2
-      //       ? draft.cells[0].id
-      //       : draft.cells[index + 1].id,
-      //   )
-      //   if (el) el.focus()
-
-      //   break
-      // }
     }
   })
 }

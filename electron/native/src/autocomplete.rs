@@ -43,7 +43,9 @@ pub fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggest
     let command = parts.next().expect("Failed to parse input");
     let mut args = parts;
 
-    // bash
+    // bash: ~/.bash_history
+    // fish: ~/.local/share/fish/fish_history
+    // zsh: /.zsh_history
     if let Ok(lines) =
         read_lines(dirs::home_dir().unwrap().to_string_lossy().to_string() + "/.bash_history")
     {

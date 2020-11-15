@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react'
-import Header from './components/header'
+import Header, { headerHeight } from './components/header'
 import { Div } from './components/shared'
-import Terminal from './components/terminal'
+import Tab from './components/tab'
 import { css } from './stitches.config'
 import useStore from './store'
 
@@ -12,9 +12,11 @@ export const globalStyles = css.global({
     caretColor: '$caretColor',
     fontFamily: '$sans',
 
-    overflow: 'hidden',
-    position: 'relative',
-    height: '100vh',
+    position: 'fixed',
+    top: '$2',
+    right: '$2',
+    bottom: '$2',
+    left: '$2',
 
     '*': {
       '::selection': {
@@ -37,18 +39,18 @@ const App: React.FC = () => {
     <>
       <Header />
       <Div
-        id="scroller"
         css={{
-          overflowY: 'auto',
-          overflowX: 'hidden',
           position: 'absolute',
-          top: '2rem',
+          height: `calc(100% - ${headerHeight})`,
+          width: '100%',
+          top: headerHeight,
           right: 0,
           bottom: 0,
           left: 0,
         }}
       >
-        <Terminal />
+        {/* todo: tabs */}
+        <Tab />
       </Div>
     </>
   )
