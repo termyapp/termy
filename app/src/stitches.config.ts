@@ -8,7 +8,7 @@ export const lightTheme = {
 
     $primaryTextColor: baseTheme.colors.$black,
     $secondaryTextColor: baseTheme.colors.$gray700,
-    $backgroundColor: baseTheme.colors.$gray100,
+    $backgroundColor: baseTheme.colors.$gray200,
 
     $accentColor: baseTheme.colors.$gray300,
     $caretColor: baseTheme.colors.$teal500,

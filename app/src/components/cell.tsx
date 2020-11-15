@@ -1,13 +1,13 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import type { CellType } from '../../types'
-import { scrollIntoView, useListener, useXterm } from '../lib'
+import { useListener, useXterm } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
 import Prompt from './prompt'
 import { Card, Div } from './shared'
 
-const Cell: React.FC<CellType> = cell => {
-  const { id } = cell
+const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
+  const cell = useStore(useCallback(state => state.cells[id], [id]))
   const dispatch = useStore(state => state.dispatch)
   const [focused, setFocused] = useState(true)
 
@@ -39,19 +39,12 @@ const Cell: React.FC<CellType> = cell => {
         terminalRef.current?.write(output.data)
         // console.log('writing chunk', output.data)
       }
-
-      scrollIntoView(id)
     }
   })
 
   return (
-    <Wrapper
-      id={cell.id}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-    >
+    <Wrapper onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
       <Prompt {...cell} focused={focused} />
-
       <Pty show={cell.type === 'pty'}>
         <Div
           ref={terminalContainerRef}
@@ -62,7 +55,6 @@ const Cell: React.FC<CellType> = cell => {
           }}
         />
       </Pty>
-
       <Div
         css={{
           display: cell.type === 'api' ? 'initial' : 'none',
@@ -79,9 +71,11 @@ const Cell: React.FC<CellType> = cell => {
 export default Cell
 
 const Wrapper = styled(Card, {
+  height: '100%',
   py: '$2',
   px: '$4',
 
+  backgroundColor: '$focusedBackgroundColor',
   border: '1px solid transparent',
   color: '$secondaryTextColor',
 

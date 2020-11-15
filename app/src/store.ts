@@ -14,12 +14,14 @@ type Action =
   | { type: 'new' }
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
   | { type: 'run-cell'; id: string; input: string }
+  | { type: 'set-layouts'; layouts: ReactGridLayout.Layouts }
   | { type: 'focus-up' }
   | { type: 'focus-down' }
 
 const getDefaultCell = (): CellType => {
+  const id = v4()
   return {
-    id: v4(),
+    id,
     currentDir: api('home'),
     value: [
       {
@@ -32,10 +34,16 @@ const getDefaultCell = (): CellType => {
 }
 
 // todo: init cell input with `help` or `guide` on first launch
-const initialState = {
-  cells: [getDefaultCell()],
-  theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
-}
+const initialState = (() => {
+  const cell = getDefaultCell()
+  return {
+    cells: { [cell.id]: cell },
+    theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
+    layouts: {
+      lg: [{ i: cell.id, x: 0, y: 0, w: 10, h: 6 }],
+    } as ReactGridLayout.Layouts,
+  }
+})()
 
 const reducer = (state: State, action: Action) => {
   return produce(state, draft => {
@@ -45,18 +53,16 @@ const reducer = (state: State, action: Action) => {
         break
       }
       case 'new': {
-        draft.cells.push(getDefaultCell())
+        const cell = getDefaultCell()
+        draft.cells[cell.id] = cell
         break
       }
       case 'set-cell': {
-        const index = draft.cells.findIndex(c => c.id === action.id)
-        if (typeof index !== 'number') return
-
-        draft.cells[index] = { ...draft.cells[index], ...action.cell }
+        draft.cells[action.id] = { ...draft.cells[action.id], ...action.cell }
         break
       }
       case 'run-cell': {
-        const cell = draft.cells.find(c => c.id === action.id)
+        const cell = draft.cells[action.id]
         if (!cell || !action.input) return
         console.log('running', action.input)
 
@@ -78,6 +84,10 @@ const reducer = (state: State, action: Action) => {
         }
 
         ipc.send('message', message)
+        break
+      }
+      case 'set-layouts': {
+        draft.layouts = action.layouts
         break
       }
       // case 'focus-up': {
