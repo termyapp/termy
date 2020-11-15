@@ -1,5 +1,5 @@
 import type { ThemeMode } from '../../types'
-import { darkTheme, lightTheme } from './../stitches.config'
+import { darkTheme, lightTheme } from '../stitches.config'
 
 export const formatCurrentDir = (currentDir: string) => {
   const path = currentDir.split('/')

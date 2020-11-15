@@ -3,12 +3,11 @@ import ReactDOM from 'react-dom'
 import App from './app'
 import './index.css'
 import './xterm.css'
-import 'react-grid-layout/css/styles.css'
-import 'react-resizable/css/styles.css'
 
 ReactDOM.render(
-  // <React.StrictMode>
-  <App />,
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
   document.getElementById('root'),
 )
 

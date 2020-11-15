@@ -49,7 +49,7 @@ export const darkTheme = {
 const tokens = JSON.parse(JSON.stringify(lightTheme)) as typeof lightTheme
 
 export const { styled, css } = createStyled({
-  prefix: 'Termy',
+  // prefix: 'Termy',
   tokens,
   breakpoints: {
     default: rule => rule,

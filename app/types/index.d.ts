@@ -1,4 +1,5 @@
 import type { Node } from 'slate'
+import type { Status } from './shared'
 
 export type ThemeMode = '#fff' | '#000'
 
@@ -7,9 +8,7 @@ export type CellType = {
   value: Node[]
   currentDir: string
   type: OutputType
-  status?: Status // undefined is default (before running anything)
-
-  // position?: number[] // todo: (row, col maybe?)
+  status: Status
 }
 
 export type CellTypeWithFocused = CellType & { focused: boolean }

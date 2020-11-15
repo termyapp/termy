@@ -1,13 +1,16 @@
-import type { OutputType, XtermSize } from '../../types'
-import { useRef, useMemo, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useDebounce } from 'react-use'
+import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
-import { ipc } from './'
-import type { CellTypeWithFocused, Message } from '../../types'
+import type {
+  CellTypeWithFocused,
+  Message,
+  OutputType,
+  XtermSize,
+} from '../../types'
 import useStore from '../store'
-import { useDebounce, useMeasure } from 'react-use'
-
-import type { Terminal } from 'xterm'
+import { ipc } from './'
 
 export const useXterm = ({
   id,
@@ -79,7 +82,7 @@ export const useXterm = ({
       }
       ipc.send('message', message)
     },
-    100,
+    80,
     [size, id, type],
   )
 
@@ -115,10 +118,7 @@ export const useXterm = ({
   }, [])
 
   useEffect(() => {
-    // todo: reset when re running a cell
-    console.log('status', status)
-
-    if (typeof status === 'undefined') {
+    if (status === null) {
       // remove previous content
       terminalRef.current?.reset()
       terminalRef.current?.setOption('disableStdin', false)

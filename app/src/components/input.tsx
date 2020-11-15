@@ -8,6 +8,7 @@ import type { CellTypeWithFocused, Message, Suggestion } from '../../types'
 import { ipc } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
+import { headerHeight } from './header'
 import { Div } from './shared'
 import { Dir } from './svg'
 
@@ -60,8 +61,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
   // update suggestions box position
   useEffect(() => {
     const { selection } = editor
-    const scroller = document.getElementById('scroller') as HTMLDivElement
-    if (suggestionRef.current && inputRef.current && selection && scroller) {
+    if (suggestionRef.current && inputRef.current && selection) {
       const suggestionElement = suggestionRef.current
       const inputElement = inputRef.current
 
@@ -74,23 +74,20 @@ const Input: React.FC<CellTypeWithFocused> = ({
       const rect = domRange.getBoundingClientRect()
 
       // calculate available top/bottom space of the element
-      const topSpace =
-        inputElement.offsetTop - scroller.scrollTop + inputElement.offsetHeight
-      const bottomSpace =
-        scroller.scrollTop + scroller.offsetHeight - inputElement.offsetTop
+      const topSpace = inputElement.offsetTop + inputElement.offsetHeight
+      const bottomSpace = window.innerHeight - inputElement.offsetTop - 100
 
       setDirection(bottomSpace > topSpace ? 'column' : 'column-reverse')
 
       // calculate position of the suggestions box
-      const padding = 5
       const top =
         bottomSpace > topSpace
-          ? rect.top + rect.height + padding
-          : rect.top - suggestionElement.offsetHeight - padding
+          ? rect.top + rect.height
+          : rect.top - suggestionElement.offsetHeight - 10
 
       // update values
       suggestionElement.style.top = `${top}px`
-      suggestionElement.style.left = `${rect.left + scroller.offsetLeft}px`
+      suggestionElement.style.left = `${rect.left}px`
     }
   }, [editor, index, suggestions])
 

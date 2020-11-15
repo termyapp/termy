@@ -1,14 +1,14 @@
 import React from 'react'
 import { Div } from './shared'
 
-interface Props {}
+export const headerHeight = '29px'
 
-const Header: React.FC<Props> = props => {
+const Header: React.FC = () => {
   return (
     <Div
       className="header"
       css={{
-        height: '2rem',
+        height: headerHeight,
         width: '100%',
       }}
     />

@@ -20,6 +20,9 @@ const Prompt: React.FC<CellTypeWithFocused> = cell => {
 export default Prompt
 
 const Wrapper = styled('div', {
+  px: '$4',
+  py: '$1',
+
   display: 'flex',
   cursor: 'text',
 

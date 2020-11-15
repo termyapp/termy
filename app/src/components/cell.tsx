@@ -4,7 +4,7 @@ import { useListener, useXterm } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
 import Prompt from './prompt'
-import { Card, Div } from './shared'
+import { Div, Flex } from './shared'
 
 const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
   const cell = useStore(useCallback(state => state.cells[id], [id]))
@@ -41,41 +41,53 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
       }
     }
   })
-
+  console.log(cell.type)
   return (
-    <Wrapper onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
+    <Wrapper
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onKeyDown={e => {
+        if (focused && e.metaKey && e.key == 'w') {
+          e.preventDefault()
+          dispatch({ type: 'remove', id })
+        }
+      }}
+    >
       <Prompt {...cell} focused={focused} />
-      <Pty show={cell.type === 'pty'}>
+      <Output>
+        <Pty show={cell.type === 'pty'}>
+          <Div
+            ref={terminalContainerRef}
+            css={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+            }}
+          />
+        </Pty>
         <Div
-          ref={terminalContainerRef}
           css={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
+            display: cell.type === 'api' ? 'initial' : 'none',
+            fontSize: '$sm',
+            color: '$secondaryTextColor',
           }}
-        />
-      </Pty>
-      <Div
-        css={{
-          display: cell.type === 'api' ? 'initial' : 'none',
-          fontSize: '$sm',
-          color: '$secondaryTextColor',
-        }}
-      >
-        {output}
-      </Div>
+        >
+          {output}
+        </Div>
+      </Output>
     </Wrapper>
   )
 }
 
 export default Cell
 
-const Wrapper = styled(Card, {
-  height: '100%',
-  py: '$2',
-  px: '$4',
+const Wrapper = styled(Flex, {
+  position: 'relative',
+  borderRadius: '$default',
+  flexDirection: 'column',
 
-  backgroundColor: '$focusedBackgroundColor',
   border: '1px solid transparent',
   color: '$secondaryTextColor',
 
@@ -86,16 +98,24 @@ const Wrapper = styled(Card, {
   },
 })
 
+const Output = styled(Div, {
+  px: '$4',
+  height: '100%',
+})
+
 const Pty = styled(Div, {
+  position: 'relative',
+
   variants: {
     show: {
       true: {
-        mt: '$2',
-        position: 'relative',
-        height: 300, // todo: variable cell size (auto on new line?)
+        width: '100%',
+        height: '100%',
         visibility: 'visible',
       },
       false: {
+        width: 0,
+        height: 0,
         visibility: 'hidden',
       },
     },
