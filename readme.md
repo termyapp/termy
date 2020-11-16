@@ -11,7 +11,7 @@
 <br/>
 
 <p align="center">
-  <a href="https://termy.app/docs"><strong>Docs</strong></a> •
+  <a href="http://discord.com/invite/tzrRhdZ"><strong>Discord</strong></a> •
   <a href="#motivation"><strong>Motivation</strong></a> •
   <a href="#development"><strong>Development</strong></a>
 </p>
