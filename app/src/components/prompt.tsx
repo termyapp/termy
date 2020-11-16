@@ -50,6 +50,7 @@ const CurrentDir = styled('div', {
   fontSize: '$xs',
   textDecoration: 'underline',
   fontFamily: '$mono',
+  whiteSpace: 'nowrap',
 
   variants: {
     focused: {
