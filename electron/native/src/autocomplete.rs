@@ -85,7 +85,7 @@ pub fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggest
                     if !entry.metadata().unwrap().is_dir() {
                         return None;
                     }
-                    let name = entry.path().to_str().unwrap().to_string();
+                    let name = entry.file_name().to_string_lossy().to_string();
                     let score = if let Some(score) = matcher.fuzzy_match(name.as_str(), command) {
                         score
                     } else {
@@ -94,8 +94,8 @@ pub fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggest
 
                     Some(Suggestion {
                         score,
-                        command: entry.file_name().to_string_lossy().to_string(),
-                        display: entry.file_name().to_string_lossy().to_string(),
+                        command: name.clone(),
+                        display: name,
                         suggestion_type: SuggestionType::Dir,
                         date: Some(
                             entry
