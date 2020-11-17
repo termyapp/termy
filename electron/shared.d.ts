@@ -1,7 +1,7 @@
 // In sync with ../electron/shared.d.ts
 // todo: figure out a way to reference the types
 
-type Status = 'running' | 'success' | 'error'
+export type Status = 'running' | 'success' | 'error' | null
 
 export type OutputType = 'pty' | 'api' | null
 
@@ -34,6 +34,8 @@ export type Message =
 
 export type ServerMessage = {
   id: string
-  output?: { data: string; type: OutputType; cd?: string }
+  output?:
+    | { type: 'pty'; data: { ptyData: number[] } }
+    | { type: 'api'; data: { apiData: string }; cd?: string }
   status?: Status
 }

@@ -34,9 +34,9 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
           dispatch({ type: 'set-cell', id, cell: { currentDir: output.cd } })
         }
 
-        setOutput(output.data)
+        setOutput(output.data.apiData)
       } else if (output.type === 'pty') {
-        terminalRef.current?.write(output.data)
+        terminalRef.current?.write(new Uint8Array(output.data.ptyData))
         // console.log('writing chunk', output.data)
       }
     }

@@ -8,10 +8,6 @@ fixPath()
 
 app.allowRendererProcessReuse = true // default true in >=9
 
-// getting these errors on newer electron versions
-// https://github.com/electron/electron/issues/11789
-// app.disableHardwareAcceleration()
-
 let mainWindow: BrowserWindow
 
 // This method will be called when Electron has finished

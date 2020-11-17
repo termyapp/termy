@@ -184,33 +184,48 @@ impl Cell {
 
             // Read and parse output from the pty with reader
             let mut reader = pair.master.try_clone_reader()?;
-
+            let mut i = 0;
             thread::spawn(move || {
+                // let mut chunk = [0u8; 10000]; 6899
+                // let mut chunk = [0u8; 1024]; 7086
+                // let mut chunk = [0u8; 64]; 37651
                 let mut chunk = [0u8; 1024];
 
+                // todo: flowcontrol - pause here
+                // https://xtermjs.org/docs/guides/flowcontrol/
+                // also, buffer chunks to minimize ipc calls
                 loop {
+                    // can't read_exact because than programs that expect input won't work
                     let read = reader.read(&mut chunk);
 
-                    if let Ok(len) = read {
-                        if len == 0 {
-                            break;
+                    if let Err(err) = read {
+                        error!("Err: {}", err);
+                        break;
+                    }
+                    loop {
+                        let read = reader.read(&mut chunk);
+
+                        if let Ok(len) = read {
+                            if len == 0 {
+                                break;
+                            }
+                            let chunk = &chunk[..len];
+                            i += 1;
+                            info!("Sending chunk: {} {}", i, chunk.len());
+                            let data = ServerData::PtyData(chunk.to_vec());
+                            send_message.send(ServerMessage {
+                                output: Some(Output {
+                                    data,
+                                    cell_type: CellType::Pty,
+                                    cd: None,
+                                }),
+                                status: None,
+                            });
+                        } else {
+                            error!("Err: {}", read.unwrap_err());
                         }
-                        let chunk = &chunk[..len];
-                        let output =
-                            std::str::from_utf8(chunk).expect("Failed to convert the chunk");
-                        send_message.send(ServerMessage {
-                            output: Some(Output {
-                                data: output.to_string(),
-                                cell_type: CellType::Pty,
-                                cd: None,
-                            }),
-                            status: None,
-                        });
-                    } else {
-                        error!("Err: {}", read.unwrap_err());
                     }
                 }
-
                 sender
                     .send(CellChannel::SendMessage(send_message))
                     .expect("Failed to pass send_message over");
@@ -339,7 +354,7 @@ impl ServerMessage {
     fn api(data: String, cd: Option<String>, status: Status) -> Option<Self> {
         Some(Self {
             output: Some(Output {
-                data,
+                data: ServerData::ApiData(data),
                 cell_type: CellType::Api,
                 cd,
             }),
@@ -357,8 +372,15 @@ impl ServerMessage {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
+enum ServerData {
+    ApiData(String),
+    PtyData(Vec<u8>),
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 struct Output {
-    data: String,
+    data: ServerData,
     #[serde(rename = "type")]
     cell_type: CellType,
     cd: Option<String>,

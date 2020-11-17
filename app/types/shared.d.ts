@@ -34,6 +34,8 @@ export type Message =
 
 export type ServerMessage = {
   id: string
-  output?: { data: string; type: OutputType; cd?: string }
+  output?:
+    | { type: 'pty'; data: { ptyData: number[] } }
+    | { type: 'api'; data: { apiData: string }; cd?: string }
   status?: Status
 }
