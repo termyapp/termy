@@ -34,7 +34,7 @@ const IndexPage = () => {
           },
         }}
       >
-        <Text as="h1" size="9" css={{ lineHeight: 0.9 }}>
+        <Text as="h1" size="9" css={{ lineHeight: 0.9, fontFamily: '$sans' }}>
           A terminal for the
           <br />
           <mark

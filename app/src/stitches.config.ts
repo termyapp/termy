@@ -118,3 +118,24 @@ export const { styled, css } = createStyled({
     }),
   },
 })
+
+export const globalStyles = css.global({
+  body: {
+    color: '$primaryTextColor',
+    backgroundColor: '$backgroundColor',
+    caretColor: '$caretColor',
+    fontFamily: '$sans',
+
+    position: 'fixed',
+    top: '$2',
+    right: '$2',
+    bottom: '$2',
+    left: '$2',
+
+    '*': {
+      '::selection': {
+        backgroundColor: '$selectionColor',
+      },
+    },
+  },
+})

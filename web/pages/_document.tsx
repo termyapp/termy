@@ -1,8 +1,14 @@
+import Document, {
+  DocumentContext,
+  Head,
+  Html,
+  Main,
+  NextScript,
+} from 'next/document'
 import React from 'react'
-import NextDocument, { DocumentContext } from 'next/document'
 import { css } from '../stitches.config'
 
-export default class Document extends NextDocument {
+export default class CustomDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
     const originalRenderPage = ctx.renderPage
 
@@ -14,7 +20,7 @@ export default class Document extends NextDocument {
         return result
       }
 
-      const initialProps = await NextDocument.getInitialProps(ctx)
+      const initialProps = await Document.getInitialProps(ctx)
 
       return {
         ...initialProps,
@@ -33,5 +39,27 @@ export default class Document extends NextDocument {
       }
     } finally {
     }
+  }
+
+  render() {
+    return (
+      <Html>
+        <Head>
+          <link rel="preconnect" href="https://fonts.gstatic.com" />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap"
+            rel="stylesheet"
+          />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+            rel="stylesheet"
+          ></link>
+        </Head>
+        <body>
+          <Main />
+          <NextScript />
+        </body>
+      </Html>
+    )
   }
 }

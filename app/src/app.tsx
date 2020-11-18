@@ -2,29 +2,8 @@ import React, { useEffect, useMemo } from 'react'
 import Header, { headerHeight } from './components/header'
 import { Div } from './components/shared'
 import Tab from './components/tab'
-import { css } from './stitches.config'
+import { css, globalStyles } from './stitches.config'
 import useStore from './store'
-
-export const globalStyles = css.global({
-  body: {
-    color: '$primaryTextColor',
-    backgroundColor: '$backgroundColor',
-    caretColor: '$caretColor',
-    fontFamily: '$sans',
-
-    position: 'fixed',
-    top: '$2',
-    right: '$2',
-    bottom: '$2',
-    left: '$2',
-
-    '*': {
-      '::selection': {
-        backgroundColor: '$selectionColor',
-      },
-    },
-  },
-})
 
 const App: React.FC = () => {
   useMemo(() => globalStyles(), [])

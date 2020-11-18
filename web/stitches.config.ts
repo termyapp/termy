@@ -1,115 +1,56 @@
 import { createStyled } from '@stitches/react'
+import baseTheme from './base-theme'
 
-import { reset } from 'stitches-reset'
-
-export const theme = {
+export const lightTheme = {
+  ...baseTheme,
   colors: {
-    $foreground: 'hsl(206,2%,80%)',
-    $background: '#000',
+    ...baseTheme.colors,
 
-    $canvas: 'hsl(0,0%,15%)',
+    $primaryTextColor: baseTheme.colors.$black,
+    $secondaryTextColor: baseTheme.colors.$gray700,
+    $backgroundColor: baseTheme.colors.$gray200,
 
-    $gray100: 'hsl(206,8%,12%)',
-    $gray200: 'hsl(206,7%,14%)',
-    $gray300: 'hsl(206,7%,15%)',
-    $gray400: 'hsl(206,7%,24%)',
-    $gray500: 'hsl(206,7%,30%)',
-    $gray600: 'hsl(206,5%,53%)',
-    $gray700: 'hsl(206,5%,65%)',
-    $gray800: 'hsl(206,5%,85%)',
+    $accentColor: baseTheme.colors.$gray300,
+    $caretColor: baseTheme.colors.$teal500,
+    $selectionColor: baseTheme.colors.$teal200,
+    $focusedBackgroundColor: baseTheme.colors.$white,
 
-    $blue100: 'hsl(212,100%,10%)',
-    $blue200: 'hsl(212,42%,12%)',
-    $blue300: 'hsl(211,55%,16%)',
-    $blue400: 'hsl(209,100%,84%)',
-    $blue500: 'hsl(206,100%,50%)',
-    $blue600: 'hsl(206,100%,60%)',
+    $currentDirColor: baseTheme.colors.$blue900,
+    $currentDirBackgroundColor: baseTheme.colors.$blue100,
 
-    $purple100: 'hsl(252,50%,10%)',
-    $purple200: 'hsl(252,22%,14%)',
-    $purple300: 'hsl(252,33%,20%)',
-    $purple400: 'hsl(252,75%,84%)',
-    $purple500: 'hsl(252,78%,60%)',
-    $purple600: 'hsl(252,78%,71%)',
-
-    $green100: 'hsl(152,75%,8%)',
-    $green200: 'hsl(152,72%,11%)',
-    $green300: 'hsl(150,60%,20%)',
-    $green400: 'hsl(150,60%,40%)',
-    $green500: 'hsl(148,60%,50%)',
-    $green600: 'hsl(148,58%,60%)',
-
-    $red100: 'hsl(346,100%,8%)',
-    $red200: 'hsl(346,94%,13%)',
-    $red300: 'hsl(348,90%,20%)',
-    $red400: 'hsl(350,90%,40%)',
-    $red500: 'hsl(352,100%,50%)',
-    $red600: 'hsl(352,79%,65%)',
-
-    $yellow100: 'hsl(52,50%,10%)',
-    $yellow200: 'hsl(52,22%,14%)',
-    $yellow300: 'hsl(52,33%,20%)',
-    $yellow400: 'hsl(52,75%,78%)',
-    $yellow500: 'hsl(52,78%,45%)',
-    $yellow600: 'hsl(52,90%,45%)',
-  },
-  fonts: {
-    $sans:
-      'Futura, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
-    $mono:
-      'Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-  },
-  space: {
-    $1: '5px',
-    $2: '10px',
-    $3: '15px',
-    $4: '20px',
-    $5: '25px',
-    $6: '35px',
-    $7: '45px',
-    $8: '65px',
-    $9: '100px',
-  },
-  sizes: {
-    $1: '5px',
-    $2: '10px',
-    $3: '15px',
-    $4: '20px',
-    $5: '25px',
-    $6: '35px',
-    $7: '45px',
-    $8: '65px',
-    $9: '80px',
-  },
-  fontSizes: {
-    $1: '12px',
-    $2: '13px',
-    $3: '15px',
-    $4: '17px',
-    $5: '19px',
-    $6: '21px',
-    $7: '27px',
-    $8: '35px',
-    $9: '90px',
-  },
-  radii: {
-    $1: '3px',
-    $2: '8px',
-    $3: '15px',
-    $round: '50%',
-    $pill: '9999px',
-  },
-  zIndices: {
-    $1: '100',
-    $2: '200',
-    $3: '300',
-    $4: '400',
-    $max: '999',
+    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue500,
+    $selectedSuggestionColor: baseTheme.colors.$white,
   },
 }
 
+export const darkTheme = {
+  ...baseTheme,
+  colors: {
+    ...baseTheme.colors,
+
+    $primaryTextColor: baseTheme.colors.$white,
+    $secondaryTextColor: baseTheme.colors.$gray400,
+    $backgroundColor: baseTheme.colors.$black,
+
+    $accentColor: '#2a2a2a',
+    $caretColor: '#f42069',
+    $selectionColor: '#f42069',
+    $focusedBackgroundColor: '#161616',
+
+    $currentDirColor: baseTheme.colors.$gray300,
+    $currentDirBackgroundColor: baseTheme.colors.$gray900,
+
+    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue700,
+    $selectedSuggestionColor: baseTheme.colors.$white,
+  },
+}
+
+// creating a copy so that the exported `theme` retains the raw values
+const tokens = JSON.parse(JSON.stringify(lightTheme)) as typeof lightTheme
+
 export const { styled, css } = createStyled({
-  tokens: theme,
+  // prefix: 'Termy',
+  tokens,
   breakpoints: {
     default: rule => rule,
     bp1: rule => `@media (min-width: 520px) { ${rule} }`,
@@ -122,128 +63,73 @@ export const { styled, css } = createStyled({
     light: rule => `@media (prefers-color-scheme: light) { ${rule} }`,
   },
   utils: {
-    p: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    p: value => ({
       paddingTop: value,
       paddingBottom: value,
       paddingLeft: value,
       paddingRight: value,
     }),
-    pt: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    pt: value => ({
       paddingTop: value,
     }),
-    pr: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    pr: value => ({
       paddingRight: value,
     }),
-    pb: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    pb: value => ({
       paddingBottom: value,
     }),
-    pl: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    pl: value => ({
       paddingLeft: value,
     }),
-    px: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    px: value => ({
       paddingLeft: value,
       paddingRight: value,
     }),
-    py: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    py: value => ({
       paddingTop: value,
       paddingBottom: value,
     }),
-    m: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+
+    m: value => ({
       marginTop: value,
       marginBottom: value,
       marginLeft: value,
       marginRight: value,
     }),
-    mt: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    mt: value => ({
       marginTop: value,
     }),
-    mr: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    mr: value => ({
       marginRight: value,
     }),
-    mb: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    mb: value => ({
       marginBottom: value,
     }),
-    ml: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    ml: value => ({
       marginLeft: value,
     }),
-    mx: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    mx: value => ({
       marginLeft: value,
       marginRight: value,
     }),
-    my: config => (value: keyof typeof theme['space'] | (string & {})) => ({
+    my: value => ({
       marginTop: value,
       marginBottom: value,
-    }),
-
-    ta: config => value => ({ textAlign: value }),
-
-    fd: config => value => ({ flexDirection: value }),
-    fw: config => value => ({ flexWrap: value }),
-
-    ai: config => value => ({ alignItems: value }),
-    ac: config => value => ({ alignContent: value }),
-    jc: config => value => ({ justifyContent: value }),
-    as: config => value => ({ alignSelf: value }),
-    fg: config => value => ({ flexGrow: value }),
-    fs: config => value => ({ flexShrink: value }),
-    fb: config => value => ({ flexBasis: value }),
-
-    bc: config => (value: keyof typeof theme['colors'] | (string & {})) => ({
-      backgroundColor: value,
-    }),
-
-    br: config => (value: keyof typeof theme['radii'] | (string & {})) => ({
-      borderRadius: value,
-    }),
-    btrr: config => (value: keyof typeof theme['radii'] | (string & {})) => ({
-      borderTopRightRadius: value,
-    }),
-    bbrr: config => (value: keyof typeof theme['radii'] | (string & {})) => ({
-      borderBottomRightRadius: value,
-    }),
-    bblr: config => (value: keyof typeof theme['radii'] | (string & {})) => ({
-      borderBottomLeftRadius: value,
-    }),
-    btlr: config => (value: keyof typeof theme['radii'] | (string & {})) => ({
-      borderTopLeftRadius: value,
-    }),
-
-    bs: config => value => ({ boxShadow: value }),
-
-    lh: config => value => ({ lineHeight: value }),
-
-    ox: config => value => ({ overflowX: value }),
-    oy: config => value => ({ overflowY: value }),
-
-    pe: config => value => ({ pointerEvents: value }),
-    us: config => value => ({ userSelect: value }),
-
-    size: config => (value: keyof typeof theme['sizes'] | (string & {})) => ({
-      width: value,
-      height: value,
-    }),
-
-    linearGradient: config => value => ({
-      backgroundImage: `linear-gradient(${value})`,
     }),
   },
 })
 
-css.global({
-  ...reset,
+export const globalStyles = css.global({
   body: {
-    backgroundColor: '$background',
-    color: '$foreground',
-    fontFamily: '$sans',
-  },
-  a: {
-    textDecoration: 'none',
-  },
+    color: '$primaryTextColor',
+    backgroundColor: '$backgroundColor',
+    caretColor: '$caretColor',
+    fontFamily: '$mono',
 
-  '*': {
-    '::selection': {
-      background: '$blue500',
-      color: '$foreground',
+    '*': {
+      '::selection': {
+        backgroundColor: '$selectionColor',
+      },
     },
   },
 })

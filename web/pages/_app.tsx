@@ -1,9 +1,9 @@
 import { AppProps } from 'next/app'
 import React from 'react'
-// import { globalStyles } from '../stitches.config'
+import { globalStyles } from '../stitches.config'
 
 const App: React.FC<AppProps> = ({ Component, pageProps }) => {
-  // globalStyles()
+  globalStyles()
 
   return <Component {...pageProps} />
 }
