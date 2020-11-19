@@ -17,7 +17,7 @@ pub struct Autocomplete {
     input: String,
     current_dir: String,
     matcher: SkimMatcherV2,
-    suggestions: Vec<Suggestion>,
+    suggestions: HashMap<String, Suggestion>,
 }
 
 impl Autocomplete {
@@ -26,7 +26,7 @@ impl Autocomplete {
             input,
             current_dir,
             matcher: SkimMatcherV2::default(),
-            suggestions: vec![],
+            suggestions: HashMap::new(),
         }
     }
 
@@ -39,31 +39,42 @@ impl Autocomplete {
         self.executables();
         self.zsh_history();
 
-        self.suggestions.sort_by(|a, b| b.score.cmp(&a.score));
+        let mut suggestions: Vec<Suggestion> =
+            self.suggestions.into_iter().map(|(_, s)| s).collect();
 
-        self.suggestions = self
-            .suggestions
+        suggestions.sort_by(|a, b| b.score.cmp(&a.score));
+
+        suggestions = suggestions
             .into_iter()
             .take(20)
             .collect::<Vec<Suggestion>>();
 
-        self.suggestions
+        suggestions
+    }
+
+    fn insert(&mut self, key: String, value: Suggestion) {
+        if let Some(s) = self.suggestions.get_mut(&key) {
+            s.score += Boost::Low as i64;
+        } else {
+            self.suggestions.insert(key, value);
+        }
     }
 
     // directory suggestions
     fn directories(&mut self) -> Result<()> {
-        let mut directories = fs::read_dir(self.current_dir.clone())?
-            .filter_map(|e| {
-                let entry = e.unwrap();
-                if !entry.metadata().unwrap().is_dir() {
-                    return None;
-                }
-                let name = entry.file_name().to_string_lossy().to_string();
-                if let Some((score, indexes)) = self
-                    .matcher
-                    .fuzzy_indices(name.as_str(), self.input.as_ref())
-                {
-                    Some(Suggestion {
+        for entry in fs::read_dir(self.current_dir.clone())? {
+            let entry = entry.unwrap();
+            if !entry.metadata().unwrap().is_dir() {
+                continue;
+            }
+            let name = entry.file_name().to_string_lossy().to_string();
+            if let Some((score, indexes)) = self
+                .matcher
+                .fuzzy_indices(name.as_str(), self.input.as_ref())
+            {
+                self.insert(
+                    name.clone(),
+                    Suggestion {
                         command: name.clone(),
                         display: name,
                         score,
@@ -81,14 +92,10 @@ impl Autocomplete {
                                 .as_millis()
                                 .to_string(),
                         ),
-                    })
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<Suggestion>>();
-
-        self.suggestions.append(&mut directories);
+                    },
+                );
+            }
+        }
 
         Ok(())
     }
@@ -99,25 +106,28 @@ impl Autocomplete {
             if let Some((score, indexes)) =
                 self.matcher.fuzzy_indices(&executable, self.input.as_ref())
             {
-                self.suggestions.push(Suggestion {
-                    command: executable.clone(),
-                    display: executable.clone(),
-                    score: if self.input == executable {
-                        // boosting so for something like `bash`, the
-                        // `bash` executable shows up as the 1st suggestion
-                        score + Boost::High as i64
-                    } else {
-                        score
+                self.suggestions.insert(
+                    executable.clone(),
+                    Suggestion {
+                        command: executable.clone(),
+                        display: executable.clone(),
+                        score: if self.input == executable {
+                            // boosting so for something like `bash`, the
+                            // `bash` executable shows up as the 1st suggestion
+                            score + Boost::High as i64
+                        } else {
+                            score
+                        },
+                        indexes,
+                        kind: SuggestionType::Executable,
+                        documentation: if let Ok(docs) = get_docs(&executable) {
+                            Some(docs)
+                        } else {
+                            None
+                        },
+                        date: None,
                     },
-                    indexes,
-                    kind: SuggestionType::Executable,
-                    documentation: if let Ok(docs) = get_docs(&executable) {
-                        Some(docs)
-                    } else {
-                        None
-                    },
-                    date: None,
-                })
+                );
             }
         }
     }
@@ -130,8 +140,6 @@ impl Autocomplete {
         if let Ok(lines) =
             read_lines(dirs::home_dir().unwrap().to_string_lossy().to_string() + "/.zsh_history")
         {
-            let mut commands: HashMap<String, Suggestion> = HashMap::new();
-
             for line in lines {
                 if let Ok(line) = line {
                     if let Some(command) = line.split(";").last() {
@@ -139,29 +147,21 @@ impl Autocomplete {
                         if let Some((score, indexes)) =
                             self.matcher.fuzzy_indices(&command, self.input.as_ref())
                         {
-                            if let Some(c) = commands.get_mut(&command) {
-                                c.score += Boost::Low as i64;
-                            } else {
-                                commands.insert(
-                                    command.clone(),
-                                    Suggestion {
-                                        command: command.clone(),
-                                        display: command,
-                                        score,
-                                        indexes,
-                                        kind: SuggestionType::Bash,
-                                        documentation: None,
-                                        date: None,
-                                    },
-                                );
-                            }
+                            self.insert(
+                                command.clone(),
+                                Suggestion {
+                                    command: command.clone(),
+                                    display: command,
+                                    score,
+                                    indexes,
+                                    kind: SuggestionType::Bash,
+                                    documentation: None,
+                                    date: None,
+                                },
+                            );
                         }
                     }
                 }
-            }
-
-            for (_, s) in commands {
-                self.suggestions.push(s);
             }
         }
     }
