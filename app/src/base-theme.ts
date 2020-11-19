@@ -113,7 +113,7 @@ export default {
     $sans:
       'Inter, "Helvetica", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
     $mono:
-      '"Source Code Pro", "Courier New", Courier, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
+      '"Roboto Mono", "Courier New", Courier, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
     $serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
   },
   space: {
