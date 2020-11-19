@@ -4,7 +4,7 @@ import { ipc } from './'
 
 export const useListener = (
   channel: string,
-  listener: (_event: any, message: ServerMessage) => void,
+  listener: (_event: any, message: any) => void,
   deps = [] as any[],
 ) => {
   // receive events from server

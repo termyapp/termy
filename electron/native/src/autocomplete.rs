@@ -1,156 +1,225 @@
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
+use is_executable::IsExecutable;
+use relative_path::RelativePath;
 use serde::Serialize;
+use std::io;
 use std::{
     collections::HashMap,
-    collections::HashSet,
+    env,
     fs::{self, File},
     io::BufRead,
     path::Path,
     time::UNIX_EPOCH,
 };
-use std::{io, process::Command};
+
+pub struct Autocomplete {
+    input: String,
+    current_dir: String,
+    matcher: SkimMatcherV2,
+    suggestions: Vec<Suggestion>,
+}
+
+impl Autocomplete {
+    pub fn new(input: String, current_dir: String) -> Self {
+        Self {
+            input,
+            current_dir,
+            matcher: SkimMatcherV2::default(),
+            suggestions: vec![],
+        }
+    }
+
+    pub fn suggestions(mut self) -> Vec<Suggestion> {
+        if self.input.len() < 1 {
+            return vec![];
+        }
+
+        self.directories();
+        self.executables();
+        self.zsh_history();
+
+        self.suggestions.sort_by(|a, b| b.score.cmp(&a.score));
+
+        self.suggestions = self
+            .suggestions
+            .into_iter()
+            .take(20)
+            .collect::<Vec<Suggestion>>();
+
+        self.suggestions
+    }
+
+    // directory suggestions
+    fn directories(&mut self) -> Result<()> {
+        let mut directories = fs::read_dir(self.current_dir.clone())?
+            .filter_map(|e| {
+                let entry = e.unwrap();
+                if !entry.metadata().unwrap().is_dir() {
+                    return None;
+                }
+                let name = entry.file_name().to_string_lossy().to_string();
+                let score = if let Some(score) =
+                    self.matcher.fuzzy_match(name.as_str(), self.input.as_ref())
+                {
+                    score
+                } else {
+                    return None;
+                };
+
+                Some(Suggestion {
+                    kind: SuggestionType::Directory,
+                    score,
+                    command: name.clone(),
+                    display: name,
+                    documentation: None,
+                    date: Some(
+                        entry
+                            .metadata()
+                            .unwrap()
+                            .modified()
+                            .unwrap()
+                            .duration_since(UNIX_EPOCH)
+                            .unwrap()
+                            .as_millis()
+                            .to_string(),
+                    ),
+                })
+            })
+            .collect::<Vec<Suggestion>>();
+
+        self.suggestions.append(&mut directories);
+
+        Ok(())
+    }
+
+    fn executables(&mut self) {
+        for executable in get_executables() {
+            // if let Ok(suggestion) = get_docs(&executable) {
+            if let Some(score) = self.matcher.fuzzy_match(&executable, self.input.as_ref()) {
+                self.suggestions.push(Suggestion {
+                    kind: SuggestionType::Executable,
+                    score: if self.input == executable {
+                        // boosting so for something like `bash`, the
+                        // `bash` executable shows up as the 1st suggestion
+                        score + Boost::High as i64
+                    } else {
+                        score
+                    },
+                    command: executable.clone(),
+                    display: executable.clone(),
+                    documentation: if let Ok(docs) = get_docs(&executable) {
+                        Some(docs)
+                    } else {
+                        None
+                    },
+                    date: None,
+                })
+            }
+        }
+    }
+
+    // todo: index these during init
+    fn zsh_history(&mut self) {
+        // bash: ~/.bash_history
+        // fish: ~/.local/share/fish/fish_history
+        // zsh: /.zsh_history
+        if let Ok(lines) =
+            read_lines(dirs::home_dir().unwrap().to_string_lossy().to_string() + "/.zsh_history")
+        {
+            let mut commands: HashMap<String, Suggestion> = HashMap::new();
+
+            for line in lines {
+                if let Ok(line) = line {
+                    if let Some(command) = line.split(";").last() {
+                        let command = command.to_string();
+                        if let Some(score) = self.matcher.fuzzy_match(&command, self.input.as_ref())
+                        {
+                            if let Some(c) = commands.get_mut(&command) {
+                                c.score += Boost::Low as i64;
+                            } else {
+                                commands.insert(
+                                    command.clone(),
+                                    Suggestion {
+                                        kind: SuggestionType::Bash,
+                                        score,
+                                        command: command.clone(),
+                                        display: command,
+                                        documentation: None,
+                                        date: None,
+                                    },
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (_, s) in commands {
+                self.suggestions.push(s);
+            }
+        }
+    }
+}
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Suggestion {
     score: i64,
-    command: String,
+    command: String, // the full command that will be inserted
     display: String,
-    suggestion_type: SuggestionType, // `type` is reserved keyword smh...
+    kind: SuggestionType, // `type` is reserved keyword smh...
+    #[serde(skip_serializing_if = "Option::is_none")]
+    documentation: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     date: Option<String>,
-    // todo: fuzzy indexes (highlight match position)
 }
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 enum SuggestionType {
-    HistoryInternal,
-    HistoryExternal,
-    CommandInternal,
-    CommandExternal,
-    ArgumentInternal,
-    ArgumentExternal,
-    Dir,
+    Bash,
+    Directory,
+    Executable,
 }
 
-pub fn get_suggestions(input: String, current_dir: String) -> Result<Vec<Suggestion>> {
-    let mut suggestions = vec![];
-    let matcher = SkimMatcherV2::default();
+// to boost suggestions' score
+enum Boost {
+    Low = 1,
+    Medium = 25,
+    High = 100,
+}
 
-    let mut parts = input.trim().split_whitespace();
-    let command = parts.next().expect("Failed to parse input");
-    let mut args = parts;
+fn get_executables() -> Vec<String> {
+    let path_var = std::env::var_os("PATH").unwrap();
+    let paths: Vec<_> = std::env::split_paths(&path_var).collect();
 
-    // bash: ~/.bash_history
-    // fish: ~/.local/share/fish/fish_history
-    // zsh: /.zsh_history
-    if let Ok(lines) =
-        read_lines(dirs::home_dir().unwrap().to_string_lossy().to_string() + "/.bash_history")
-    {
-        let mut commands: HashMap<String, Suggestion> = HashMap::new();
-
-        for line in lines {
-            if let Ok(bash_command) = line {
-                if let Some(score) = matcher.fuzzy_match(&bash_command, &input) {
-                    if let Some(c) = commands.get_mut(&bash_command) {
-                        c.score += 1;
-                    } else {
-                        commands.insert(
-                            bash_command.clone(),
-                            Suggestion {
-                                score,
-                                command: bash_command.clone(),
-                                display: bash_command,
-                                suggestion_type: SuggestionType::HistoryExternal,
-                                date: None,
-                            },
-                        );
+    let mut executables = vec![];
+    for path in paths {
+        if let Ok(mut contents) = std::fs::read_dir(path) {
+            while let Some(Ok(item)) = contents.next() {
+                if item.path().is_executable() {
+                    if let Ok(name) = item.file_name().into_string() {
+                        executables.push(name);
                     }
                 }
             }
         }
-
-        for (_, s) in commands {
-            suggestions.push(s);
-        }
     }
 
-    match command {
-        command if !input.contains(" ") => {
-            let mut entries = fs::read_dir(current_dir)?
-                .filter_map(|e| {
-                    let entry = e.unwrap();
-                    if !entry.metadata().unwrap().is_dir() {
-                        return None;
-                    }
-                    let name = entry.file_name().to_string_lossy().to_string();
-                    let score = if let Some(score) = matcher.fuzzy_match(name.as_str(), command) {
-                        score
-                    } else {
-                        return None;
-                    };
+    executables
+}
 
-                    Some(Suggestion {
-                        score,
-                        command: name.clone(),
-                        display: name,
-                        suggestion_type: SuggestionType::Dir,
-                        date: Some(
-                            entry
-                                .metadata()
-                                .unwrap()
-                                .modified()
-                                .unwrap()
-                                .duration_since(UNIX_EPOCH)
-                                .unwrap()
-                                .as_millis()
-                                .to_string(),
-                        ),
-                    })
-                })
-                .collect::<Vec<Suggestion>>();
-            suggestions.append(&mut entries);
-        }
-        // command if !input.contains(" ") => {
-        // list all the commands 😁
-        // let output = Command::new("bash")
-        //     .args(&["-c", "compgen -A function -abck"])
-        //     .output();
-        // if let Err(err) = output {
-        //     info!("{}", err);
-        // } else {
-        //     let mut commands = String::from_utf8(output.unwrap().stdout)?
-        //         .lines()
-        //         .filter_map(|line| {
-        //             let name = line.to_string();
-        //             let mut score =
-        //                 if let Some(score) = matcher.fuzzy_match(name.as_str(), command) {
-        //                     score
-        //                 } else {
-        //                     return None;
-        //                 };
-        //             if name == command {
-        //                 score += 100;
-        //             }
-        //             Some(Suggestion {
-        //                 name,
-        //                 score,
-        //                 command: command.to_string(),
-        //             })
-        //         })
-        //         .collect::<Vec<Suggestion>>();
+fn get_docs(command: &str) -> Result<String> {
+    let cwd = env::current_dir()?.to_string_lossy().to_string();
+    // todo: bundled production path
+    let path = RelativePath::new(&cwd).join_normalized(
+        "/../typed-cli/repositories/tldr/pages/common/".to_string() + command + ".md",
+    );
+    // info!("Trying get docs from {}", path);
+    let path = path.to_path("");
 
-        //     suggestions.append(&mut commands);
-        // }
-        // }
-        _ => (),
-    }
-    // todo: include only above threshold score
-    suggestions.sort_by(|a, b| b.score.cmp(&a.score));
-
-    Ok(suggestions)
+    Ok(fs::read_to_string(path)?)
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -159,4 +228,15 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn getting_executables() {
+        assert!(get_executables().len() > 1);
+        assert!(get_executables().contains(&("cargo".to_string())));
+    }
 }

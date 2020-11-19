@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import type { CellType } from '../../types'
+import type { CellType, ServerMessage } from '../../types'
 import { useListener, useXterm } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
@@ -17,7 +17,7 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
   // pty
   const { terminalContainerRef, terminalRef } = useXterm({ ...cell, focused })
 
-  useListener(`message-${id}`, (_, message) => {
+  useListener(`message-${id}`, (_, message: ServerMessage) => {
     console.log('received', message)
     const { output, status } = message
 
@@ -41,7 +41,7 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
       }
     }
   })
-  console.log(cell.type)
+
   return (
     <Wrapper
       onFocus={() => setFocused(true)}

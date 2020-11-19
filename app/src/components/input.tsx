@@ -1,20 +1,22 @@
 import { formatDistanceToNow } from 'date-fns'
+import Markdown from 'markdown-to-jsx'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Portal } from 'react-portal'
 import { createEditor, Editor, Node, Range, Transforms } from 'slate'
 import { withHistory } from 'slate-history'
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react'
 import type { CellTypeWithFocused, Message, Suggestion } from '../../types'
-import { ipc } from '../lib'
+import { ipc, useListener } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
-import { headerHeight } from './header'
 import { Div } from './shared'
 import { Dir } from './svg'
+import { useDebounce } from 'react-use'
 
 // todo: refactor
 
 if (import.meta.hot) {
+  // slate not happy w/ hot reload
   import.meta.hot.decline()
 }
 
@@ -50,13 +52,24 @@ const Input: React.FC<CellTypeWithFocused> = ({
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
   // update suggestions
-  useEffect(() => {
-    setSuggestions(suggestions =>
-      // null is a *flag* that is set after inserting
-      // a suggestion to avoid showing a the suggestion box
-      suggestions === null ? [] : getSuggestions(input, currentDir),
-    )
-  }, [input, currentDir])
+  useDebounce(
+    () => {
+      ipc.send('message', {
+        type: 'get-suggestions',
+        id,
+        input,
+        currentDir,
+      } as Message)
+    },
+    20,
+    [id, input, currentDir],
+  )
+
+  useListener(`suggestions-${id}`, (_, suggestions) =>
+    setSuggestions(suggestions),
+  )
+
+  console.log(suggestions)
 
   // update suggestions box position
   useEffect(() => {
@@ -79,6 +92,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
 
       setDirection(bottomSpace > topSpace ? 'column' : 'column-reverse')
 
+      // todo: broken again w/ new layout
       // calculate position of the suggestions box
       const top =
         bottomSpace > topSpace
@@ -196,7 +210,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
           // renderElement={renderElement}
           onFocus={() => focusInput(editor)}
         />
-        {focused && suggestions && (
+        {suggestions && (
           <Portal>
             <Div
               ref={suggestionRef}
@@ -214,31 +228,56 @@ const Input: React.FC<CellTypeWithFocused> = ({
                 borderRadius: '$default',
                 boxShadow: '$3xl',
                 maxHeight: '60vh',
-                overflowY: 'auto',
                 border: '1px solid $accentColor',
               }}
             >
               {suggestions.map((suggestion, i) => (
                 <SuggestionItem
                   key={i}
-                  type={suggestion.suggestionType}
+                  type={suggestion.kind}
                   state={i === index ? 'focused' : 'default'}
                 >
-                  {suggestion.suggestionType === 'dir' && (
+                  {suggestion.kind === 'directory' && (
                     <Dir css={{ width: '$3', height: '100%', mr: '$1' }} />
                   )}
                   {suggestion.display}
-                  <Div
-                    css={{
-                      ml: 'auto',
-                      pl: '$1',
-                      color: i === index ? '$gray200' : '$gray600',
-                      fontSize: '$xs',
-                    }}
-                  >
-                    {suggestion.date &&
-                      formatDistanceToNow(parseInt(suggestion.date))}
-                  </Div>
+                  {suggestion.date && (
+                    <Div
+                      css={{
+                        ml: 'auto',
+                        pl: '$1',
+                        color: i === index ? '$gray200' : '$gray600',
+                        fontSize: '$xs',
+                      }}
+                    >
+                      {formatDistanceToNow(parseInt(suggestion.date))}
+                    </Div>
+                  )}
+                  {suggestion.documentation && (
+                    <Div
+                      css={{
+                        position: 'absolute',
+                        left: '100%',
+                        top: 0,
+                        color: '$primaryTextColor',
+                        backgroundColor: '$backgroundColor',
+                        px: '$2',
+                        borderRadius: '$default',
+                        boxShadow: '$3xl',
+                        zIndex: 1,
+                        overflowY: 'auto',
+                        minWidth: '300px',
+                        maxHeight: '60vh',
+                        fontSize: '$xs',
+
+                        '* > *': {
+                          my: '$2',
+                        },
+                      }}
+                    >
+                      <Markdown>{suggestion.documentation}</Markdown>
+                    </Div>
+                  )}
                 </SuggestionItem>
               ))}
             </Div>
@@ -254,7 +293,6 @@ const SuggestionItem = styled(Div, {
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'nowrap',
-
   fontSize: '$sm',
 
   '& + &': {
@@ -263,8 +301,9 @@ const SuggestionItem = styled(Div, {
 
   variants: {
     type: {
-      dir: {},
-      historyExternal: {},
+      directory: {},
+      bash: {},
+      executable: {},
     },
     state: {
       focused: {
@@ -295,56 +334,38 @@ const focusInput = (editor: ReactEditor) => {
   ReactEditor.focus(editor)
 }
 
-// todo: use tokio to make this async
-const getSuggestions = (input: string, currentDir: string) => {
-  if (input.length < 1) return []
-
-  const message: Message = {
-    type: 'get-suggestions',
-    input,
-    currentDir,
-  }
-
-  const suggestions: Suggestion[] = [
-    ...ipc.sendSync('message', message),
-    ...typedCliPrototype(input),
-  ]
-
-  return suggestions
-}
-
 const themeCommand = {
   name: 'theme',
-  description: "Change Termy's theme",
+  documentation: "Change Termy's theme",
   subCommands: [
     {
       name: '#fff',
-      description: '🌞 Light theme',
+      documentation: '🌞 Light theme',
     },
     {
       name: '#000',
-      description: '🌚 Dark theme',
+      documentation: '🌚 Dark theme',
     },
   ],
 }
 
-const typedCliPrototype = (input: string): Suggestion[] => {
-  let args = input.split(' ')
-  const command = args.shift()
-  switch (command) {
-    case 'theme':
-      return themeCommand.subCommands
-        .filter(({ name }) => name.includes(args.join(' ')))
-        .map(c => ({
-          score: 100,
-          command: command + ' ' + c.name,
-          display: c.name,
-          suggestionType: 'dir',
-        }))
-    default:
-      return []
-  }
-}
+// const typedCliPrototype = (input: string): Suggestion[] => {
+//   let args = input.split(' ')
+//   const command = args.shift()
+//   switch (command) {
+//     case 'theme':
+//       return themeCommand.subCommands
+//         .filter(({ name }) => name.includes(args.join(' ')))
+//         .map(c => ({
+//           score: 100,
+//           command: command + ' ' + c.name,
+//           display: c.name,
+//           kind: 'dir',
+//         }))
+//     default:
+//       return []
+//   }
+// }
 
 // for rich input
 // const Element = (props: RenderElementProps) => {

@@ -3,13 +3,17 @@ extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
+use autocomplete::Autocomplete;
 use crossbeam_channel::{unbounded, Sender};
 use log::info;
-use napi::{CallContext, Error, JsExternal, JsFunction, JsString, JsUndefined, JsUnknown, Module};
+use napi::{
+    CallContext, Error, JsExternal, JsFunction, JsObject, JsString, JsUndefined, JsUnknown, Module,
+    Status,
+};
 
+use futures::{channel::oneshot, prelude::*};
 use shell::{Cell, CellChannel, FrontendMessage, RunCell, ServerMessage};
 use std::thread;
-
 mod autocomplete;
 mod db;
 mod logger;
@@ -38,22 +42,35 @@ fn init(module: &mut Module) -> napi::Result<()> {
 fn api(ctx: CallContext) -> napi::Result<JsString> {
     let command: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
 
+    info!("Api call: {}", command);
+
     let result = Cell::api(command);
 
     ctx.env.create_string(&result)
 }
 
 #[js_function(2)]
-fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
+fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
     let input = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
     let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
 
-    info!("Getting suggestions for {}", input);
+    info!("Getting suggestions for: {}", input);
 
-    let suggestions = autocomplete::get_suggestions(input, current_dir).unwrap();
+    let (sender, receiver) = oneshot::channel();
 
-    // needs "serde-json" feature
-    ctx.env.to_js_value(&suggestions)
+    thread::spawn(|| {
+        let suggestions = Autocomplete::new(input, current_dir).suggestions();
+        sender
+            .send(suggestions)
+            .expect("sending suggestions failed");
+    });
+
+    ctx.env.execute(
+        receiver
+            .map_err(|e| Error::new(Status::Unknown, format!("{}", e)))
+            .map(|x| x.and_then(|x| Ok(x))),
+        |&mut env, data| env.to_js_value(&data),
+    )
 }
 
 #[js_function(5)]
@@ -74,6 +91,8 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
                 .collect::<Result<Vec<JsUnknown>, Error>>()
         },
     )?;
+
+    info!("Executing command: {:?}", props);
 
     thread::spawn(move || {
         // db::add_command(&input, &current_dir).expect("Failed to add command");
@@ -96,6 +115,8 @@ fn frontend_message(ctx: CallContext) -> napi::Result<JsUndefined> {
         .get_value_external::<Sender<CellChannel>>(&attached_obj)?;
 
     let message: FrontendMessage = ctx.env.from_js_value(ctx.get::<JsUnknown>(1)?)?;
+
+    info!("Frontend message: {:?}", message);
 
     if let Err(err) = sender.send(CellChannel::FrontendMessage(message)) {
         info!("Failed to send key: {}", err);

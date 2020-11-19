@@ -26,6 +26,7 @@ export type Message =
   | { type: 'api'; command: string } // todo: create types for the api
   | {
       type: 'get-suggestions'
+      id: string
       input: string
       currentDir: string
     }
@@ -38,4 +39,13 @@ export type ServerMessage = {
     | { type: 'pty'; data: { ptyData: number[] } }
     | { type: 'api'; data: { apiData: string }; cd?: string }
   status?: Status
+}
+
+export type Suggestion = {
+  score: number
+  command: string
+  display: string
+  kind: 'executable' | 'directory' | 'bash'
+  date?: string
+  documentation?: string // md
 }

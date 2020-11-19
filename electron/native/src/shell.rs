@@ -59,10 +59,6 @@ impl Cell {
         receiver: Receiver<CellChannel>,
         sender: Sender<CellChannel>,
     ) -> Result<()> {
-        info!(
-            "Executing command: `{}` in {}",
-            self.input, self.current_dir
-        );
         let send_message = SendMessage::new(shell_sender);
 
         send_message.send(ServerMessage::status(Status::Running));

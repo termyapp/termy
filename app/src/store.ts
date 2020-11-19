@@ -38,7 +38,10 @@ const initialState = (() => {
   const cellB2 = getDefaultCell()
 
   return {
-    cells: { [cellA1.id]: cellA1, [cellB1.id]: cellB1, [cellB2.id]: cellB2 },
+    cells: {
+      [cellA1.id]: cellA1,
+      //  [cellB1.id]: cellB1, [cellB2.id]: cellB2
+    },
     theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
   }
 })()

@@ -1,6 +1,6 @@
 [package]
 name = "native"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["martonlanga <martonlanga@gmail.com>"]
 license = "MIT"
 edition = "2018"
@@ -14,7 +14,7 @@ serde = { version = "1.0", features = ["derive"] }
 anyhow = "1.0.32"
 fuzzy-matcher = "*"
 crossbeam-channel = "0.4.4"
-napi = { git = "https://github.com/napi-rs/napi-rs", features = ["serde-json"] }
+napi = { git = "https://github.com/napi-rs/napi-rs", features = ["serde-json", "libuv"] }
 napi-derive = { git = "https://github.com/napi-rs/napi-rs" }
 portable-pty = "0.3.1"
 rusqlite = "0.24.1"
@@ -22,6 +22,8 @@ dirs = "3.0.1"
 relative-path = "1.3.2"
 log = "0.4"
 log4rs = "0.13.0"
+is_executable = "0.1.2"
+futures = "0.3.8"
 
 [build-dependencies]
 napi-build = "0.2"

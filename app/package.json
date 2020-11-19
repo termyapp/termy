@@ -1,8 +1,7 @@
 {
   "name": "termy",
-  "description": "An easy to use terminal. Termy has autosuggestions, a modern GUI (HTML), structured data piping and many others.",
-  "author": "Marton Langa",
-  "version": "0.1.1",
+  "private": true,
+  "version": "0.1.2",
   "homepage": "./",
   "scripts": {
     "dev": "SNOWPACK_PUBLIC_NODE_ENV=development snowpack dev",
@@ -16,6 +15,7 @@
     "@stitches/react": "^0.0.3-canary.4",
     "date-fns": "^2.16.1",
     "immer": "^7.0.14",
+    "markdown-to-jsx": "^7.0.1",
     "path": "^0.12.7",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -47,6 +47,7 @@
     "@types/uuid": "^8.3.0",
     "@web/test-runner": "^0.9.7",
     "chai": "^4.2.0",
+    "prettier": "^2.1.2",
     "snowpack": "^2.17.1",
     "typescript": "^4.0.0"
   }

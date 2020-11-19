@@ -13,14 +13,6 @@ export type CellType = {
 
 export type CellTypeWithFocused = CellType & { focused: boolean }
 
-export type Suggestion = {
-  score: number
-  command: string
-  display: string
-  suggestionType: 'dir' | 'historyExternal'
-  date?: string
-}
-
 // not using these rn
 export type FileEntry = {
   fileName: string
