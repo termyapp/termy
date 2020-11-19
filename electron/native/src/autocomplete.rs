@@ -59,32 +59,32 @@ impl Autocomplete {
                     return None;
                 }
                 let name = entry.file_name().to_string_lossy().to_string();
-                let score = if let Some(score) =
-                    self.matcher.fuzzy_match(name.as_str(), self.input.as_ref())
+                if let Some((score, indexes)) = self
+                    .matcher
+                    .fuzzy_indices(name.as_str(), self.input.as_ref())
                 {
-                    score
+                    Some(Suggestion {
+                        command: name.clone(),
+                        display: name,
+                        score,
+                        indexes,
+                        kind: SuggestionType::Directory,
+                        documentation: None,
+                        date: Some(
+                            entry
+                                .metadata()
+                                .unwrap()
+                                .modified()
+                                .unwrap()
+                                .duration_since(UNIX_EPOCH)
+                                .unwrap()
+                                .as_millis()
+                                .to_string(),
+                        ),
+                    })
                 } else {
-                    return None;
-                };
-
-                Some(Suggestion {
-                    kind: SuggestionType::Directory,
-                    score,
-                    command: name.clone(),
-                    display: name,
-                    documentation: None,
-                    date: Some(
-                        entry
-                            .metadata()
-                            .unwrap()
-                            .modified()
-                            .unwrap()
-                            .duration_since(UNIX_EPOCH)
-                            .unwrap()
-                            .as_millis()
-                            .to_string(),
-                    ),
-                })
+                    None
+                }
             })
             .collect::<Vec<Suggestion>>();
 
@@ -96,9 +96,12 @@ impl Autocomplete {
     fn executables(&mut self) {
         for executable in get_executables() {
             // if let Ok(suggestion) = get_docs(&executable) {
-            if let Some(score) = self.matcher.fuzzy_match(&executable, self.input.as_ref()) {
+            if let Some((score, indexes)) =
+                self.matcher.fuzzy_indices(&executable, self.input.as_ref())
+            {
                 self.suggestions.push(Suggestion {
-                    kind: SuggestionType::Executable,
+                    command: executable.clone(),
+                    display: executable.clone(),
                     score: if self.input == executable {
                         // boosting so for something like `bash`, the
                         // `bash` executable shows up as the 1st suggestion
@@ -106,8 +109,8 @@ impl Autocomplete {
                     } else {
                         score
                     },
-                    command: executable.clone(),
-                    display: executable.clone(),
+                    indexes,
+                    kind: SuggestionType::Executable,
                     documentation: if let Ok(docs) = get_docs(&executable) {
                         Some(docs)
                     } else {
@@ -133,7 +136,8 @@ impl Autocomplete {
                 if let Ok(line) = line {
                     if let Some(command) = line.split(";").last() {
                         let command = command.to_string();
-                        if let Some(score) = self.matcher.fuzzy_match(&command, self.input.as_ref())
+                        if let Some((score, indexes)) =
+                            self.matcher.fuzzy_indices(&command, self.input.as_ref())
                         {
                             if let Some(c) = commands.get_mut(&command) {
                                 c.score += Boost::Low as i64;
@@ -141,10 +145,11 @@ impl Autocomplete {
                                 commands.insert(
                                     command.clone(),
                                     Suggestion {
-                                        kind: SuggestionType::Bash,
-                                        score,
                                         command: command.clone(),
                                         display: command,
+                                        score,
+                                        indexes,
+                                        kind: SuggestionType::Bash,
                                         documentation: None,
                                         date: None,
                                     },
@@ -165,9 +170,10 @@ impl Autocomplete {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Suggestion {
-    score: i64,
     command: String, // the full command that will be inserted
     display: String,
+    score: i64,
+    indexes: Vec<usize>,
     kind: SuggestionType, // `type` is reserved keyword smh...
     #[serde(skip_serializing_if = "Option::is_none")]
     documentation: Option<String>,

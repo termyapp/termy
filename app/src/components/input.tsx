@@ -240,7 +240,15 @@ const Input: React.FC<CellTypeWithFocused> = ({
                   {suggestion.kind === 'directory' && (
                     <Dir css={{ width: '$3', height: '100%', mr: '$1' }} />
                   )}
-                  {suggestion.display}
+                  {suggestion.display
+                    .split('')
+                    .map((c, i) =>
+                      suggestion.indexes.includes(BigInt(i)) ? (
+                        <b key={i}>{c}</b>
+                      ) : (
+                        <span key={i}>{c}</span>
+                      ),
+                    )}
                   {suggestion.date && (
                     <Div
                       css={{
