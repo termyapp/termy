@@ -194,36 +194,29 @@ impl Cell {
                 // todo: flowcontrol - pause here
                 // https://xtermjs.org/docs/guides/flowcontrol/
                 // also, buffer chunks to minimize ipc calls
+                // can't read_exact because than programs that expect input won't work
+
                 loop {
-                    // can't read_exact because than programs that expect input won't work
                     let read = reader.read(&mut chunk);
 
-                    if let Err(err) = read {
-                        error!("Err: {}", err);
-                        break;
-                    }
-                    loop {
-                        let read = reader.read(&mut chunk);
-
-                        if let Ok(len) = read {
-                            if len == 0 {
-                                break;
-                            }
-                            let chunk = &chunk[..len];
-                            i += 1;
-                            info!("Sending chunk: {} {}", i, chunk.len());
-                            let data = ServerData::PtyData(chunk.to_vec());
-                            send_message.send(ServerMessage {
-                                output: Some(Output {
-                                    data,
-                                    cell_type: CellType::Pty,
-                                    cd: None,
-                                }),
-                                status: None,
-                            });
-                        } else {
-                            error!("Err: {}", read.unwrap_err());
+                    if let Ok(len) = read {
+                        if len == 0 {
+                            break;
                         }
+                        let chunk = &chunk[..len];
+                        i += 1;
+                        info!("Sending chunk: {} {}", i, chunk.len());
+                        let data = ServerData::PtyData(chunk.to_vec());
+                        send_message.send(ServerMessage {
+                            output: Some(Output {
+                                data,
+                                cell_type: CellType::Pty,
+                                cd: None,
+                            }),
+                            status: None,
+                        });
+                    } else {
+                        error!("Err: {}", read.unwrap_err());
                     }
                 }
                 sender
