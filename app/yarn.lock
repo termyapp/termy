@@ -911,6 +911,11 @@
   dependencies:
     extend "3.0.2"
 
+"@modulz/radix-icons@^3.3.0":
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/@modulz/radix-icons/-/radix-icons-3.3.0.tgz#4af89aa773d8a3951814a3500ccb1eeb2d2cd262"
+  integrity sha512-Wf6YMSsTVmldg3TXP0IbW/a9/zi9vx4vrRmoaIPMsQtVtjtGwwaObJorRwoN+e4vXEeIeQPccdeRslzvkKxELg==
+
 "@nodelib/fs.scandir@2.1.3":
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.3.tgz#3a582bdb53804c6ba6d146579c46e52130cf4a3b"
