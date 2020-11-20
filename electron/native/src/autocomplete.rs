@@ -35,8 +35,8 @@ impl Autocomplete {
             return vec![];
         }
 
+        self.executables(); // important that this comes first so documentation can be set on the HashMap
         self.directories();
-        self.executables();
         self.zsh_history();
 
         let mut suggestions: Vec<Suggestion> =
@@ -152,7 +152,7 @@ impl Autocomplete {
                                 Suggestion {
                                     command: command.clone(),
                                     display: command,
-                                    score,
+                                    score: score - Boost::High as i64,
                                     indexes,
                                     kind: SuggestionType::Bash,
                                     documentation: None,
