@@ -1,7 +1,8 @@
 {
   "search.exclude": {
     "**/build": true,
-    "**/dist": true
+    "**/dist": true,
+    "**/typed-cli": true
   },
   "files.exclude": {
     "**/.git": true,
@@ -10,5 +11,6 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/node_modules": true
-  }
+  },
+  "rust-analyzer.linkedProjects": ["electron/native/Cargo.toml"]
 }
