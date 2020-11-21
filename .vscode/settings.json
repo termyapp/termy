@@ -2,7 +2,7 @@
   "search.exclude": {
     "**/build": true,
     "**/dist": true,
-    "**/typed-cli": true
+    "**/electron/external": true
   },
   "files.exclude": {
     "**/.git": true,
