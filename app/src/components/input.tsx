@@ -31,6 +31,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
   // update suggestions
+  // todo: https://www.electronjs.org/docs/api/ipc-main#ipcmainhandlechannel-listener
   useDebounce(
     () => {
       ipc.send('message', {

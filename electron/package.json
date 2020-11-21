@@ -19,7 +19,11 @@
     },
     "files": [
       "build/**/*"
-    ]
+    ],
+    "extraFiles": {
+      "from": "external/tldr/pages/common",
+      "to": "tldr"
+    }
   },
   "devDependencies": {
     "@types/electron-devtools-installer": "^2.2.0",

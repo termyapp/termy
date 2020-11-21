@@ -1,6 +1,7 @@
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use is_executable::IsExecutable;
+use log::info;
 use relative_path::RelativePath;
 use serde::Serialize;
 use std::io;
@@ -217,13 +218,17 @@ fn get_executables() -> Vec<String> {
 }
 
 fn get_docs(command: &str) -> Result<String> {
-    let cwd = env::current_dir()?.to_string_lossy().to_string();
-    // todo: bundled production path
-    let path = RelativePath::new(&cwd).join_normalized(
-        "/../typed-cli/repositories/tldr/pages/common/".to_string() + command + ".md",
-    );
-    // info!("Trying get docs from {}", path);
+    let path = if cfg!(debug_assertions) {
+        RelativePath::new(env::current_dir()?.to_str().unwrap())
+            .join_normalized("/external/tldr/pages/common/".to_string() + command + ".md")
+    } else {
+        // https://www.electron.build/configuration/contents.html#filesetto
+        RelativePath::new(env::current_exe()?.to_str().unwrap())
+            .join_normalized("/../../tldr/".to_string() + command + ".md")
+    };
+
     let path = path.to_path("");
+    info!("Path: {:?}", path);
 
     Ok(fs::read_to_string(path)?)
 }
