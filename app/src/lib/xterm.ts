@@ -101,7 +101,7 @@ export const useXterm = ({
     terminalRef.current?.setOption('fontFamily', theme.fonts.$mono)
   }, [theme, focused, over])
 
-  // resize listener
+  // resize observer
   useEffect(() => {
     const updateSize = () => {
       if (terminalRef.current) {
@@ -113,8 +113,9 @@ export const useXterm = ({
     }
 
     updateSize()
-    window.addEventListener('resize', updateSize)
-    return () => window.removeEventListener('resize', updateSize)
+
+    if (terminalContainerRef.current)
+      new ResizeObserver(updateSize).observe(terminalContainerRef.current)
   }, [])
 
   useEffect(() => {
