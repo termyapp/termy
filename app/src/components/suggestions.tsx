@@ -1,4 +1,8 @@
-import { CounterClockwiseClockIcon, GearIcon } from '@modulz/radix-icons'
+import {
+  CounterClockwiseClockIcon,
+  ExternalLinkIcon,
+  GearIcon,
+} from '@modulz/radix-icons'
 import { formatDistanceToNow } from 'date-fns'
 import Markdown from 'markdown-to-jsx'
 import React, { useEffect, useRef, useState } from 'react'
@@ -177,10 +181,30 @@ const Suggestions: React.FC<Props> = ({ id, editor, inputRef, focused }) => {
           </Item>
         ))}
       </Items>
-      {suggestions[index] && suggestions[index].documentation && (
+      {suggestions[index] && suggestions[index].tldrDocumentation && (
         <DocumentationPopup>
           {/* @ts-ignore */}
-          <Markdown>{suggestions[index].documentation}</Markdown>
+          <Markdown>{suggestions[index].tldrDocumentation}</Markdown>
+          <Div
+            css={{
+              position: 'absolute',
+              right: '$4',
+              top: '$2',
+              textDecoration: 'none',
+              color: '$secondaryTextColor',
+
+              display: 'flex',
+              alignItems: 'center',
+              svg: {
+                ml: '$1',
+                width: '$3',
+              },
+            }}
+            as="a"
+            href="https://github.com/tldr-pages/tldr"
+          >
+            📚tldr <ExternalLinkIcon />
+          </Div>
         </DocumentationPopup>
       )}
     </Popup>

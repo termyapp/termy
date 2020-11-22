@@ -48,5 +48,5 @@ export type Suggestion = {
   indexes: bigint[] // fuzzy indexes to be highlighted
   kind: 'executable' | 'directory' | 'bash'
   date?: string
-  documentation?: string // md
+  tldrDocumentation?: string // md
 }

@@ -36,7 +36,7 @@ impl Autocomplete {
             return vec![];
         }
 
-        self.executables(); // important that this comes first so documentation can be set on the HashMap
+        self.executables(); // important that this comes first so tldr_documentation can be set on the HashMap
         self.directories();
         self.zsh_history();
 
@@ -81,7 +81,7 @@ impl Autocomplete {
                         score: score + Priority::Medium as i64,
                         indexes,
                         kind: SuggestionType::Directory,
-                        documentation: None,
+                        tldr_documentation: None,
                         date: Some(
                             entry
                                 .metadata()
@@ -121,7 +121,7 @@ impl Autocomplete {
                         },
                         indexes,
                         kind: SuggestionType::Executable,
-                        documentation: if let Ok(docs) = get_docs(&executable) {
+                        tldr_documentation: if let Ok(docs) = get_docs(&executable) {
                             Some(docs)
                         } else {
                             None
@@ -156,7 +156,7 @@ impl Autocomplete {
                                     score: score - Priority::High as i64,
                                     indexes,
                                     kind: SuggestionType::Bash,
-                                    documentation: None,
+                                    tldr_documentation: None,
                                     date: None,
                                 },
                             );
@@ -177,7 +177,7 @@ pub struct Suggestion {
     indexes: Vec<usize>,
     kind: SuggestionType, // `type` is reserved keyword smh...
     #[serde(skip_serializing_if = "Option::is_none")]
-    documentation: Option<String>,
+    tldr_documentation: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     date: Option<String>,
 }
