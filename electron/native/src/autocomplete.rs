@@ -55,7 +55,7 @@ impl Autocomplete {
 
     fn insert(&mut self, key: String, value: Suggestion) {
         if let Some(s) = self.suggestions.get_mut(&key) {
-            s.score += Boost::Low as i64;
+            s.score += Priority::Low as i64;
         } else {
             self.suggestions.insert(key, value);
         }
@@ -78,7 +78,7 @@ impl Autocomplete {
                     Suggestion {
                         command: name.clone(),
                         display: name,
-                        score,
+                        score: score + Priority::Medium as i64,
                         indexes,
                         kind: SuggestionType::Directory,
                         documentation: None,
@@ -115,7 +115,7 @@ impl Autocomplete {
                         score: if self.input == executable {
                             // boosting so for something like `bash`, the
                             // `bash` executable shows up as the 1st suggestion
-                            score + Boost::High as i64
+                            score + Priority::High as i64
                         } else {
                             score
                         },
@@ -153,7 +153,7 @@ impl Autocomplete {
                                 Suggestion {
                                     command: command.clone(),
                                     display: command,
-                                    score: score - Boost::High as i64,
+                                    score: score - Priority::High as i64,
                                     indexes,
                                     kind: SuggestionType::Bash,
                                     documentation: None,
@@ -191,7 +191,7 @@ enum SuggestionType {
 }
 
 // to boost suggestions' score
-enum Boost {
+enum Priority {
     Low = 1,
     Medium = 25,
     High = 100,
