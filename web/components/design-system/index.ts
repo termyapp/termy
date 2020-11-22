@@ -1,5 +1,5 @@
 export * from './badge'
-export * from './box'
+export * from './div'
 export * from './button'
 export * from './card'
 export * from './code'

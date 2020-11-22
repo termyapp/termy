@@ -1,10 +1,25 @@
-import { styled } from '../stitches.config'
+import React from 'react'
+import { Div } from './design-system'
+import Footer from './footer'
+import Nav from './nav'
 
-export const Layout = styled.div({
-  maxWidth: '1000px',
-  margin: '0 auto',
-  px: '$3',
-  mb: '$4',
-})
+const Layout: React.FC = ({ children }) => (
+  <Div
+    css={{
+      maxWidth: '1300px',
+      margin: '0 auto',
+      px: '$3',
+      mb: '$4',
+
+      mobile: {
+        px: '$1',
+      },
+    }}
+  >
+    <Nav />
+    {children}
+    <Footer />
+  </Div>
+)
 
 export default Layout

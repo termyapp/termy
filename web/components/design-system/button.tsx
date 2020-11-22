@@ -1,16 +1,18 @@
 import { styled } from '../../stitches.config'
 
 export const Button = styled.button({
-  backgroundColor: '$foreground',
+  px: '$4',
+  py: '$2',
+  mx: '$2',
+  fontWeight: '$medium',
+  letterSpacing: '$wide',
+  backgroundColor: '$black',
+  borderRadius: '$md',
+  color: '$white',
   border: 'none',
-  borderRadius: '$2',
-  color: '$background',
-  px: '$5',
-  py: '$1',
-  fontSize: '$3',
-  lineHeight: 'normal',
+  textDecoration: 'none',
   cursor: 'pointer',
-  fontWeight: 500,
+  fontFamily: '$mono',
 
   ':disabled': {
     pointerEvents: 'none',
@@ -31,27 +33,5 @@ export const Button = styled.button({
         },
       },
     },
-    // state: {
-    //   active: {
-    //     backgroundColor: '$gray300',
-    //     boxShadow: 'inset 0 0 0 1px hsl(206,10%,76%)',
-    //     ':hover': {
-    //       boxShadow: 'inset 0 0 0 1px hsl(206,10%,76%)',
-    //     },
-    //     ':active': {
-    //       backgroundColor: '$gray300',
-    //     },
-    //   },
-    //   waiting: {
-    //     backgroundColor: '$gray300',
-    //     boxShadow: 'inset 0 0 0 1px hsl(206,10%,76%)',
-    //     ':hover': {
-    //       boxShadow: 'inset 0 0 0 1px hsl(206,10%,76%)',
-    //     },
-    //     ':active': {
-    //       backgroundColor: '$gray300',
-    //     },
-    //   },
-    // },
   },
 })

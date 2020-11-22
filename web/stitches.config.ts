@@ -8,7 +8,7 @@ export const lightTheme = {
 
     $primaryTextColor: baseTheme.colors.$black,
     $secondaryTextColor: baseTheme.colors.$gray700,
-    $backgroundColor: baseTheme.colors.$gray200,
+    $backgroundColor: '#f5f5f7',
 
     $accentColor: baseTheme.colors.$gray300,
     $caretColor: baseTheme.colors.$teal500,
@@ -16,31 +16,9 @@ export const lightTheme = {
     $focusedBackgroundColor: baseTheme.colors.$white,
 
     $currentDirColor: baseTheme.colors.$blue900,
-    $currentDirBackgroundColor: baseTheme.colors.$blue100,
+    $currentDirBackgroundColor: baseTheme.colors.$gray200,
 
     $selectedSuggestionBackgroundColor: baseTheme.colors.$blue500,
-    $selectedSuggestionColor: baseTheme.colors.$white,
-  },
-}
-
-export const darkTheme = {
-  ...baseTheme,
-  colors: {
-    ...baseTheme.colors,
-
-    $primaryTextColor: baseTheme.colors.$white,
-    $secondaryTextColor: baseTheme.colors.$gray400,
-    $backgroundColor: baseTheme.colors.$black,
-
-    $accentColor: '#2a2a2a',
-    $caretColor: '#f42069',
-    $selectionColor: '#f42069',
-    $focusedBackgroundColor: '#161616',
-
-    $currentDirColor: baseTheme.colors.$gray300,
-    $currentDirBackgroundColor: baseTheme.colors.$gray900,
-
-    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue700,
     $selectedSuggestionColor: baseTheme.colors.$white,
   },
 }
@@ -53,6 +31,7 @@ export const { styled, css } = createStyled({
   tokens,
   breakpoints: {
     default: rule => rule,
+    mobile: rule => `@media (max-width: 900px) { ${rule} }`,
     bp1: rule => `@media (min-width: 520px) { ${rule} }`,
     bp2: rule => `@media (min-width: 900px) { ${rule} }`,
     bp3: rule => `@media (min-width: 1200px) { ${rule} }`,
@@ -124,12 +103,16 @@ export const globalStyles = css.global({
     color: '$primaryTextColor',
     backgroundColor: '$backgroundColor',
     caretColor: '$caretColor',
-    fontFamily: '$mono',
+    fontFamily: '$sans',
 
     '*': {
       '::selection': {
         backgroundColor: '$selectionColor',
       },
+    },
+
+    a: {
+      textDecoration: 'none',
     },
   },
 })

@@ -10,11 +10,12 @@ export const Logo = () => {
         letterSpacing: -0.8,
         fontWeight: 'bold',
         background:
-          'linear-gradient(to right bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, .2) 100%)',
+          'linear-gradient(to right bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, .9) 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         lineHeight: 1.3, // somehow it clips it if it's not heigh enough?!
         position: 'relative',
+        textDecoration: 'none',
       }}
     >
       Termy
@@ -22,19 +23,20 @@ export const Logo = () => {
         css={{
           position: 'absolute',
           top: -8,
-          right: -12,
+          left: 'calc(100% - 10px)',
           WebkitTextFillColor: 'rgba(200, 10, 10, .8)',
-          background: 'rgba(200, 10, 10, .2)',
+          backgroundColor: '$orange200',
           px: '$1',
           lineHeight: 1.7,
-          br: '$2',
           fontWeight: 400,
-          fontSize: '9px',
+          fontSize: '10px',
+          borderRadius: '$lg',
           letterSpacing: '.4px',
           pointerEvents: 'none',
+          zIndex: -1,
         }}
       >
-        Alpha
+        Beta
       </Text>
     </Text>
   )
