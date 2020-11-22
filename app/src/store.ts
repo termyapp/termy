@@ -14,6 +14,7 @@ type Action =
   | { type: 'remove'; id: string }
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
   | { type: 'run-cell'; id: string; input: string }
+  | { type: 'set-theme'; theme: ThemeMode }
 
 const getDefaultCell = (): CellType => {
   const id = v4()
@@ -74,13 +75,6 @@ const reducer = (state: State, action: Action) => {
         // reset
         cell.status = null
 
-        // todo: move this to cell
-        const command = action.input.split(' ')[0]
-        if (command === 'theme') {
-          draft.theme = getTheme(action.input.split(' ')[1] as ThemeMode)
-          break
-        }
-
         const message: Message = {
           type: 'run-cell',
           id: cell.id,
@@ -89,6 +83,10 @@ const reducer = (state: State, action: Action) => {
         }
 
         ipc.send('message', message)
+        break
+      }
+      case 'set-theme': {
+        draft.theme = getTheme(action.theme)
         break
       }
     }

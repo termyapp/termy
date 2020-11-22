@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react'
-import type { CellType, ServerMessage } from '../../types'
+import type { CellType, ServerMessage, ThemeMode } from '../../types'
 import { useListener, useXterm } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
+import Api from './api'
 import Prompt from './prompt'
 import { Div, Flex } from './shared'
 
@@ -32,6 +33,10 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
         // handle built-in stuff
         if (output.cd) {
           dispatch({ type: 'set-cell', id, cell: { currentDir: output.cd } })
+        }
+
+        if (output.theme) {
+          dispatch({ type: 'set-theme', theme: output.theme as ThemeMode })
         }
 
         setOutput(output.data.apiData)
@@ -74,7 +79,7 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
             color: '$secondaryTextColor',
           }}
         >
-          {output}
+          <Api>{output}</Api>
         </Div>
       </Output>
     </Wrapper>

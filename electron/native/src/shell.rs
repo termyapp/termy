@@ -1,5 +1,6 @@
 use anyhow::Result;
 use crossbeam_channel::{Receiver, Sender};
+use indoc::formatdoc;
 use io::Read;
 use log::{error, info, warn};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
@@ -64,12 +65,40 @@ impl Cell {
         send_message.send(ServerMessage::status(Status::Running));
 
         if let Some(server_message) = match self.command.as_ref() {
+            "theme" => {
+                let theme = if let Some(theme) = self.args.iter().next() {
+                    Some(theme.clone())
+                } else {
+                    None
+                };
+                Some(ServerMessage {
+                    output: Some(Output {
+                        data: ServerData::ApiData(formatdoc! {"
+                            <Card>Changed theme to <Path>{theme}</Path></Card>
+                            ", theme = theme.clone().unwrap()}),
+                        cell_type: CellType::Api,
+                        cd: None,
+                        theme,
+                    }),
+                    status: Some(Status::Success),
+                })
+            }
+            "home" => {
+                let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
+                ServerMessage::api(
+                    format!("Home Directory: {:?}", home_dir),
+                    None,
+                    Status::Success,
+                )
+            }
             "/" => {
                 let path = RelativePath::new("").to_path("/");
 
                 if path.is_dir() {
                     ServerMessage::api(
-                        format!("Changed current directory to {}", path.to_string_lossy()),
+                        formatdoc! {"
+                                <Card type='success'>Changed current directory to <Path>{path}</Path></Card>
+                                ", path = path.to_string_lossy()},
                         Some(path.to_string_lossy().to_string()),
                         Status::Success,
                     )
@@ -80,14 +109,6 @@ impl Cell {
                         Status::Error,
                     )
                 }
-            }
-            "home" => {
-                let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
-                ServerMessage::api(
-                    format!("Home Directory: {:?}", home_dir),
-                    None,
-                    Status::Success,
-                )
             }
             dir if RelativePath::new(&self.current_dir)
                 .join_normalized(RelativePath::new(dir))
@@ -101,10 +122,9 @@ impl Cell {
 
                 if absolute_path.is_dir() {
                     ServerMessage::api(
-                        format!(
-                            "Changed current directory to {}",
-                            absolute_path.to_string_lossy()
-                        ),
+                        formatdoc! {"
+                        <Card type='success'>Changed current directory to <Path>{path}</Path></Card>
+                        ", path = absolute_path.to_string_lossy()},
                         Some(absolute_path.to_string_lossy().to_string()),
                         Status::Success,
                     )
@@ -208,6 +228,7 @@ impl Cell {
                                 data,
                                 cell_type: CellType::Pty,
                                 cd: None,
+                                theme: None,
                             }),
                             status: None,
                         });
@@ -346,6 +367,7 @@ impl ServerMessage {
                 data: ServerData::ApiData(data),
                 cell_type: CellType::Api,
                 cd,
+                theme: None,
             }),
             status: Some(status),
         })
@@ -373,6 +395,7 @@ struct Output {
     #[serde(rename = "type")]
     cell_type: CellType,
     cd: Option<String>,
+    theme: Option<String>,
 }
 
 #[derive(Serialize, Debug)]

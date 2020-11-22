@@ -37,7 +37,7 @@ export type ServerMessage = {
   id: string
   output?:
     | { type: 'pty'; data: { ptyData: number[] } }
-    | { type: 'api'; data: { apiData: string }; cd?: string }
+    | { type: 'api'; data: { apiData: string }; cd?: string; theme?: string }
   status?: Status
 }
 
