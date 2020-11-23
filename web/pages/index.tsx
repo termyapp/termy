@@ -12,7 +12,7 @@ const IndexPage = () => {
         as="h1"
         css={{
           fontSize: '$4xl',
-          mt: '$32',
+          mt: '$24',
           textAlign: 'center',
 
           mobile: {
@@ -27,7 +27,7 @@ const IndexPage = () => {
 
       <Div
         css={{
-          my: '$32',
+          my: '$24',
 
           mobile: {
             display: 'none',
