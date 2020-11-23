@@ -959,19 +959,19 @@ dependencies = [
 [[package]]
 name = "napi-build"
 version = "0.2.1"
-source = "git+https://github.com/napi-rs/napi-rs#5025ffa7917955b3e47fd357858a25660a977608"
-dependencies = [
- "cfg-if 1.0.0",
-]
-
-[[package]]
-name = "napi-build"
-version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "18fbf687efe5f277c76310a56965788ba9be871bda622baf7401281e38ad02fc"
 dependencies = [
  "cfg-if 0.1.10",
  "reqwest",
+]
+
+[[package]]
+name = "napi-build"
+version = "0.2.1"
+source = "git+https://github.com/napi-rs/napi-rs#5025ffa7917955b3e47fd357858a25660a977608"
+dependencies = [
+ "cfg-if 1.0.0",
 ]
 
 [[package]]
