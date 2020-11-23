@@ -15,6 +15,10 @@ const PioneerFaqPage: React.FC<Props> = props => {
           mt: '$24',
           lineHeight: '$relaxed',
 
+          mobile: {
+            mt: '$12',
+          },
+
           h1: {
             fontSize: '$5xl',
             color: '$gray900',

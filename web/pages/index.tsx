@@ -35,7 +35,7 @@ const IndexPage = () => {
         }}
       >
         <Text
-          as="p"
+          as="div"
           css={{
             color: '$gray700',
             fontSize: '$xl',

@@ -13,7 +13,7 @@ const Nav: React.FC = () => {
       }}
     >
       <Logo />
-      <Flex>
+      <Flex css={{ alignItems: 'center' }}>
         <Text
           as="a"
           href="http://discord.com/invite/tzrRhdZ"
@@ -37,7 +37,7 @@ const Nav: React.FC = () => {
           css={{
             color: '$gray700',
             cursor: 'pointer',
-
+            mr: '$5',
             ':hover': {
               color: 'black',
               textDecoration: 'underline',
@@ -46,13 +46,13 @@ const Nav: React.FC = () => {
         >
           Github
         </Text>
+        <Button
+          as="a"
+          href="https://github.com/termyapp/Termy/releases/download/v0.1.3/Termy-0.1.3.dmg"
+        >
+          Download
+        </Button>
       </Flex>
-      <Button
-        as="a"
-        href="https://github.com/termyapp/Termy/releases/download/v0.1.3/Termy-0.1.3.dmg"
-      >
-        Download
-      </Button>
     </Flex>
   )
 }
