@@ -99,7 +99,7 @@ const Footer: React.FC = () => {
           },
         }}
       >
-        2020 © Termy, Inc.
+        © 2020 Termy, Inc.
       </Div>
     </Flex>
   )
