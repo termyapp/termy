@@ -18,8 +18,8 @@ export const lightTheme = {
     $currentDirColor: baseTheme.colors.$blue900,
     $currentDirBackgroundColor: baseTheme.colors.$blue100,
 
-    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue200,
-    $selectedSuggestionColor: baseTheme.colors.$blue800,
+    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue500,
+    $selectedSuggestionColor: baseTheme.colors.$white,
   },
 }
 

@@ -78,24 +78,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
             }}
             onKeyDown={event => {
               if (event.key === 'Enter') {
-                // run cell
-                event.preventDefault() // don't allow multiline input
-                dispatch({ type: 'run-cell', id, input })
-
-                // const suggestion =
-                //   suggestions && suggestions[index] && suggestions[index].command
-                // if (typeof suggestion === 'string') {
-                //   insertSuggestion(editor, suggestion)
-                //   dispatch({
-                //     type: 'run-cell',
-                //     id,
-                //     input: suggestion,
-                //   })
-
-                //   // todo: doesn't work again... maybe blur would fix it
-                //   setSuggestions(() => null)
-                // } else {
-                // }
+                event.preventDefault() // prevent multiline input
               }
             }}
             // renderElement={renderElement}
@@ -104,6 +87,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
       </Div>
       <Suggestions
         id={id}
+        input={input}
         editor={editor}
         inputRef={inputRef}
         focused={focused}

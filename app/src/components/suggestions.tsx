@@ -9,25 +9,38 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useKey } from 'react-use'
 import { Editor, Range, Transforms } from 'slate'
 import { ReactEditor } from 'slate-react'
+import useStore from '../store'
 import type { Suggestion } from 'types/shared'
 import { useListener } from '../lib'
 import { styled } from '../stitches.config'
 import { Div, Span } from './shared'
 import { Folder } from './svg'
 
+if (import.meta.hot) {
+  import.meta.hot.decline()
+}
+
 interface Props {
   id: string
+  input: string
   editor: Editor & ReactEditor
   inputRef: React.RefObject<HTMLDivElement>
   focused: boolean
 }
 
-const Suggestions: React.FC<Props> = ({ id, editor, inputRef, focused }) => {
+const Suggestions: React.FC<Props> = ({
+  id,
+  input,
+  editor,
+  inputRef,
+  focused,
+}) => {
+  const dispatch = useStore(state => state.dispatch)
   const suggestionRef = useRef<HTMLDivElement>(null)
 
   const [show, setShow] = useState(true)
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>([])
-  const [index, setIndex] = useState(0)
+  const [index, setIndex] = useState<null | number>(null)
   const [direction, setDirection] = useState<'column' | 'column-reverse'>(
     'column',
   )
@@ -73,11 +86,19 @@ const Suggestions: React.FC<Props> = ({ id, editor, inputRef, focused }) => {
       suggestionElement.style.top = `${top}px`
       suggestionElement.style.left = `${rect.left}px`
     }
+
+    // reset if index is out of bounds
+    if (suggestions && index !== null && index > suggestions.length - 1)
+      setIndex(null)
   }, [editor, index, suggestions])
 
   // scroll item into view
   useEffect(() => {
-    if (suggestionRef.current && suggestionRef.current.children[0]) {
+    if (
+      suggestionRef.current &&
+      suggestionRef.current.children[0] &&
+      index !== null
+    ) {
       const item = suggestionRef.current.children[0].children[
         index
       ] as HTMLDivElement
@@ -95,46 +116,68 @@ const Suggestions: React.FC<Props> = ({ id, editor, inputRef, focused }) => {
           case 'ArrowUp': {
             event.preventDefault()
 
-            const nextIndex =
-              direction !== 'column-reverse'
-                ? index <= 0
-                  ? suggestions.length - 1
-                  : index - 1
-                : index >= suggestions.length - 1
-                ? 0
-                : index + 1
-            setIndex(nextIndex)
+            if (index === null) {
+              setIndex(suggestions.length - 1)
+            } else {
+              const nextIndex =
+                direction !== 'column-reverse'
+                  ? index <= 0
+                    ? suggestions.length - 1
+                    : index - 1
+                  : index >= suggestions.length - 1
+                  ? 0
+                  : index + 1
+              setIndex(nextIndex)
+            }
             break
           }
           case 'ArrowDown': {
             event.preventDefault()
 
-            const nextIndex =
-              direction === 'column-reverse'
-                ? index <= 0
-                  ? suggestions.length - 1
-                  : index - 1
-                : index >= suggestions.length - 1
-                ? 0
-                : index + 1
-            setIndex(nextIndex)
+            if (index === null) {
+              setIndex(0)
+            } else {
+              const nextIndex =
+                direction === 'column-reverse'
+                  ? index <= 0
+                    ? suggestions.length - 1
+                    : index - 1
+                  : index >= suggestions.length - 1
+                  ? 0
+                  : index + 1
+              setIndex(nextIndex)
+            }
+
             break
           }
           case 'Tab':
+            event.preventDefault()
+            if (index !== null)
+              insertSuggestion(editor, suggestions[index].command)
+            setShow(false)
+            break
           case 'Enter':
             event.preventDefault()
-            insertSuggestion(editor, suggestions[index].command)
+            // todo: this way we can only run a cell if there is a suggestion
+            if (index === null) {
+              dispatch({ type: 'run-cell', id, input })
+            } else {
+              const input = suggestions[index].command
+              insertSuggestion(editor, input)
+              dispatch({ type: 'run-cell', id, input })
+            }
             setShow(false)
             break
           case 'Escape':
             event.preventDefault()
             setSuggestions(null)
+            setIndex(null)
             break
         }
       }
     },
     {},
-    [focused, suggestions, editor, index, direction],
+    [focused, input, suggestions, editor, index, direction],
   )
 
   if (!suggestions || suggestions.length < 1 || !focused || !show) return null
@@ -150,7 +193,7 @@ const Suggestions: React.FC<Props> = ({ id, editor, inputRef, focused }) => {
           <Item
             key={i}
             type={suggestion.kind}
-            state={i === index ? 'focused' : 'default'}
+            focused={i === index}
             onClick={() => {
               insertSuggestion(editor, suggestions[i].command)
               setShow(false)
@@ -176,37 +219,41 @@ const Suggestions: React.FC<Props> = ({ id, editor, inputRef, focused }) => {
             </Span>
 
             {suggestion.date && (
-              <Date>{formatDistanceToNow(parseInt(suggestion.date))} ago</Date>
+              <Date focused={i === index}>
+                {formatDistanceToNow(parseInt(suggestion.date))} ago
+              </Date>
             )}
           </Item>
         ))}
       </Items>
-      {suggestions[index] && suggestions[index].tldrDocumentation && (
-        <DocumentationPopup>
-          {/* @ts-ignore */}
-          <Markdown>{suggestions[index].tldrDocumentation}</Markdown>
-          <Div
-            css={{
-              position: 'absolute',
-              right: '$4',
-              top: '$2',
-              textDecoration: 'none',
-              color: '$secondaryTextColor',
+      {index !== null &&
+        suggestions[index] &&
+        suggestions[index].tldrDocumentation && (
+          <DocumentationPopup>
+            {/* @ts-ignore */}
+            <Markdown>{suggestions[index].tldrDocumentation}</Markdown>
+            <Div
+              css={{
+                position: 'absolute',
+                right: '$4',
+                top: '$2',
+                textDecoration: 'none',
+                color: '$secondaryTextColor',
 
-              display: 'flex',
-              alignItems: 'center',
-              svg: {
-                ml: '$1',
-                width: '$3',
-              },
-            }}
-            as="a"
-            href="https://github.com/tldr-pages/tldr"
-          >
-            📚tldr <ExternalLinkIcon />
-          </Div>
-        </DocumentationPopup>
-      )}
+                display: 'flex',
+                alignItems: 'center',
+                svg: {
+                  ml: '$1',
+                  width: '$3',
+                },
+              }}
+              as="a"
+              href="https://github.com/tldr-pages/tldr"
+            >
+              📚tldr <ExternalLinkIcon />
+            </Div>
+          </DocumentationPopup>
+        )}
     </Popup>
   )
 }
@@ -266,18 +313,23 @@ const Items = styled(Div, {
   overflowY: 'auto',
   overflowX: 'hidden',
   maxWidth: '22rem',
-  borderRadius: '$default',
-  backgroundColor: '$focusedBackgroundColor',
+  borderRadius: '$lg',
+  border: '1px solid $accentColor',
+  backgroundColor: '$backgroundColor',
   boxShadow: '$3xl',
+  p: '$1',
 })
 
 const Item = styled(Div, {
-  p: '$2',
+  px: '$2',
+  py: '$1',
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'nowrap',
   fontSize: '$sm',
+  letterSpacing: '$wide',
   cursor: 'pointer',
+  borderRadius: '$md',
 
   ':hover': {
     backgroundColor: '$selectedSuggestionBackgroundColor',
@@ -289,14 +341,17 @@ const Item = styled(Div, {
     type: {
       directory: {},
       bash: {},
-      executable: {},
+      executable: {
+        fontFamily: '$mono',
+      },
     },
-    state: {
-      focused: {
+
+    focused: {
+      true: {
         backgroundColor: '$selectedSuggestionBackgroundColor',
         color: '$selectedSuggestionColor',
       },
-      default: {
+      false: {
         color: '$secondaryTextColor',
       },
     },
@@ -306,8 +361,16 @@ const Item = styled(Div, {
 const Date = styled(Span, {
   ml: 'auto',
   pl: '$1',
-  color: '$secondaryTextColor',
   fontSize: '$xs',
+  color: '$secondaryTextColor',
+
+  variants: {
+    focused: {
+      true: {
+        color: '$selectedSuggestionColor',
+      },
+    },
+  },
 })
 
 const DocumentationPopup = styled(Div, {
@@ -326,10 +389,9 @@ const DocumentationPopup = styled(Div, {
   py: '$2',
   overflowY: 'auto',
   fontSize: '.8em',
-  backgroundColor: '$focusedBackgroundColor',
+  backgroundColor: '$backgroundColor',
   border: '1px solid $accentColor',
-  borderRadius: '$default',
-  boxShadow: '2xl',
+  borderRadius: '$lg',
 
   '* > *': {
     my: '$3',
