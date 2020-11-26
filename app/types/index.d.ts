@@ -9,9 +9,8 @@ export type CellType = {
   currentDir: string
   type: OutputType
   status: Status
+  focused: boolean
 }
-
-export type CellTypeWithFocused = CellType & { focused: boolean }
 
 // not using these rn
 export type FileEntry = {

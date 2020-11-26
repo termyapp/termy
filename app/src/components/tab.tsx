@@ -11,8 +11,23 @@ const Tab: React.FC = () => {
     useCallback(state => Object.keys(state.cells), []),
     shallow,
   )
+  const focusedCellId = useStore(state => state.focus) // this might rerender all the cells on change
   const dispatch = useStore(state => state.dispatch)
+
   useKey('d', e => e.metaKey && dispatch({ type: 'new' }))
+  useKey('j', e => e.metaKey && dispatch({ type: 'focus-next' }))
+  useKey('k', e => e.metaKey && dispatch({ type: 'focus-previous' }))
+  useKey(
+    'w',
+    e => {
+      if (e.metaKey) {
+        e.preventDefault()
+        dispatch({ type: 'remove', id: focusedCellId })
+      }
+    },
+    {},
+    [focusedCellId],
+  )
 
   return (
     <Grid
@@ -23,7 +38,7 @@ const Tab: React.FC = () => {
       }}
     >
       {cellIds.map(id => (
-        <Cell key={id} id={id} />
+        <Cell key={id} id={id} focused={id === focusedCellId} />
       ))}
     </Grid>
   )

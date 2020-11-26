@@ -3,22 +3,13 @@ import { useDebounce } from 'react-use'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
-import type {
-  CellTypeWithFocused,
-  Message,
-  OutputType,
-  XtermSize,
-} from '../../types'
-import useStore from '../store'
+import type { CellType, Message, XtermSize } from '../../types'
+import useStore, { focusCell } from '../store'
 import { ipc } from './'
 
-export const useXterm = ({
-  id,
-  status,
-  focused,
-  type,
-}: CellTypeWithFocused & { type: OutputType }) => {
+export const useXterm = ({ id, status, focused, type }: CellType) => {
   const theme = useStore(state => state.theme)
+  const dispatch = useStore(state => state.dispatch)
 
   const [size, setSize] = useState<XtermSize>()
 
@@ -40,8 +31,8 @@ export const useXterm = ({
 
     // todo: https://xtermjs.org/docs/guides/flowcontrol/
     terminal.onKey(({ key, domEvent }) => {
-      if (domEvent.metaKey && domEvent.key === 'Escape') {
-        terminal.blur()
+      if (domEvent.shiftKey && domEvent.key === 'Tab') {
+        focusCell(id)
       } else if (!terminal.getOption('disableStdin')) {
         console.log('key', key.charCodeAt(0))
 

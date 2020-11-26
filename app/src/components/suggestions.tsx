@@ -171,6 +171,7 @@ const Suggestions: React.FC<Props> = ({
                 focus: Editor.end(editor, []),
               })
               setShow(false)
+              setIndex(null)
             }
             break
           case 'Escape':
@@ -197,6 +198,7 @@ const Suggestions: React.FC<Props> = ({
           focus: Editor.end(editor, []),
         })
         setShow(false)
+        setIndex(null)
       }
     },
     {},
@@ -382,10 +384,11 @@ const Item = styled(Div, {
 
 const Date = styled(Span, {
   ml: 'auto',
-  pl: '$1',
+  pl: '$3',
   fontSize: '$xs',
   color: '$secondaryForeground',
   letterSpacing: '$tight',
+  whiteSpace: 'nowrap',
 
   variants: {
     focused: {

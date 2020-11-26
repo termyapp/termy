@@ -42,6 +42,8 @@ export type ServerMessage = {
 }
 
 export type Suggestion = {
+  // todo: make fullCommand optional, display should be comman
+  // if availale delete everything and insert full command, otherwis append command
   command: string
   display: string
   score: number

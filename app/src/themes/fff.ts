@@ -5,7 +5,7 @@ export const lightTheme = {
   colors: {
     ...baseTheme.colors,
 
-    $background: '#f3f3f3',
+    $background: '#efefef',
     $foreground: baseTheme.colors.$black,
     $secondaryForeground: baseTheme.colors.$gray700,
 

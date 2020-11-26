@@ -15,8 +15,11 @@ type Action =
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
   | { type: 'run-cell'; id: string; input: string }
   | { type: 'set-theme'; theme: ThemeMode }
+  | { type: 'focus'; id: string }
+  | { type: 'focus-next' }
+  | { type: 'focus-previous' }
 
-const getDefaultCell = (): CellType => {
+const getDefaultCell = (): Omit<CellType, 'focused'> => {
   const id = v4()
   return {
     id,
@@ -44,8 +47,16 @@ const initialState = (() => {
       //  [cellB1.id]: cellB1, [cellB2.id]: cellB2
     },
     theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
+    focus: cellA1.id,
   }
 })()
+
+export const focusCell = (id: string) => {
+  const cell = document.getElementById(id)
+  if (cell) {
+    cell.focus()
+  }
+}
 
 const reducer = (state: State, action: Action) => {
   return produce(state, draft => {
@@ -57,10 +68,21 @@ const reducer = (state: State, action: Action) => {
       case 'new': {
         const cell = getDefaultCell()
         draft.cells[cell.id] = cell
+        draft.focus = cell.id
         break
       }
       case 'remove': {
+        const keys = Object.keys(draft.cells)
+        if (keys.length <= 1) break
         delete draft.cells[action.id]
+
+        // focus prev
+        const index = keys.findIndex(id => id === draft.focus)
+        if (index <= 0) {
+          draft.focus = keys[keys.length - 1]
+        } else {
+          draft.focus = keys[index - 1]
+        }
         break
       }
       case 'set-cell': {
@@ -87,6 +109,36 @@ const reducer = (state: State, action: Action) => {
       }
       case 'set-theme': {
         draft.theme = getTheme(action.theme)
+        break
+      }
+      case 'focus': {
+        draft.focus = action.id
+        break
+      }
+      case 'focus-next': {
+        const keys = Object.keys(draft.cells)
+        const index = keys.findIndex(id => id === draft.focus)
+        let newIndex
+        if (index >= keys.length - 1) {
+          newIndex = keys[0]
+        } else {
+          newIndex = keys[index + 1]
+        }
+        draft.focus = newIndex
+        focusCell(newIndex)
+        break
+      }
+      case 'focus-previous': {
+        const keys = Object.keys(draft.cells)
+        const index = keys.findIndex(id => id === draft.focus)
+        let newIndex
+        if (index <= 0) {
+          newIndex = keys[keys.length - 1]
+        } else {
+          newIndex = keys[index - 1]
+        }
+        draft.focus = newIndex
+        focusCell(newIndex)
         break
       }
     }

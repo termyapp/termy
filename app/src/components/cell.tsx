@@ -12,10 +12,9 @@ if (import.meta.hot) {
   import.meta.hot.decline()
 }
 
-const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
+const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   const cell = useStore(useCallback(state => state.cells[id], [id]))
   const dispatch = useStore(state => state.dispatch)
-  const [focused, setFocused] = useState(true)
 
   // api
   const [output, setOutput] = useState('')
@@ -54,14 +53,10 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
 
   return (
     <Card
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      onKeyDown={e => {
-        if (focused && e.metaKey && e.key == 'w') {
-          e.preventDefault()
-          dispatch({ type: 'remove', id })
-        }
-      }}
+      onFocus={() => dispatch({ type: 'focus', id })}
+      status={
+        focused ? (cell.status === null ? 'default' : cell.status) : 'none'
+      }
     >
       <Prompt {...cell} focused={focused} />
       <Output>
@@ -98,15 +93,35 @@ const Card = styled(Flex, {
   borderRadius: '$lg',
   flexDirection: 'column',
 
-  color: '$defaultForeground',
-
-  ':focus-within': {
-    backgroundColor: '$defaultBackground',
+  variants: {
+    status: {
+      none: {
+        color: '$defaultForeground',
+        border: '1px solid transparent',
+      },
+      default: {
+        backgroundColor: '$defaultBackground',
+        border: '1px solid $defaultForeground',
+      },
+      running: {
+        backgroundColor: '$defaultBackground',
+        border: '1px solid $runningForeground',
+      },
+      success: {
+        backgroundColor: '$defaultBackground',
+        border: '1px solid $successForeground',
+      },
+      error: {
+        backgroundColor: '$defaultBackground',
+        border: '1px solid $errorForeground',
+      },
+    },
   },
 })
 
 const Output = styled(Div, {
-  p: '$4',
+  px: '$4',
+  py: '$1',
   height: '100%',
 })
 

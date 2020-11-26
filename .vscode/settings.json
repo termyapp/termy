@@ -12,5 +12,5 @@
     "**/.DS_Store": true,
     "**/node_modules": true
   },
-  "rust-analyzer.linkedProjects": ["electron/native/Cargo.toml"]
+  "git.detectSubmodules": false // prevent electron/external/tldr from showing up
 }

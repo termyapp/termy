@@ -1,15 +1,16 @@
 import React from 'react'
-import type { CellTypeWithFocused } from '../../types'
+import type { CellType } from '../../types'
 import { formatCurrentDir } from '../lib'
 import { styled } from '../stitches.config'
 import Input from './input'
 
-const Prompt: React.FC<CellTypeWithFocused> = cell => {
+const Prompt: React.FC<CellType> = cell => {
   const { focused, currentDir } = cell
 
   return (
     <Wrapper
       status={cell.status === null ? 'default' : cell.status}
+      focused={focused}
       newLine={currentDir.length > 60} // todo: do better with long lines (decrease fontSize)
     >
       <CurrentDir focused={focused}>{formatCurrentDir(currentDir)}</CurrentDir>
@@ -25,19 +26,8 @@ const Wrapper = styled('div', {
 
   display: 'flex',
   cursor: 'text',
-  borderRadius: '$lg',
 
   variants: {
-    newLine: {
-      true: {
-        alignItems: 'flex-start',
-        flexDirection: 'column',
-      },
-      false: {
-        alignItems: 'baseline',
-        flexDirection: 'row',
-      },
-    },
     status: {
       default: {
         backgroundColor: '$defaultBackground',
@@ -54,6 +44,25 @@ const Wrapper = styled('div', {
       error: {
         backgroundColor: '$errorBackground',
         color: '$errorForeground',
+      },
+    },
+    focused: {
+      true: {
+        borderTopLeftRadius: '$lg',
+        borderTopRightRadius: '$lg',
+      },
+      false: {
+        borderRadius: '$lg',
+      },
+    },
+    newLine: {
+      true: {
+        alignItems: 'flex-start',
+        flexDirection: 'column',
+      },
+      false: {
+        alignItems: 'baseline',
+        flexDirection: 'row',
       },
     },
   },

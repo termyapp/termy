@@ -3,7 +3,7 @@ import { useDebounce } from 'react-use'
 import { createEditor, Editor, Node, Transforms } from 'slate'
 import { withHistory } from 'slate-history'
 import { Editable, ReactEditor, Slate, withReact } from 'slate-react'
-import type { CellTypeWithFocused, Message } from '../../types'
+import type { CellType, Message } from '../../types'
 import { ipc } from '../lib'
 import useStore from '../store'
 import { Div } from './shared'
@@ -14,12 +14,7 @@ if (import.meta.hot) {
   import.meta.hot.decline()
 }
 
-const Input: React.FC<CellTypeWithFocused> = ({
-  id,
-  currentDir,
-  value,
-  focused,
-}) => {
+const Input: React.FC<CellType> = ({ id, currentDir, value, focused }) => {
   const dispatch = useStore(state => state.dispatch)
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
   const inputRef = useRef<HTMLDivElement>(null)
@@ -59,7 +54,7 @@ const Input: React.FC<CellTypeWithFocused> = ({
           fontSize: '$base',
 
           div: {
-            py: '$2',
+            py: '0.32rem',
           },
         }}
       >
@@ -76,10 +71,12 @@ const Input: React.FC<CellTypeWithFocused> = ({
           }}
         >
           <Editable
+            id={id}
             autoFocus
             placeholder=">"
             onFocus={() => {
-              focusInput(editor)
+              Transforms.select(editor, Editor.end(editor, []))
+              ReactEditor.focus(editor)
             }}
             onKeyDown={event => {
               if (event.key === 'Enter') {
@@ -99,13 +96,6 @@ const Input: React.FC<CellTypeWithFocused> = ({
       />
     </>
   )
-}
-
-const focusInput = (editor: ReactEditor) => {
-  // move cursor to the end
-  Transforms.select(editor, Editor.end(editor, []))
-
-  ReactEditor.focus(editor)
 }
 
 const themeCommand = {

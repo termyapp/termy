@@ -1,6 +1,8 @@
 import type { ThemeMode } from '../../types'
 import { darkTheme, lightTheme } from '../themes'
 
+export const isDev = import.meta.env.SNOWPACK_PUBLIC_NODE_ENV === 'development'
+
 export const formatCurrentDir = (currentDir: string) => {
   const path = currentDir.split('/')
   if (path.length < 3) {
@@ -10,19 +12,7 @@ export const formatCurrentDir = (currentDir: string) => {
   return (relativePath.length > 0 ? '~/' : '~') + relativePath
 }
 
-// todo: replace below ones w/ api
-export const readFile = (path: string): string | null => {
-  return null
-}
-
-export const writeFile = (path: string, content: string) => {}
-
-export const getLanguage = (path: string): string | undefined => {
-  return undefined
-}
-
-export const isDev = import.meta.env.SNOWPACK_PUBLIC_NODE_ENV === 'development'
-
+// todo: dark theme
 export const getTheme = (mode?: ThemeMode) =>
   mode === '#000' ? lightTheme : lightTheme
 
@@ -38,3 +28,14 @@ export const shortenDate = (date: string) =>
 export * from './ipc'
 export * from './listener'
 export * from './xterm'
+
+// todo: replace below ones w/ api
+export const readFile = (path: string): string | null => {
+  return null
+}
+
+export const writeFile = (path: string, content: string) => {}
+
+export const getLanguage = (path: string): string | undefined => {
+  return undefined
+}
