@@ -3,16 +3,16 @@ import {
   ExternalLinkIcon,
   GearIcon,
 } from '@modulz/radix-icons'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNowStrict } from 'date-fns'
 import Markdown from 'markdown-to-jsx'
 import React, { useEffect, useRef, useState } from 'react'
 import { useKey } from 'react-use'
 import { Editor, Range, Transforms } from 'slate'
 import { ReactEditor } from 'slate-react'
-import useStore from '../store'
 import type { Suggestion } from 'types/shared'
-import { useListener } from '../lib'
+import { shortenDate, useListener } from '../lib'
 import { styled } from '../stitches.config'
+import useStore from '../store'
 import { Div, Span } from './shared'
 import { Folder } from './svg'
 
@@ -220,7 +220,9 @@ const Suggestions: React.FC<Props> = ({
 
             {suggestion.date && (
               <Date focused={i === index}>
-                {formatDistanceToNow(parseInt(suggestion.date))} ago
+                {shortenDate(
+                  formatDistanceToNowStrict(parseInt(suggestion.date)),
+                )}
               </Date>
             )}
           </Item>
@@ -238,7 +240,7 @@ const Suggestions: React.FC<Props> = ({
                 right: '$4',
                 top: '$2',
                 textDecoration: 'none',
-                color: '$secondaryTextColor',
+                color: '$secondaryForeground',
 
                 display: 'flex',
                 alignItems: 'center',
@@ -314,8 +316,8 @@ const Items = styled(Div, {
   overflowX: 'hidden',
   maxWidth: '22rem',
   borderRadius: '$lg',
-  border: '1px solid $accentColor',
-  backgroundColor: '$backgroundColor',
+  border: '1px solid $secondaryForeground',
+  backgroundColor: '$defaultBackground',
   boxShadow: '$3xl',
   p: '$1',
 })
@@ -330,10 +332,11 @@ const Item = styled(Div, {
   letterSpacing: '$wide',
   cursor: 'pointer',
   borderRadius: '$md',
+  lineHeight: '$relaxed',
 
   ':hover': {
-    backgroundColor: '$selectedSuggestionBackgroundColor',
-    color: '$selectedSuggestionColor',
+    backgroundColor: '$focusedSuggestionBackground',
+    color: '$focusedSuggestionForeground',
     opacity: 0.92,
   },
 
@@ -341,18 +344,16 @@ const Item = styled(Div, {
     type: {
       directory: {},
       bash: {},
-      executable: {
-        fontFamily: '$mono',
-      },
+      executable: {},
     },
 
     focused: {
       true: {
-        backgroundColor: '$selectedSuggestionBackgroundColor',
-        color: '$selectedSuggestionColor',
+        backgroundColor: '$focusedSuggestionBackground',
+        color: '$focusedSuggestionForeground',
       },
       false: {
-        color: '$secondaryTextColor',
+        color: '$secondaryForeground',
       },
     },
   },
@@ -362,12 +363,13 @@ const Date = styled(Span, {
   ml: 'auto',
   pl: '$1',
   fontSize: '$xs',
-  color: '$secondaryTextColor',
+  color: '$secondaryForeground',
+  letterSpacing: '$tight',
 
   variants: {
     focused: {
       true: {
-        color: '$selectedSuggestionColor',
+        color: '$focusedSuggestionForeground',
       },
     },
   },
@@ -384,13 +386,13 @@ const DocumentationPopup = styled(Div, {
   maxWidth: '70vh',
   maxHeight: '70vh',
 
-  color: '$primaryTextColor',
+  color: '$foreground',
   px: '$3',
   py: '$2',
   overflowY: 'auto',
   fontSize: '.8em',
-  backgroundColor: '$backgroundColor',
-  border: '1px solid $accentColor',
+  backgroundColor: '$defaultBackground',
+  border: '1px solid $secondaryForeground',
   borderRadius: '$lg',
 
   '* > *': {

@@ -9,6 +9,7 @@ const Prompt: React.FC<CellTypeWithFocused> = cell => {
 
   return (
     <Wrapper
+      status={cell.status === null ? 'default' : cell.status}
       newLine={currentDir.length > 60} // todo: do better with long lines (decrease fontSize)
     >
       <CurrentDir focused={focused}>{formatCurrentDir(currentDir)}</CurrentDir>
@@ -25,6 +26,7 @@ const Wrapper = styled('div', {
 
   display: 'flex',
   cursor: 'text',
+  borderRadius: '$lg',
 
   variants: {
     newLine: {
@@ -37,29 +39,45 @@ const Wrapper = styled('div', {
         flexDirection: 'row',
       },
     },
+    status: {
+      default: {
+        backgroundColor: '$defaultBackground',
+        color: '$defaultForeground',
+      },
+      running: {
+        backgroundColor: '$runningBackground',
+        color: '$runningForeground',
+      },
+      success: {
+        backgroundColor: '$successBackground',
+        color: '$successForeground',
+      },
+      error: {
+        backgroundColor: '$errorBackground',
+        color: '$errorForeground',
+      },
+    },
   },
 })
 
 const CurrentDir = styled('div', {
-  color: '$currentDirColor',
-  py: '$1',
   px: '$2',
   ml: '-$2',
   mr: '$2',
-  borderRadius: '$default',
-  fontSize: '$xs',
+  fontSize: '$sm',
   textDecoration: 'underline',
   fontFamily: '$mono',
   whiteSpace: 'nowrap',
+  letterSpacing: '$tighter',
 
   variants: {
     focused: {
       false: {
-        backgroundColor: 'transparent',
+        opacity: 0.8,
         display: 'inline-block',
       },
       true: {
-        backgroundColor: '$currentDirBackgroundColor',
+        opacity: 1,
         display: 'block',
       },
     },

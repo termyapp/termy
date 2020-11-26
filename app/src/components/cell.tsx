@@ -7,6 +7,11 @@ import Api from './api'
 import Prompt from './prompt'
 import { Div, Flex } from './shared'
 
+// it breaks nowadays, idk why
+if (import.meta.hot) {
+  import.meta.hot.decline()
+}
+
 const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
   const cell = useStore(useCallback(state => state.cells[id], [id]))
   const dispatch = useStore(state => state.dispatch)
@@ -48,7 +53,7 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
   })
 
   return (
-    <Wrapper
+    <Card
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onKeyDown={e => {
@@ -82,29 +87,26 @@ const Cell: React.FC<Pick<CellType, 'id'>> = ({ id }) => {
           <Api>{output}</Api>
         </Div>
       </Output>
-    </Wrapper>
+    </Card>
   )
 }
 
 export default Cell
 
-const Wrapper = styled(Flex, {
+const Card = styled(Flex, {
   position: 'relative',
-  borderRadius: '$default',
+  borderRadius: '$lg',
   flexDirection: 'column',
 
-  border: '1px solid transparent',
-  color: '$secondaryTextColor',
+  color: '$defaultForeground',
 
   ':focus-within': {
-    border: '1px solid $accentColor',
-    backgroundColor: '$focusedBackgroundColor',
-    color: '$primaryTextColor',
+    backgroundColor: '$defaultBackground',
   },
 })
 
 const Output = styled(Div, {
-  px: '$4',
+  p: '$4',
   height: '100%',
 })
 

@@ -26,6 +26,15 @@ export const isDev = import.meta.env.SNOWPACK_PUBLIC_NODE_ENV === 'development'
 export const getTheme = (mode?: ThemeMode) =>
   mode === '#000' ? lightTheme : lightTheme
 
+export const shortenDate = (date: string) =>
+  date
+    .replace('seconds', 's')
+    .replace('minutes', 'min')
+    .replace('hours', 'h')
+    .replace('days', 's')
+    .replace('months', 'm')
+    .replace('years', 'y')
+
 export * from './ipc'
 export * from './listener'
 export * from './xterm'

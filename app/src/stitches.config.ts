@@ -1,49 +1,5 @@
 import { createStyled } from '@stitches/react'
-import baseTheme from './base-theme'
-
-export const lightTheme = {
-  ...baseTheme,
-  colors: {
-    ...baseTheme.colors,
-
-    $primaryTextColor: baseTheme.colors.$black,
-    $secondaryTextColor: baseTheme.colors.$gray700,
-    $backgroundColor: baseTheme.colors.$gray200,
-
-    $accentColor: baseTheme.colors.$gray300,
-    $caretColor: baseTheme.colors.$teal500,
-    $selectionColor: baseTheme.colors.$teal200,
-    $focusedBackgroundColor: baseTheme.colors.$white,
-
-    $currentDirColor: baseTheme.colors.$blue900,
-    $currentDirBackgroundColor: baseTheme.colors.$blue100,
-
-    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue500,
-    $selectedSuggestionColor: baseTheme.colors.$white,
-  },
-}
-
-export const darkTheme = {
-  ...baseTheme,
-  colors: {
-    ...baseTheme.colors,
-
-    $primaryTextColor: baseTheme.colors.$white,
-    $secondaryTextColor: baseTheme.colors.$gray400,
-    $backgroundColor: baseTheme.colors.$black,
-
-    $accentColor: '#2a2a2a',
-    $caretColor: '#f42069',
-    $selectionColor: '#f42069',
-    $focusedBackgroundColor: '#161616',
-
-    $currentDirColor: baseTheme.colors.$gray300,
-    $currentDirBackgroundColor: baseTheme.colors.$gray900,
-
-    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue700,
-    $selectedSuggestionColor: baseTheme.colors.$white,
-  },
-}
+import { lightTheme } from './themes'
 
 // creating a copy so that the exported `theme` retains the raw values
 const tokens = JSON.parse(JSON.stringify(lightTheme)) as typeof lightTheme
@@ -121,9 +77,9 @@ export const { styled, css } = createStyled({
 
 export const globalStyles = css.global({
   body: {
-    color: '$primaryTextColor',
-    backgroundColor: '$backgroundColor',
-    caretColor: '$caretColor',
+    backgroundColor: '$background',
+    color: '$foreground',
+    caretColor: '$caret',
     fontFamily: '$sans',
 
     position: 'fixed',
@@ -134,7 +90,7 @@ export const globalStyles = css.global({
 
     '*': {
       '::selection': {
-        backgroundColor: '$selectionColor',
+        backgroundColor: '$selection',
       },
     },
   },
