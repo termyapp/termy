@@ -74,6 +74,7 @@ const reducer = (state: State, action: Action) => {
       case 'remove': {
         const keys = Object.keys(draft.cells)
         if (keys.length <= 1) break
+        // todo: kill pty if running
         delete draft.cells[action.id]
 
         // focus prev

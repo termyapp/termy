@@ -46,6 +46,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
         setOutput(output.data.apiData)
       } else if (output.type === 'pty') {
         terminalRef.current?.write(new Uint8Array(output.data.ptyData))
+        terminalRef.current?.focus()
         // console.log('writing chunk', output.data)
       }
     }

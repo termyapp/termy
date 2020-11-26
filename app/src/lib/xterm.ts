@@ -55,6 +55,27 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
     terminalRef.current = terminal
   }, [])
 
+  useEffect(() => {
+    if (status === null) {
+      // remove previous content
+      terminalRef.current?.reset()
+      terminalRef.current?.setOption('disableStdin', false)
+    } else if (status === 'running') {
+      // todo: this doesn't work here because it's too early to focus
+      // currently focusing on each `pty` write (not ideal)
+      terminalRef.current?.focus()
+    } else if (over) {
+      console.log('disabling terminal')
+
+      // disable stdin
+      terminalRef.current?.setOption('disableStdin', true)
+
+      terminalRef.current?.blur()
+
+      focusCell(id)
+    }
+  }, [status, over, id])
+
   // debounced onResize
   const [, cancel] = useDebounce(
     () => {
@@ -108,23 +129,6 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
     if (terminalContainerRef.current)
       new ResizeObserver(updateSize).observe(terminalContainerRef.current)
   }, [])
-
-  useEffect(() => {
-    if (status === null) {
-      // remove previous content
-      terminalRef.current?.reset()
-      terminalRef.current?.setOption('disableStdin', false)
-    } else if (status === 'running') {
-      terminalRef.current?.focus()
-    } else if (over) {
-      console.log('disabling terminal')
-
-      // disable stdin
-      terminalRef.current?.setOption('disableStdin', true)
-
-      terminalRef.current?.blur()
-    }
-  }, [status, over])
 
   return { terminalContainerRef, terminalRef }
 }
