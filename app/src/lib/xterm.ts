@@ -89,13 +89,13 @@ export const useXterm = ({
   // update theme
   useEffect(() => {
     const background = focused
-      ? theme.colors.$focusedBackgroundColor
-      : theme.colors.$backgroundColor
-    const cursor = over ? background : theme.colors.$caretColor
+      ? theme.colors.$defaultBackground
+      : theme.colors.$background
+    const cursor = over ? background : theme.colors.$caret
     terminalRef.current?.setOption('theme', {
       background,
-      foreground: theme.colors.$primaryTextColor,
-      selection: theme.colors.$selectionColor, // color looks lighter in xterm, idk why
+      foreground: theme.colors.$foreground,
+      selection: theme.colors.$selection, // color looks lighter in xterm, idk why
       cursor,
     })
     terminalRef.current?.setOption('fontFamily', theme.fonts.$mono)

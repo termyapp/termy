@@ -1,5 +1,5 @@
 import type { ThemeMode } from '../../types'
-import { darkTheme, lightTheme } from '../stitches.config'
+import { darkTheme, lightTheme } from '../themes'
 
 export const formatCurrentDir = (currentDir: string) => {
   const path = currentDir.split('/')
@@ -24,7 +24,7 @@ export const getLanguage = (path: string): string | undefined => {
 export const isDev = import.meta.env.SNOWPACK_PUBLIC_NODE_ENV === 'development'
 
 export const getTheme = (mode?: ThemeMode) =>
-  mode === '#000' ? darkTheme : lightTheme
+  mode === '#000' ? lightTheme : lightTheme
 
 export * from './ipc'
 export * from './listener'
