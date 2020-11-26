@@ -166,8 +166,12 @@ const Suggestions: React.FC<Props> = ({
               const input = suggestions[index].command
               insertSuggestion(editor, input)
               dispatch({ type: 'run-cell', id, input })
+              Transforms.select(editor, {
+                anchor: Editor.start(editor, []),
+                focus: Editor.end(editor, []),
+              })
+              setShow(false)
             }
-            setShow(false)
             break
           case 'Escape':
             event.preventDefault()
@@ -188,6 +192,10 @@ const Suggestions: React.FC<Props> = ({
       if (focused && event.key === 'Enter' && index === null) {
         event.preventDefault()
         dispatch({ type: 'run-cell', id, input })
+        Transforms.select(editor, {
+          anchor: Editor.start(editor, []),
+          focus: Editor.end(editor, []),
+        })
         setShow(false)
       }
     },
@@ -210,8 +218,7 @@ const Suggestions: React.FC<Props> = ({
             type={suggestion.kind}
             focused={i === index}
             onClick={() => {
-              insertSuggestion(editor, suggestions[i].command)
-              setShow(false)
+              // todo: cell loses focus before this can get triggered
             }}
           >
             <Span
@@ -348,12 +355,6 @@ const Item = styled(Div, {
   lineHeight: '$loose',
   cursor: 'pointer',
 
-  ':hover': {
-    backgroundColor: '$focusedSuggestionBackground',
-    color: '$focusedSuggestionForeground',
-    opacity: 0.92,
-  },
-
   variants: {
     type: {
       directory: {},
@@ -368,6 +369,12 @@ const Item = styled(Div, {
       },
       false: {
         color: '$secondaryForeground',
+
+        ':hover': {
+          backgroundColor: '$focusedSuggestionBackground',
+          color: '$focusedSuggestionForeground',
+          opacity: 0.72,
+        },
       },
     },
   },
