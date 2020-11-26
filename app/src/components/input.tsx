@@ -28,6 +28,8 @@ const Input: React.FC<CellTypeWithFocused> = ({
     value,
   ])
 
+  // const { portalRef } = useSuggestions(input)
+
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
   // update suggestions
@@ -51,11 +53,14 @@ const Input: React.FC<CellTypeWithFocused> = ({
         ref={inputRef}
         css={{
           width: '100%',
-          py: '$2',
           position: 'relative',
-          fontWeight: '$semibold',
+          fontWeight: '$medium',
           letterSpacing: '$snug',
           fontSize: '$base',
+
+          div: {
+            py: '$2',
+          },
         }}
       >
         <Slate

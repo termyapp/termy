@@ -9,7 +9,7 @@ export const lightTheme = {
     $foreground: baseTheme.colors.$black,
     $secondaryForeground: baseTheme.colors.$gray700,
 
-    $accent: baseTheme.colors.$teal500,
+    $accent: baseTheme.colors.$gray400,
     $caret: baseTheme.colors.$teal500,
     $selection: baseTheme.colors.$teal200,
 
@@ -25,7 +25,7 @@ export const lightTheme = {
     $currentDirForeground: baseTheme.colors.$teal900,
     $currentDirBackground: baseTheme.colors.$white,
 
-    $focusedSuggestionBackground: baseTheme.colors.$blue500,
+    $focusedSuggestionBackground: baseTheme.colors.$blue400,
     $focusedSuggestionForeground: baseTheme.colors.$white,
   },
 }

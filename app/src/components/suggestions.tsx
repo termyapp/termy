@@ -117,7 +117,9 @@ const Suggestions: React.FC<Props> = ({
             event.preventDefault()
 
             if (index === null) {
-              setIndex(suggestions.length - 1)
+              direction !== 'column-reverse'
+                ? setIndex(suggestions.length - 1)
+                : setIndex(0)
             } else {
               const nextIndex =
                 direction !== 'column-reverse'
@@ -135,7 +137,9 @@ const Suggestions: React.FC<Props> = ({
             event.preventDefault()
 
             if (index === null) {
-              setIndex(0)
+              direction === 'column-reverse'
+                ? setIndex(suggestions.length - 1)
+                : setIndex(0)
             } else {
               const nextIndex =
                 direction === 'column-reverse'
@@ -157,11 +161,8 @@ const Suggestions: React.FC<Props> = ({
             setShow(false)
             break
           case 'Enter':
-            event.preventDefault()
-            // todo: this way we can only run a cell if there is a suggestion
-            if (index === null) {
-              dispatch({ type: 'run-cell', id, input })
-            } else {
+            if (index !== null) {
+              event.preventDefault()
               const input = suggestions[index].command
               insertSuggestion(editor, input)
               dispatch({ type: 'run-cell', id, input })
@@ -178,6 +179,20 @@ const Suggestions: React.FC<Props> = ({
     },
     {},
     [focused, input, suggestions, editor, index, direction],
+  )
+
+  // make sure we can run the cell when there are no suggestions
+  useKey(
+    () => true,
+    event => {
+      if (focused && event.key === 'Enter' && index === null) {
+        event.preventDefault()
+        dispatch({ type: 'run-cell', id, input })
+        setShow(false)
+      }
+    },
+    {},
+    [focused, index, input],
   )
 
   if (!suggestions || suggestions.length < 1 || !focused || !show) return null
@@ -308,6 +323,12 @@ const Popup = styled(Div, {
   top: '-99999px',
   left: '-99999px',
   zIndex: 1,
+
+  p: '$1',
+  borderRadius: '$lg',
+  border: '1px solid $accent',
+  backgroundColor: '$defaultBackground',
+  boxShadow: '$3xl',
 })
 
 const Items = styled(Div, {
@@ -315,24 +336,17 @@ const Items = styled(Div, {
   overflowY: 'auto',
   overflowX: 'hidden',
   maxWidth: '22rem',
-  borderRadius: '$lg',
-  border: '1px solid $secondaryForeground',
-  backgroundColor: '$defaultBackground',
-  boxShadow: '$3xl',
-  p: '$1',
 })
 
 const Item = styled(Div, {
   px: '$2',
-  py: '$1',
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'nowrap',
-  fontSize: '$sm',
-  letterSpacing: '$wide',
-  cursor: 'pointer',
   borderRadius: '$md',
-  lineHeight: '$relaxed',
+  fontSize: '$sm',
+  lineHeight: '$loose',
+  cursor: 'pointer',
 
   ':hover': {
     backgroundColor: '$focusedSuggestionBackground',
@@ -392,7 +406,7 @@ const DocumentationPopup = styled(Div, {
   overflowY: 'auto',
   fontSize: '.8em',
   backgroundColor: '$defaultBackground',
-  border: '1px solid $secondaryForeground',
+  border: '1px solid $accent',
   borderRadius: '$lg',
 
   '* > *': {
