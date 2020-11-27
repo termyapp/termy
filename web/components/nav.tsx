@@ -48,7 +48,7 @@ const Nav: React.FC = () => {
         </Text>
         <Button
           as="a"
-          href="https://github.com/termyapp/Termy/releases/download/v0.1.3/Termy-0.1.3.dmg"
+          href="https://github.com/termyapp/Termy/releases/download/v0.1.4/Termy-0.1.4.dmg"
         >
           Download
         </Button>

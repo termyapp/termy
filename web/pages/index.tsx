@@ -23,7 +23,7 @@ const IndexPage = () => {
         A terminal with autocomplete
       </Text>
 
-      <Demo src="/demo.gif" alt="Demo Gif" />
+      <Demo src="/demo.mp4" autoPlay loop muted />
 
       <Div
         css={{
@@ -45,7 +45,7 @@ const IndexPage = () => {
           Press{' '}
           <Key
             shortcut="d"
-            href="https://github.com/termyapp/Termy/releases/download/v0.1.3/Termy-0.1.3.dmg"
+            href="https://github.com/termyapp/Termy/releases/download/v0.1.4/Termy-0.1.4.dmg"
             external
           >
             D
@@ -53,7 +53,7 @@ const IndexPage = () => {
           to{' '}
           <Button
             as="a"
-            href="https://github.com/termyapp/Termy/releases/download/v0.1.3/Termy-0.1.3.dmg"
+            href="https://github.com/termyapp/Termy/releases/download/v0.1.4/Termy-0.1.4.dmg"
           >
             Download
           </Button>
@@ -78,15 +78,15 @@ const IndexPage = () => {
   )
 }
 
-const Demo = styled.img({
+const Demo = styled.video({
   display: 'block',
-  width: '60%',
+  width: '97%',
   mx: 'auto',
   my: '$10',
   br: '$3',
   backgroundColor: '$backgroundColor',
   boxShadow: '$2xl',
-  borderRadius: '$lg',
+  borderRadius: '$2xl',
   p: '-$2',
 
   mobile: {
