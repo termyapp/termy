@@ -35,28 +35,26 @@ const getDefaultCell = (): Omit<CellType, 'focused'> => {
   }
 }
 
-// todo: init cell input with `help` or `guide` on first launch
-const initialState = (() => {
-  const cellA1 = getDefaultCell()
-  const cellB1 = getDefaultCell()
-  const cellB2 = getDefaultCell()
-
-  return {
-    cells: {
-      [cellA1.id]: cellA1,
-      //  [cellB1.id]: cellB1, [cellB2.id]: cellB2
-    },
-    theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
-    focus: cellA1.id,
-  }
-})()
-
 export const focusCell = (id: string) => {
   const cell = document.getElementById(id)
   if (cell) {
     cell.focus()
   }
 }
+
+// todo: init cell input with `help` or `guide` on first launch
+const initialState = (() => {
+  const cell = getDefaultCell()
+  // @ts-ignore
+  cell.value[0].children[0].text = 'shortcuts'
+  return {
+    cells: {
+      [cell.id]: cell,
+    },
+    theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
+    focus: cell.id,
+  }
+})()
 
 const reducer = (state: State, action: Action) => {
   return produce(state, draft => {

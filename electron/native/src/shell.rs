@@ -1,6 +1,6 @@
 use anyhow::Result;
 use crossbeam_channel::{Receiver, Sender};
-use indoc::formatdoc;
+use indoc::{formatdoc, indoc};
 use io::Read;
 use log::{error, info, warn};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
@@ -13,6 +13,36 @@ use std::{fs, io::Write};
 
 // todo: refactor this huge mess
 // https://stackoverflow.com/questions/57649032/returning-a-value-from-a-function-that-spawns-threads
+
+const SHORTCUTS: &str = indoc! {"
+<br />
+
+## Shortcuts
+
+<br />
+
+### Cell
+
+New: <kbd>Cmd + D</kbd>
+
+Remove: <kbd>Cmd + W</kbd>
+
+<br />
+
+### Move between cells
+
+Down: <kbd>Cmd + J</kbd>
+
+Up: <kbd>Cmd + K</kbd>
+
+<br />
+
+### Focus in-cell
+
+Output: <kbd>Tab</kbd>
+
+Prompt: <kbd>Shift + Tab</kbd>
+"};
 
 pub struct Cell {
     id: String,
@@ -91,6 +121,7 @@ impl Cell {
                     Status::Success,
                 )
             }
+            "shortcuts" => ServerMessage::api(SHORTCUTS.to_string(), None, Status::Success),
             root if root.chars().next().unwrap_or_default() == '/' => {
                 let path = RelativePath::new("").to_path(root);
 

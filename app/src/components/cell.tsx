@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import type { CellType, ServerMessage, ThemeMode } from '../../types'
 import { useListener, useXterm } from '../lib'
 import { styled } from '../stitches.config'
@@ -51,6 +51,15 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
       }
     }
   })
+
+  useEffect(() => {
+    // @ts-ignore very hacky i know i know
+    if (cell.value[0].children[0].text === 'shortcuts')
+      dispatch({ type: 'run-cell', id, input: 'shortcuts' })
+  }, [])
+
+  // it only breaks after we remove the first cell
+  if (typeof cell === 'undefined') return null
 
   return (
     <Card
