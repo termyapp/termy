@@ -37,3 +37,7 @@ Terminals can be scary at first. Termy aims to be a beginner-friendly, easy to u
 <sup>
 Termy is <a href="LICENSE">MIT licensed</a>.
 </sup>
+
+#### Contributors
+
+- [dragonDScript](https://github.com/dragonDScript)
