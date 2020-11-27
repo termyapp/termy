@@ -157,13 +157,20 @@ const Suggestions: React.FC<Props> = ({
           case 'Tab':
             event.preventDefault()
             if (index !== null)
-              insertSuggestion(editor, suggestions[index].command)
+              insertSuggestion(
+                editor,
+                suggestions[index].fullCommand
+                  ? suggestions[index].fullCommand
+                  : suggestions[index].command,
+              )
             setShow(false)
             break
           case 'Enter':
             if (index !== null) {
               event.preventDefault()
-              const input = suggestions[index].command
+              const input = suggestions[index].fullCommand
+                ? suggestions[index].fullCommand
+                : suggestions[index].command
               insertSuggestion(editor, input)
               dispatch({ type: 'run-cell', id, input })
               Transforms.select(editor, {
@@ -239,7 +246,7 @@ const Suggestions: React.FC<Props> = ({
             </Span>
 
             <Span css={{ whiteSpace: 'pre', overflow: 'hidden' }}>
-              {renderSuggestionText(suggestion.display, suggestion.indexes)}
+              {renderSuggestionText(suggestion.command, suggestion.indexes)}
             </Span>
 
             {suggestion.date && (

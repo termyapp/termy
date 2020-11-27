@@ -42,8 +42,8 @@ export type ServerMessage = {
 }
 
 export type Suggestion = {
+  fullCommand?: string
   command: string
-  display: string
   score: number
   indexes: bigint[] // fuzzy indexes to be highlighted
   kind: 'executable' | 'directory' | 'bash'

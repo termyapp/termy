@@ -36,8 +36,9 @@ impl Autocomplete {
             return vec![];
         }
 
-        self.executables(); // important that this comes first so tldr_documentation can be set on the HashMap
+        // order matters since we're using a hashmap
         self.directories();
+        self.executables();
         self.zsh_history();
 
         let mut suggestions: Vec<Suggestion> =
@@ -63,21 +64,31 @@ impl Autocomplete {
 
     // directory suggestions
     fn directories(&mut self) -> Result<()> {
-        for entry in fs::read_dir(self.current_dir.clone())? {
+        let mut dir = String::new();
+        let mut input = self.input.clone();
+        let mut chunks = input.split('/').peekable();
+        while let Some(chunk) = chunks.next() {
+            if chunks.peek().is_none() {
+                input = chunk.to_string();
+                break;
+            }
+            dir += &(format!("{}/", chunk));
+        }
+
+        for entry in fs::read_dir(self.current_dir.clone() + &(format!("/{}", dir.clone())))? {
             let entry = entry.unwrap();
             if !entry.metadata().unwrap().is_dir() {
                 continue;
             }
             let name = entry.file_name().to_string_lossy().to_string();
-            if let Some((score, indexes)) = self
-                .matcher
-                .fuzzy_indices(name.as_str(), self.input.as_ref())
+            if let Some((score, indexes)) =
+                self.matcher.fuzzy_indices(name.as_str(), input.as_ref())
             {
                 self.insert(
                     name.clone(),
                     Suggestion {
+                        full_command: Some(dir.clone() + &name),
                         command: name.clone(),
-                        display: name,
                         score: score + Priority::Medium as i64,
                         indexes,
                         kind: SuggestionType::Directory,
@@ -110,8 +121,8 @@ impl Autocomplete {
                 self.suggestions.insert(
                     executable.clone(),
                     Suggestion {
+                        full_command: Some(executable.clone()),
                         command: executable.clone(),
-                        display: executable.clone(),
                         score: if self.input == executable {
                             // boosting so for something like `bash`, the
                             // `bash` executable shows up as the 1st suggestion
@@ -151,8 +162,8 @@ impl Autocomplete {
                             self.insert(
                                 command.clone(),
                                 Suggestion {
-                                    command: command.clone(),
-                                    display: command,
+                                    full_command: Some(command.clone()),
+                                    command,
                                     score: score - Priority::High as i64,
                                     indexes,
                                     kind: SuggestionType::Bash,
@@ -171,8 +182,8 @@ impl Autocomplete {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Suggestion {
-    command: String, // the full command that will be inserted
-    display: String,
+    full_command: Option<String>, // the full command that will be inserted
+    command: String,
     score: i64,
     indexes: Vec<usize>,
     kind: SuggestionType, // `type` is reserved keyword smh...

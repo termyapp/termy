@@ -42,10 +42,8 @@ export type ServerMessage = {
 }
 
 export type Suggestion = {
-  // todo: make fullCommand optional, display should be comman
-  // if availale delete everything and insert full command, otherwis append command
+  fullCommand?: string
   command: string
-  display: string
   score: number
   indexes: bigint[] // fuzzy indexes to be highlighted
   kind: 'executable' | 'directory' | 'bash'
