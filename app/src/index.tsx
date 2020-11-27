@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import App from './app'
 import './css/index.css'
 import './css/inter.css'
+import './css/source-code-pro.css'
 import './css/xterm.css'
 
 ReactDOM.render(

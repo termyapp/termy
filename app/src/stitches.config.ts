@@ -93,5 +93,9 @@ export const globalStyles = css.global({
         backgroundColor: '$selection',
       },
     },
+
+    kbd: {
+      fontFamily: '$mono',
+    },
   },
 })
