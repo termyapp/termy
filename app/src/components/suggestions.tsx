@@ -159,6 +159,7 @@ const Suggestions: React.FC<Props> = ({
             if (index !== null)
               insertSuggestion(
                 editor,
+                // @ts-ignore
                 suggestions[index].fullCommand
                   ? suggestions[index].fullCommand
                   : suggestions[index].command,
@@ -168,7 +169,8 @@ const Suggestions: React.FC<Props> = ({
           case 'Enter':
             if (index !== null) {
               event.preventDefault()
-              const input = suggestions[index].fullCommand
+              // @ts-ignore
+              const input: string = suggestions[index].fullCommand
                 ? suggestions[index].fullCommand
                 : suggestions[index].command
               insertSuggestion(editor, input)
