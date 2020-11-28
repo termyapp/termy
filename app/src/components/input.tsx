@@ -14,7 +14,13 @@ if (import.meta.hot) {
   import.meta.hot.decline()
 }
 
-const Input: React.FC<CellType> = ({ id, currentDir, value, focused }) => {
+const Input: React.FC<CellType> = ({
+  id,
+  currentDir,
+  value,
+  focused,
+  status,
+}) => {
   const dispatch = useStore(state => state.dispatch)
   const editor = useMemo(() => withHistory(withReact(createEditor())), [])
   const inputRef = useRef<HTMLDivElement>(null)
@@ -74,6 +80,7 @@ const Input: React.FC<CellType> = ({ id, currentDir, value, focused }) => {
             id={id}
             autoFocus
             placeholder=">"
+            readOnly={status === 'running'}
             onFocus={() => {
               Transforms.select(editor, Editor.end(editor, []))
               ReactEditor.focus(editor)
