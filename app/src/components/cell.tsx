@@ -102,28 +102,29 @@ const Card = styled(Flex, {
   position: 'relative',
   borderRadius: '$lg',
   flexDirection: 'column',
+  border: '1px dashed',
 
   variants: {
     status: {
       none: {
         color: '$defaultForeground',
-        border: '1px solid transparent',
+        borderColor: 'transparent',
       },
       default: {
         backgroundColor: '$defaultBackground',
-        border: '1px solid $defaultForeground',
+        borderColor: '$defaultForeground',
       },
       running: {
         backgroundColor: '$defaultBackground',
-        border: '1px solid $runningForeground',
+        borderColor: '$runningForeground',
       },
       success: {
         backgroundColor: '$defaultBackground',
-        border: '1px solid $successForeground',
+        borderColor: '$successForeground',
       },
       error: {
         backgroundColor: '$defaultBackground',
-        border: '1px solid $errorForeground',
+        borderColor: '$errorForeground',
       },
     },
   },

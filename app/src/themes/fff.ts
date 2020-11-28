@@ -17,7 +17,7 @@ export const lightTheme = {
     $defaultForeground: baseTheme.colors.$gray900,
     $runningBackground: baseTheme.colors.$blue100,
     $runningForeground: baseTheme.colors.$blue800,
-    $successBackground: baseTheme.colors.$green100,
+    $successBackground: baseTheme.colors.$green200,
     $successForeground: baseTheme.colors.$green900,
     $errorBackground: baseTheme.colors.$red200,
     $errorForeground: baseTheme.colors.$red900,
