@@ -84,7 +84,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
         </Pty>
         <Div
           css={{
-            display: cell.type === 'api' ? 'initial' : 'none',
+            display: cell.type === 'api' ? 'block' : 'none',
             fontSize: '$sm',
             color: '$secondaryTextColor',
           }}
@@ -134,6 +134,7 @@ const Output = styled(Div, {
   px: '$4',
   py: '$1',
   height: '100%',
+  overflowY: 'auto',
 })
 
 const Pty = styled(Div, {

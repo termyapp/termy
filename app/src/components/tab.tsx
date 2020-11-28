@@ -33,7 +33,7 @@ const Tab: React.FC = () => {
     <Grid
       css={{
         height: '100%',
-        gridAutoRows: '1fr',
+        gridAutoRows: 'minmax(0, 1fr)',
         rowGap: '$2',
       }}
     >
