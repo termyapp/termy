@@ -1,11 +1,16 @@
 import { ipcMain } from 'electron'
 import native from '../native'
 import type { Message, ServerMessage } from '../shared'
+import { checkForUpdates } from './autoupdater'
 
 export default () => {
   ipcMain.on('message', (event, message) => {
     console.log('message', message)
     event.returnValue = handleMessage(event, message)
+  })
+
+  ipcMain.handle('update', async (event) => {
+    return await checkForUpdates()
   })
 }
 
