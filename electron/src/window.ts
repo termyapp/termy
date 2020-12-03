@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, Menu } from 'electron'
 import debug from 'electron-debug'
 import installExtension, {
   REACT_DEVELOPER_TOOLS,
@@ -7,7 +7,6 @@ import installExtension, {
 import isDev from 'electron-is-dev'
 import path from 'path'
 
-// todo: menu — include shift in zoom accelerators
 export const createWindow = async (): Promise<BrowserWindow> => {
   const window = new BrowserWindow({
     minWidth: 370,
@@ -29,6 +28,45 @@ export const createWindow = async (): Promise<BrowserWindow> => {
       // worldSafeExecuteJavaScript: true,
     },
   })
+
+  // create application menu
+  // this menu will be hidden to the user,
+  // but it fixes Ctrl+, Ctrl- in Windows and linux and Cmd+V Cmd+C in Mac
+  const menu = Menu.buildFromTemplate([
+    {
+      label: 'Edit',
+      submenu: [
+        {
+          label: 'You shouldn\'t see this!',
+          enabled: false
+        },
+        {
+          type: 'separator'
+        },
+        {
+          role: 'copy'
+        },
+        {
+          role: 'paste'
+        },
+        {
+          role: 'zoomIn',
+          accelerator: 'CmdOrCtrl++'
+        },
+        {
+          role: 'zoomOut',
+          accelerator: 'CmdOrCtrl+-'
+        },
+        {
+          role: 'resetZoom',
+          accelerator: 'CmdOrCtrl+0'
+        }
+      ]
+    }
+  ])
+
+  window.setMenu(menu)
+  window.setMenuBarVisibility(false)
 
   await window.loadURL(
     isDev
