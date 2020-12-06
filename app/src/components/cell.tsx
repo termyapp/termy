@@ -7,11 +7,6 @@ import Api from './api'
 import Prompt from './prompt'
 import { Div, Flex } from './shared'
 
-// it breaks nowadays, idk why
-if (import.meta.hot) {
-  import.meta.hot.decline()
-}
-
 const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   const cell = useStore(useCallback(state => state.cells[id], [id]))
   const dispatch = useStore(state => state.dispatch)
@@ -46,7 +41,6 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
         setOutput(output.data.apiData)
       } else if (output.type === 'pty') {
         terminalRef.current?.write(new Uint8Array(output.data.ptyData))
-        terminalRef.current?.focus()
         // console.log('writing chunk', output.data)
       }
     }
@@ -62,12 +56,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   if (typeof cell === 'undefined') return null
 
   return (
-    <Card
-      onFocus={() => dispatch({ type: 'focus', id })}
-      status={
-        focused ? (cell.status === null ? 'default' : cell.status) : 'none'
-      }
-    >
+    <Card onFocus={() => dispatch({ type: 'focus', id })} focused={focused}>
       <Prompt {...cell} focused={focused} />
       <Output>
         <Pty show={cell.type === 'pty'}>
@@ -102,29 +91,14 @@ const Card = styled(Flex, {
   position: 'relative',
   borderRadius: '$lg',
   flexDirection: 'column',
-  border: '1px dashed',
+  border: '1px solid transparent',
 
   variants: {
-    status: {
-      none: {
-        color: '$defaultForeground',
-        borderColor: 'transparent',
-      },
-      default: {
-        backgroundColor: '$defaultBackground',
-        borderColor: '$defaultForeground',
-      },
-      running: {
-        backgroundColor: '$defaultBackground',
-        borderColor: '$runningForeground',
-      },
-      success: {
-        backgroundColor: '$defaultBackground',
-        borderColor: '$successForeground',
-      },
-      error: {
-        backgroundColor: '$defaultBackground',
-        borderColor: '$errorForeground',
+    focused: {
+      true: {
+        backgroundColor: '$focusedBackground',
+        color: '$focusedForeground',
+        border: '1px solid $gray300',
       },
     },
   },

@@ -5,22 +5,22 @@ export const lightTheme = {
   colors: {
     ...baseTheme.colors,
 
-    $background: '#f5f5f7',
-    $foreground: baseTheme.colors.$black,
+    $background: '#f7f7f9',
+    $foreground: baseTheme.colors.$gray700,
     $secondaryForeground: baseTheme.colors.$gray700,
 
     $accent: baseTheme.colors.$gray400,
     $caret: baseTheme.colors.$teal500,
     $selection: baseTheme.colors.$teal200,
 
-    $defaultBackground: baseTheme.colors.$white,
-    $defaultForeground: baseTheme.colors.$gray900,
+    $focusedBackground: baseTheme.colors.$white,
+    $focusedForeground: baseTheme.colors.$black,
     $runningBackground: baseTheme.colors.$blue100,
-    $runningForeground: baseTheme.colors.$blue800,
-    $successBackground: baseTheme.colors.$green200,
-    $successForeground: baseTheme.colors.$green900,
+    $runningForeground: baseTheme.colors.$blue700,
+    $successBackground: baseTheme.colors.$teal100,
+    $successForeground: baseTheme.colors.$teal600,
     $errorBackground: baseTheme.colors.$red200,
-    $errorForeground: baseTheme.colors.$red900,
+    $errorForeground: baseTheme.colors.$red600,
 
     $currentDirForeground: baseTheme.colors.$teal900,
     $currentDirBackground: baseTheme.colors.$white,

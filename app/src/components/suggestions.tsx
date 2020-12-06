@@ -16,10 +16,6 @@ import useStore from '../store'
 import { Div, Span } from './shared'
 import { Folder } from './svg'
 
-if (import.meta.hot) {
-  import.meta.hot.decline()
-}
-
 interface Props {
   id: string
   input: string
@@ -251,13 +247,13 @@ const Suggestions: React.FC<Props> = ({
               {renderSuggestionText(suggestion.command, suggestion.indexes)}
             </Span>
 
-            {suggestion.date && (
+            {/* {suggestion.date && (
               <Date focused={i === index}>
                 {shortenDate(
                   formatDistanceToNowStrict(parseInt(suggestion.date)),
                 )}
               </Date>
-            )}
+            )} */}
           </Item>
         ))}
       </Items>
@@ -345,7 +341,7 @@ const Popup = styled(Div, {
   p: '$1',
   borderRadius: '$lg',
   border: '1px solid $accent',
-  backgroundColor: '$defaultBackground',
+  backgroundColor: '$focusedBackground',
   boxShadow: '$3xl',
 })
 
@@ -365,6 +361,8 @@ const Item = styled(Div, {
   fontSize: '$sm',
   lineHeight: '$loose',
   cursor: 'pointer',
+  letterSpacing: '$tight',
+  fontWeight: '$medium',
 
   variants: {
     type: {
@@ -424,7 +422,7 @@ const DocumentationPopup = styled(Div, {
   py: '$2',
   overflowY: 'auto',
   fontSize: '.8em',
-  backgroundColor: '$defaultBackground',
+  backgroundColor: '$focusedBackground',
   border: '1px solid $accent',
   borderRadius: '$lg',
 

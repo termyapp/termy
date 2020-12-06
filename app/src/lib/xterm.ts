@@ -18,7 +18,7 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
 
   const fitAddon = new FitAddon()
 
-  const over = status === 'success' || status === 'error'
+  const over = status !== 'running'
 
   // init
   useEffect(() => {
@@ -58,9 +58,13 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
   useEffect(() => {
     if (status === null) {
       // remove previous content
+      // terminalRef.current?.reset()
+      // terminalRef.current?.setOption('disableStdin', false)
+    } else if (status === 'running') {
+      // remove previous content
       terminalRef.current?.reset()
       terminalRef.current?.setOption('disableStdin', false)
-    } else if (status === 'running') {
+
       // todo: this doesn't work here because it's too early to focus
       // currently focusing on each `pty` write (not ideal)
       terminalRef.current?.focus()
@@ -101,7 +105,7 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
   // update theme
   useEffect(() => {
     const background = focused
-      ? theme.colors.$defaultBackground
+      ? theme.colors.$focusedBackground
       : theme.colors.$background
     const cursor = over ? background : theme.colors.$caret
     terminalRef.current?.setOption('theme', {

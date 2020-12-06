@@ -60,7 +60,7 @@ export default {
     $yellow900: '#744210',
 
     $green100: '#f0fff4',
-    $green200: '#c6f6d5',
+    $green200: '#d6ffe5',
     $green300: '#9ae6b4',
     $green400: '#68d391',
     $green500: '#48bb78',

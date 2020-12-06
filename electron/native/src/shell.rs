@@ -128,7 +128,7 @@ impl Cell {
                 if path.is_dir() {
                     ServerMessage::api(
                         formatdoc! {"
-                                <Card type='success'>Changed current directory to <Path>{path}</Path></Card>
+                                <Card type='success'>New directory: <Path>{path}</Path></Card>
                                 ", path = path.to_string_lossy()},
                         Some(path.to_string_lossy().to_string()),
                         Status::Success,

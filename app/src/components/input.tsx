@@ -55,9 +55,11 @@ const Input: React.FC<CellType> = ({
         css={{
           width: '100%',
           position: 'relative',
-          fontWeight: '$medium',
-          letterSpacing: '$snug',
-          fontSize: '$base',
+          fontWeight: '$semibold',
+          letterSpacing: '$tight',
+          fontSize: '$lg',
+          color: focused ? '$focusedForeground' : '$foreground',
+          cursor: status === 'running' ? 'default' : 'text',
 
           div: {
             py: '0.32rem',
@@ -69,10 +71,11 @@ const Input: React.FC<CellType> = ({
           value={value}
           onChange={value => {
             // console.log('val', value)
+
             dispatch({
               type: 'set-cell',
               id,
-              cell: { value },
+              cell: { value, status: status !== null ? null : undefined },
             })
           }}
         >
