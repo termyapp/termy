@@ -98,7 +98,7 @@ const Card = styled(Flex, {
       true: {
         backgroundColor: '$focusedBackground',
         color: '$focusedForeground',
-        border: '1px solid $gray300',
+        border: '1px solid $accent',
       },
     },
   },
