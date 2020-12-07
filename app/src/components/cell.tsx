@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import type { CellType, ServerMessage, ThemeMode } from '../../types'
 import { useListener, useXterm } from '../lib'
 import { styled } from '../stitches.config'
-import useStore from '../store'
+import useStore, { focusCell } from '../store'
 import Api from './api'
 import Prompt from './prompt'
 import { Div, Flex } from './shared'
@@ -20,7 +20,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   useListener(`message-${id}`, (_, message: ServerMessage) => {
     console.log('received', message)
     const { output, status } = message
-
+    console.log('s', status)
     if (status) {
       dispatch({ type: 'set-cell', id, cell: { status } })
     }
@@ -45,6 +45,12 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
       }
     }
   })
+
+  useEffect(() => {
+    if (focused && cell.status !== 'running') {
+      focusCell(id)
+    }
+  }, [focused, cell.status])
 
   useEffect(() => {
     // @ts-ignore very hacky i know i know
