@@ -85,8 +85,12 @@ const Input: React.FC<CellType> = ({
             placeholder=">"
             readOnly={status === 'running'}
             onFocus={() => {
-              Transforms.select(editor, Editor.end(editor, []))
-              ReactEditor.focus(editor)
+              dispatch({ type: 'focus', id })
+
+              if (status !== 'running') {
+                Transforms.select(editor, Editor.end(editor, []))
+                ReactEditor.focus(editor)
+              }
             }}
             onKeyDown={event => {
               if (event.key === 'Enter') {

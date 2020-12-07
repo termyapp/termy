@@ -75,8 +75,6 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
       terminalRef.current?.setOption('disableStdin', true)
 
       terminalRef.current?.blur()
-
-      focusCell(id)
     }
   }, [status, over, id])
 
