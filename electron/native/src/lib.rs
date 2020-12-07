@@ -1,6 +1,5 @@
 #![feature(proc_macro_hygiene)]
 
-#[macro_use]
 extern crate napi;
 #[macro_use]
 extern crate napi_derive;
@@ -10,7 +9,7 @@ use crossbeam_channel::{unbounded, Sender};
 use log::info;
 use napi::{
     CallContext, Error, JsExternal, JsFunction, JsObject, JsString, JsUndefined, JsUnknown, Module,
-    Status,
+    Result, Status,
 };
 
 use futures::{channel::oneshot, prelude::*};
@@ -21,16 +20,14 @@ mod db;
 mod logger;
 mod shell;
 
-register_module!(module, init); // only calling it so rust-analyzer thinks it gets called
+fn register_js(exports: &mut JsObject) -> Result<()> {
+    exports.create_named_method("api", api)?;
 
-fn init(module: &mut Module) -> napi::Result<()> {
-    module.create_named_method("api", api)?;
+    exports.create_named_method("getSuggestions", get_suggestions)?;
 
-    module.create_named_method("getSuggestions", get_suggestions)?;
+    exports.create_named_method("runCell", run_cell)?;
 
-    module.create_named_method("runCell", run_cell)?;
-
-    module.create_named_method("frontendMessage", frontend_message)?;
+    exports.create_named_method("frontendMessage", frontend_message)?;
 
     // todo: this fails in prod
     // db::init().expect("Failed to initialize database");
@@ -42,7 +39,7 @@ fn init(module: &mut Module) -> napi::Result<()> {
 
 #[js_function(1)]
 fn api(ctx: CallContext) -> napi::Result<JsString> {
-    let command: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
+    let command: String = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
 
     info!("Api call: {}", command);
 
@@ -53,8 +50,8 @@ fn api(ctx: CallContext) -> napi::Result<JsString> {
 
 #[js_function(2)]
 fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
-    let input = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
-    let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
+    let input = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
+    let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.into_owned()?;
 
     info!("Getting suggestions for: {}", input);
 
