@@ -69,8 +69,6 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
       // currently focusing on each `pty` write (not ideal)
       terminalRef.current?.focus()
     } else if (over) {
-      console.log('disabling terminal')
-
       // disable stdin
       terminalRef.current?.setOption('disableStdin', true)
 

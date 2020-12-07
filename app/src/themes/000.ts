@@ -9,20 +9,20 @@ export const darkTheme = {
     $foreground: baseTheme.colors.$white,
     $secondaryForeground: baseTheme.colors.$gray400,
 
-    $accent: baseTheme.colors.$gray900,
-    $caret: baseTheme.colors.$teal500,
-    $selection: baseTheme.colors.$teal200,
+    $accent: baseTheme.colors.$gray800,
+    $caret: baseTheme.colors.$pink500,
+    $selection: baseTheme.colors.$pink500,
 
     $focusedBackground: baseTheme.colors.$black,
     $focusedForeground: baseTheme.colors.$white,
     $runningBackground: baseTheme.colors.$blue100,
     $runningForeground: baseTheme.colors.$blue700,
-    $successBackground: baseTheme.colors.$teal100,
-    $successForeground: baseTheme.colors.$teal600,
+    $successBackground: baseTheme.colors.$pink100,
+    $successForeground: baseTheme.colors.$pink600,
     $errorBackground: baseTheme.colors.$red200,
     $errorForeground: baseTheme.colors.$red600,
 
-    $currentDirForeground: baseTheme.colors.$teal900,
+    $currentDirForeground: baseTheme.colors.$pink900,
     $currentDirBackground: baseTheme.colors.$white,
 
     $focusedSuggestionBackground: baseTheme.colors.$blue600,

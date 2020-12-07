@@ -20,7 +20,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   useListener(`message-${id}`, (_, message: ServerMessage) => {
     console.log('received', message)
     const { output, status } = message
-    console.log('s', status)
+
     if (status) {
       dispatch({ type: 'set-cell', id, cell: { status } })
     }
