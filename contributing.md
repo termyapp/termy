@@ -5,6 +5,7 @@
 - [Node](https://nodejs.org/en/download/)
 - [Yarn](https://classic.yarnpkg.com/en/docs/install)
 - [Rust nightly](https://www.rust-lang.org/tools/install)
+- Clang
 
 ## Start developing
 
