@@ -14,7 +14,7 @@
   },
   "git.detectSubmodules": false, // prevent electron/external/tldr from showing up
   "rust-analyzer.linkedProjects": [
-    "electro/native/Cargo.toml",
+    "electron/native/Cargo.toml",
     "electron\\native\\Cargo.toml"
   ]
 }
