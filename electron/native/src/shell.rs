@@ -346,7 +346,6 @@ impl SendMessage {
     }
 
     fn send(&self, message: ServerMessage) {
-        // rust-analyzer complains, but it compiles ¯\_(ツ)_/¯
         self.threadsafe_function.call(
             Ok(vec![message]),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
@@ -354,8 +353,7 @@ impl SendMessage {
     }
 
     fn release(self) {
-        self.threadsafe_function
-            .release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
+        self.threadsafe_function.abort();
         info!("Released threadsafe function");
     }
 }

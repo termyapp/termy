@@ -81,13 +81,13 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
     let shell_sender = sender.clone();
 
     let server_message = ctx.env.create_threadsafe_function(
-        server_message,
+        &server_message,
         0,
         |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<ServerMessage>>| {
             ctx.value
                 .iter()
                 .map(|arg| ctx.env.to_js_value(&arg))
-                .collect::<Result<Vec<JsUnknown>, Error>>()
+                .collect::<Result<Vec<JsUnknown>>>()
         },
     )?;
 
