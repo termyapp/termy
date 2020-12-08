@@ -12,9 +12,8 @@ export const formatCurrentDir = (currentDir: string) => {
   return (relativePath.length > 0 ? '~/' : '~') + relativePath
 }
 
-// todo: dark theme
 export const getTheme = (mode?: ThemeMode) =>
-  mode === '#000' ? lightTheme : lightTheme
+  mode === '#000' ? darkTheme : lightTheme
 
 export const shortenDate = (date: string) =>
   date

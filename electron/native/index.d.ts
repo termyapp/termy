@@ -2,10 +2,7 @@ import { RunCell, FrontendMessage, Suggestion } from '../shared'
 
 declare function api(command: string): any
 
-declare function getSuggestions(
-  input: string,
-  currentDir: string,
-): Promise<Suggestion[]>
+declare function getSuggestions(input: string, currentDir: string): Suggestion[]
 
 declare function runCell(
   props: RunCell,

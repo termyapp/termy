@@ -5,19 +5,27 @@ export const darkTheme = {
   colors: {
     ...baseTheme.colors,
 
-    $primaryTextColor: baseTheme.colors.$white,
-    $secondaryTextColor: baseTheme.colors.$gray400,
-    $backgroundColor: baseTheme.colors.$black,
+    $background: '#000',
+    $foreground: baseTheme.colors.$white,
+    $secondaryForeground: baseTheme.colors.$gray400,
 
-    $accent: '#2a2a2a',
-    $caret: '#f42069',
-    $selection: '#f42069',
-    $focusedBackgroundColor: '#161616',
+    $accent: baseTheme.colors.$gray800,
+    $caret: baseTheme.colors.$pink500,
+    $selection: baseTheme.colors.$pink500,
 
-    $currentDirColor: baseTheme.colors.$gray300,
-    $currentDirBackgroundColor: baseTheme.colors.$gray900,
+    $focusedBackground: baseTheme.colors.$black,
+    $focusedForeground: baseTheme.colors.$white,
+    $runningBackground: baseTheme.colors.$blue100,
+    $runningForeground: baseTheme.colors.$blue700,
+    $successBackground: baseTheme.colors.$pink100,
+    $successForeground: baseTheme.colors.$pink600,
+    $errorBackground: baseTheme.colors.$red200,
+    $errorForeground: baseTheme.colors.$red600,
 
-    $selectedSuggestionBackgroundColor: baseTheme.colors.$blue700,
-    $selectedSuggestionColor: baseTheme.colors.$white,
+    $currentDirForeground: baseTheme.colors.$pink900,
+    $currentDirBackground: baseTheme.colors.$white,
+
+    $focusedSuggestionBackground: baseTheme.colors.$blue600,
+    $focusedSuggestionForeground: baseTheme.colors.$white,
   },
 }

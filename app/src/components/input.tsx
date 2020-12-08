@@ -33,21 +33,6 @@ const Input: React.FC<CellType> = ({
 
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
-  // update suggestions
-  // todo: https://www.electronjs.org/docs/api/ipc-main#ipcmainhandlechannel-listener
-  useDebounce(
-    () => {
-      ipc.send('message', {
-        type: 'get-suggestions',
-        id,
-        input,
-        currentDir,
-      } as Message)
-    },
-    100,
-    [id, input, currentDir],
-  )
-
   return (
     <>
       <Div
@@ -85,8 +70,12 @@ const Input: React.FC<CellType> = ({
             placeholder=">"
             readOnly={status === 'running'}
             onFocus={() => {
-              Transforms.select(editor, Editor.end(editor, []))
-              ReactEditor.focus(editor)
+              dispatch({ type: 'focus', id })
+
+              if (status !== 'running') {
+                Transforms.select(editor, Editor.end(editor, []))
+                ReactEditor.focus(editor)
+              }
             }}
             onKeyDown={event => {
               if (event.key === 'Enter') {
@@ -103,6 +92,7 @@ const Input: React.FC<CellType> = ({
         editor={editor}
         inputRef={inputRef}
         focused={focused}
+        currentDir={currentDir}
       />
     </>
   )

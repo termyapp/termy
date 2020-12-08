@@ -216,7 +216,6 @@ impl Cell {
             _ => None,
         } {
             send_message.send(server_message);
-            send_message.release();
         } else {
             // Pty
             // examples: https://github.com/wez/wezterm/tree/e2e46cb50d32562cdb02e0a8d309fa9f7fbbecf0/pty/examples
@@ -260,6 +259,7 @@ impl Cell {
 
                     if let Ok(len) = read {
                         if len == 0 {
+                            // todo: doesn't get here on windows
                             break;
                         }
                         let chunk = &chunk[..len];
@@ -279,9 +279,10 @@ impl Cell {
                         error!("Err: {}", read.unwrap_err());
                     }
                 }
-                sender
-                    .send(CellChannel::SendMessage(send_message))
-                    .expect("Failed to pass send_message over");
+                if let Err(err) = sender.send(CellChannel::SendMessage(send_message)) {
+                    error!("Failed to pass send_message over: {}", err);
+                };
+                info!("Passed over send_message");
             });
 
             while child.try_wait()?.is_none() {
@@ -320,7 +321,7 @@ impl Cell {
                                 Status::Error
                             }),
                         });
-                        send_message.release();
+                        break;
                     }
                     _ => {
                         error!("Received no message or error");
@@ -346,17 +347,10 @@ impl SendMessage {
     }
 
     fn send(&self, message: ServerMessage) {
-        // rust-analyzer complains, but it compiles ¯\_(ツ)_/¯
         self.threadsafe_function.call(
             Ok(vec![message]),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
         );
-    }
-
-    fn release(self) {
-        self.threadsafe_function
-            .release(napi::threadsafe_function::ThreadsafeFunctionReleaseMode::Release);
-        info!("Released threadsafe function");
     }
 }
 

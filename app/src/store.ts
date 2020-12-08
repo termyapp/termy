@@ -124,7 +124,6 @@ const reducer = (state: State, action: Action) => {
           newIndex = keys[index + 1]
         }
         draft.focus = newIndex
-        focusCell(newIndex)
         break
       }
       case 'focus-previous': {
@@ -137,7 +136,6 @@ const reducer = (state: State, action: Action) => {
           newIndex = keys[index - 1]
         }
         draft.focus = newIndex
-        focusCell(newIndex)
         break
       }
     }

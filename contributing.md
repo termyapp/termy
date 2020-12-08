@@ -5,6 +5,7 @@
 - [Node](https://nodejs.org/en/download/)
 - [Yarn](https://classic.yarnpkg.com/en/docs/install)
 - [Rust nightly](https://www.rust-lang.org/tools/install)
+- Clang
 
 ## Start developing
 
@@ -14,6 +15,12 @@
 4. Go back to electron folder: `cd ..`
 5. Install electron dependencies: `yarn`
 6. Start electron: `yarn dev`
-7. In a seperate console go to the app directory: `cd app`
+7. In a separate console go to the app directory: `cd app`
 8. Install dependencies: `yarn`
 9. Start the app: `yarn dev`
+
+### Windows
+
+#### error: linking with `link.exe` failed: exit code: 1181
+
+https://stackoverflow.com/a/57843860
