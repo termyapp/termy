@@ -404,7 +404,7 @@ mute-stream@0.0.8:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-napi-rs@^0.3.10:
+napi-rs@latest:
   version "0.3.10"
   resolved "https://registry.yarnpkg.com/napi-rs/-/napi-rs-0.3.10.tgz#df8620c9a86bb0a612204c50ac634dd25d1dfe96"
   integrity sha512-Jw9A5T1WFIxNuUT6JNqo4cuPqZimnQg3BtFjQVpusDKLHGKBsxGiIMVUM/HT3jkZ44oVWoew4kAxygty0dzWFA==

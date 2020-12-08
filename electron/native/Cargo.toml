@@ -17,7 +17,7 @@ crossbeam-channel = "0.4.4"
 napi = { git = "https://github.com/napi-rs/napi-rs", features = ["serde-json", "napi4"] }
 napi-derive = { git = "https://github.com/napi-rs/napi-rs" }
 portable-pty = "0.3.1"
-rusqlite = "0.24.1"
+rusqlite = { version = "0.24.1", features = ["bundled"] }
 dirs = "3.0.1"
 relative-path = "1.3.2"
 log = "0.4"

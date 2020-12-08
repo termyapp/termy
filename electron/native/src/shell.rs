@@ -259,6 +259,7 @@ impl Cell {
 
                     if let Ok(len) = read {
                         if len == 0 {
+                            // todo: doesn't get here on windows
                             break;
                         }
                         let chunk = &chunk[..len];
@@ -278,9 +279,10 @@ impl Cell {
                         error!("Err: {}", read.unwrap_err());
                     }
                 }
-                sender
-                    .send(CellChannel::SendMessage(send_message))
-                    .expect("Failed to pass send_message over");
+                if let Err(err) = sender.send(CellChannel::SendMessage(send_message)) {
+                    error!("Failed to pass send_message over: {}", err);
+                };
+                info!("Passed over send_message");
             });
 
             while child.try_wait()?.is_none() {
@@ -319,6 +321,7 @@ impl Cell {
                                 Status::Error
                             }),
                         });
+                        break;
                     }
                     _ => {
                         error!("Received no message or error");
