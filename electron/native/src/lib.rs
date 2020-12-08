@@ -1,6 +1,5 @@
 #![feature(proc_macro_hygiene)]
 
-extern crate napi;
 #[macro_use]
 extern crate napi_derive;
 
@@ -20,7 +19,8 @@ mod db;
 mod logger;
 mod shell;
 
-fn register_js(exports: &mut JsObject) -> Result<()> {
+#[module_exports]
+fn init(mut exports: JsObject) -> Result<()> {
     exports.create_named_method("api", api)?;
 
     exports.create_named_method("getSuggestions", get_suggestions)?;
@@ -49,27 +49,16 @@ fn api(ctx: CallContext) -> napi::Result<JsString> {
 }
 
 #[js_function(2)]
-fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
+fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
     let input = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
     let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.into_owned()?;
 
-    info!("Getting suggestions for: {}", input);
+    info!("Getting suggestions for {}", input);
 
-    let (sender, receiver) = oneshot::channel();
+    let suggestions = Autocomplete::new(input, current_dir).suggestions();
 
-    thread::spawn(|| {
-        let suggestions = Autocomplete::new(input, current_dir).suggestions();
-        sender
-            .send(suggestions)
-            .expect("sending suggestions failed");
-    });
-
-    ctx.env.execute(
-        receiver
-            .map_err(|e| Error::new(Status::Unknown, format!("{}", e)))
-            .map(|x| x.and_then(|x| Ok(x))),
-        |&mut env, data| env.to_js_value(&data),
-    )
+    // needs "serde-json" feature
+    ctx.env.to_js_value(&suggestions)
 }
 
 #[js_function(5)]
@@ -101,6 +90,7 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
         // run cell
         // todo: when refactoring handle error returned from here (send 'error' status)
         cell.run(server_message, receiver, shell_sender)
+            .expect("Error while running cell");
     });
 
     ctx.env.create_external(sender)

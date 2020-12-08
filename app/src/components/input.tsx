@@ -33,21 +33,6 @@ const Input: React.FC<CellType> = ({
 
   // const renderElement = useCallback(props => <Element {...props} />, [])
 
-  // update suggestions
-  // todo: https://www.electronjs.org/docs/api/ipc-main#ipcmainhandlechannel-listener
-  useDebounce(
-    () => {
-      ipc.send('message', {
-        type: 'get-suggestions',
-        id,
-        input,
-        currentDir,
-      } as Message)
-    },
-    100,
-    [id, input, currentDir],
-  )
-
   return (
     <>
       <Div
@@ -107,6 +92,7 @@ const Input: React.FC<CellType> = ({
         editor={editor}
         inputRef={inputRef}
         focused={focused}
+        currentDir={currentDir}
       />
     </>
   )

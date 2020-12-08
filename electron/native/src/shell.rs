@@ -216,7 +216,6 @@ impl Cell {
             _ => None,
         } {
             send_message.send(server_message);
-            send_message.release();
         } else {
             // Pty
             // examples: https://github.com/wez/wezterm/tree/e2e46cb50d32562cdb02e0a8d309fa9f7fbbecf0/pty/examples
@@ -320,7 +319,6 @@ impl Cell {
                                 Status::Error
                             }),
                         });
-                        send_message.release();
                     }
                     _ => {
                         error!("Received no message or error");
@@ -350,11 +348,6 @@ impl SendMessage {
             Ok(vec![message]),
             napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
         );
-    }
-
-    fn release(self) {
-        self.threadsafe_function.abort();
-        info!("Released threadsafe function");
     }
 }
 

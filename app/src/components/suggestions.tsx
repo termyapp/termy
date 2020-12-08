@@ -6,11 +6,11 @@ import {
 import { formatDistanceToNowStrict } from 'date-fns'
 import Markdown from 'markdown-to-jsx'
 import React, { useEffect, useRef, useState } from 'react'
-import { useKey } from 'react-use'
+import { useDebounce, useKey } from 'react-use'
 import { Editor, Range, Transforms } from 'slate'
 import { ReactEditor } from 'slate-react'
-import type { Suggestion } from 'types/shared'
-import { shortenDate, useListener } from '../lib'
+import type { Message, Suggestion } from 'types/shared'
+import { ipc, shortenDate, useListener } from '../lib'
 import { styled } from '../stitches.config'
 import useStore from '../store'
 import { Div, Span } from './shared'
@@ -22,6 +22,7 @@ interface Props {
   editor: Editor & ReactEditor
   inputRef: React.RefObject<HTMLDivElement>
   focused: boolean
+  currentDir: string
 }
 
 const Suggestions: React.FC<Props> = ({
@@ -30,6 +31,7 @@ const Suggestions: React.FC<Props> = ({
   editor,
   inputRef,
   focused,
+  currentDir,
 }) => {
   const dispatch = useStore(state => state.dispatch)
   const suggestionRef = useRef<HTMLDivElement>(null)
@@ -41,10 +43,24 @@ const Suggestions: React.FC<Props> = ({
     'column',
   )
 
-  useListener(
-    `suggestions-${id}`,
-    (_, suggestions) => (show ? setSuggestions(suggestions) : setShow(true)),
-    [show],
+  // update suggestions
+  // todo: https://www.electronjs.org/docs/api/ipc-main#ipcmainhandlechannel-listener
+  useDebounce(
+    () => {
+      const result: Suggestion[] = ipc.sendSync('message', {
+        type: 'get-suggestions',
+        id,
+        input,
+        currentDir,
+      } as Message)
+      if (Array.isArray(result) && show) {
+        setSuggestions(result)
+      } else if (!show) {
+        setShow(true)
+      }
+    },
+    100,
+    [id, input, currentDir, show],
   )
 
   // update popup position

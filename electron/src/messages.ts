@@ -19,13 +19,7 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
       return result
     }
     case 'get-suggestions': {
-      native
-        .getSuggestions(message.input, message.currentDir)
-        .then(suggestions => {
-          event.sender.send(`suggestions-${message.id}`, suggestions)
-        })
-
-      return
+      return native.getSuggestions(message.input, message.currentDir)
     }
     case 'run-cell': {
       const { id, input, currentDir } = message
