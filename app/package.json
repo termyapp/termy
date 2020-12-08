@@ -1,10 +1,10 @@
 {
   "name": "termy",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "homepage": "./",
   "scripts": {
-    "dev": "SNOWPACK_PUBLIC_NODE_ENV=development snowpack dev",
+    "dev": "cross-env SNOWPACK_PUBLIC_NODE_ENV=development snowpack dev",
     "build": "snowpack build && rm -rf ../electron/build && mv build ../electron",
     "test": "web-test-runner \"src/**/*.test.tsx\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
@@ -49,6 +49,7 @@
     "@types/uuid": "^8.3.0",
     "@web/test-runner": "^0.9.7",
     "chai": "^4.2.0",
+    "cross-env": "^7.0.3",
     "prettier": "^2.1.2",
     "snowpack": "^2.17.1",
     "typescript": "^4.0.0"

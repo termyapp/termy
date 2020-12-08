@@ -1,8 +1,6 @@
 #![feature(proc_macro_hygiene)]
 
 #[macro_use]
-extern crate napi;
-#[macro_use]
 extern crate napi_derive;
 
 use autocomplete::Autocomplete;
@@ -10,7 +8,7 @@ use crossbeam_channel::{unbounded, Sender};
 use log::info;
 use napi::{
     CallContext, Error, JsExternal, JsFunction, JsObject, JsString, JsUndefined, JsUnknown, Module,
-    Status,
+    Result, Status,
 };
 
 use futures::{channel::oneshot, prelude::*};
@@ -21,16 +19,15 @@ mod db;
 mod logger;
 mod shell;
 
-register_module!(module, init); // only calling it so rust-analyzer thinks it gets called
+#[module_exports]
+fn init(mut exports: JsObject) -> Result<()> {
+    exports.create_named_method("api", api)?;
 
-fn init(module: &mut Module) -> napi::Result<()> {
-    module.create_named_method("api", api)?;
+    exports.create_named_method("getSuggestions", get_suggestions)?;
 
-    module.create_named_method("getSuggestions", get_suggestions)?;
+    exports.create_named_method("runCell", run_cell)?;
 
-    module.create_named_method("runCell", run_cell)?;
-
-    module.create_named_method("frontendMessage", frontend_message)?;
+    exports.create_named_method("frontendMessage", frontend_message)?;
 
     // todo: this fails in prod
     // db::init().expect("Failed to initialize database");
@@ -42,7 +39,7 @@ fn init(module: &mut Module) -> napi::Result<()> {
 
 #[js_function(1)]
 fn api(ctx: CallContext) -> napi::Result<JsString> {
-    let command: String = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
+    let command: String = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
 
     info!("Api call: {}", command);
 
@@ -52,27 +49,16 @@ fn api(ctx: CallContext) -> napi::Result<JsString> {
 }
 
 #[js_function(2)]
-fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
-    let input = ctx.get::<JsString>(0)?.into_utf8()?.to_owned()?;
-    let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.to_owned()?;
+fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
+    let input = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
+    let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.into_owned()?;
 
-    info!("Getting suggestions for: {}", input);
+    info!("Getting suggestions for {}", input);
 
-    let (sender, receiver) = oneshot::channel();
+    let suggestions = Autocomplete::new(input, current_dir).suggestions();
 
-    thread::spawn(|| {
-        let suggestions = Autocomplete::new(input, current_dir).suggestions();
-        sender
-            .send(suggestions)
-            .expect("sending suggestions failed");
-    });
-
-    ctx.env.execute(
-        receiver
-            .map_err(|e| Error::new(Status::Unknown, format!("{}", e)))
-            .map(|x| x.and_then(|x| Ok(x))),
-        |&mut env, data| env.to_js_value(&data),
-    )
+    // needs "serde-json" feature
+    ctx.env.to_js_value(&suggestions)
 }
 
 #[js_function(5)]
@@ -84,13 +70,13 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
     let shell_sender = sender.clone();
 
     let server_message = ctx.env.create_threadsafe_function(
-        server_message,
+        &server_message,
         0,
         |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<ServerMessage>>| {
             ctx.value
                 .iter()
                 .map(|arg| ctx.env.to_js_value(&arg))
-                .collect::<Result<Vec<JsUnknown>, Error>>()
+                .collect::<Result<Vec<JsUnknown>>>()
         },
     )?;
 
@@ -104,6 +90,7 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
         // run cell
         // todo: when refactoring handle error returned from here (send 'error' status)
         cell.run(server_message, receiver, shell_sender)
+            .expect("Error while running cell");
     });
 
     ctx.env.create_external(sender)

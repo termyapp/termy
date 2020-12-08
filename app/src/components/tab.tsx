@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useKey } from 'react-use'
 import shallow from 'zustand/shallow'
-import useStore from '../store'
+import useStore, { focusCell } from '../store'
 import Cell from './cell'
 import { Grid } from './shared'
 
@@ -28,6 +28,10 @@ const Tab: React.FC = () => {
     {},
     [focusedCellId],
   )
+
+  useEffect(() => {
+    focusCell(focusedCellId)
+  }, [focusedCellId])
 
   return (
     <Grid
