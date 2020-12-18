@@ -44,6 +44,9 @@ Output: <kbd>Tab</kbd>
 Prompt: <kbd>Shift + Tab</kbd>
 "};
 
+/// Synonymous with Shell or CLI
+/// Naming it Cell makes it consistent with the frontend
+/// Once we have a name for Termy's shell language, it might make sense to rename this
 pub struct Cell {
     id: String,
     pub current_dir: String,
@@ -69,18 +72,6 @@ impl Cell {
             input,
             command,
             args,
-        }
-    }
-
-    pub fn api(command: String) -> String {
-        match command.as_ref() {
-            "home" => {
-                let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
-                return home_dir.to_string_lossy().to_string();
-            }
-            command => {
-                return format!("Invalid command: {}", command);
-            }
         }
     }
 
@@ -116,7 +107,7 @@ impl Cell {
             "home" => {
                 let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
                 ServerMessage::api(
-                    format!("Home Directory: {:?}", home_dir),
+                    home_dir.to_string_lossy().to_string(),
                     None,
                     Status::Success,
                 )

@@ -6,6 +6,7 @@ use log4rs::encode::pattern::PatternEncoder;
 
 pub fn init() -> Result<()> {
     // todo: create ~/termy folder and put log inside there & delete it on each init
+    // or .config folder (standard?)
     // let file = FileAppender::builder()
     //   .encoder(Box::new(PatternEncoder::new(
     //     "{d(%Y-%m-%d %H:%M:%S)} {l} - {m}{n}",

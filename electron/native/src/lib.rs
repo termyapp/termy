@@ -1,5 +1,3 @@
-#![feature(proc_macro_hygiene)]
-
 #[macro_use]
 extern crate napi_derive;
 
@@ -11,13 +9,15 @@ use napi::{
     Result, Status,
 };
 
+use cell::{Cell, CellChannel, FrontendMessage, RunCell, ServerMessage};
 use futures::{channel::oneshot, prelude::*};
-use shell::{Cell, CellChannel, FrontendMessage, RunCell, ServerMessage};
 use std::thread;
 mod autocomplete;
+mod cell;
+mod commands;
 mod db;
 mod logger;
-mod shell;
+mod util;
 
 #[module_exports]
 fn init(mut exports: JsObject) -> Result<()> {
@@ -43,9 +43,11 @@ fn api(ctx: CallContext) -> napi::Result<JsString> {
 
     info!("Api call: {}", command);
 
-    let result = Cell::api(command);
+    // let result = Cell::api(command);
 
-    ctx.env.create_string(&result)
+    // ctx.env.create_string(&result)
+
+    todo!()
 }
 
 #[js_function(2)]

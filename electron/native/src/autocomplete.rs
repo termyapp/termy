@@ -1,3 +1,4 @@
+use crate::util::paths::root_path;
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use is_executable::IsExecutable;
@@ -229,19 +230,15 @@ fn get_executables() -> Vec<String> {
 }
 
 fn get_docs(command: &str) -> Result<String> {
-    let path = if cfg!(debug_assertions) {
-        RelativePath::new(env::current_dir()?.to_str().unwrap())
-            .join_normalized("/external/tldr/pages/common/".to_string() + command + ".md")
-    } else {
-        // https://www.electron.build/configuration/contents.html#filesetto
-        RelativePath::new(env::current_exe()?.to_str().unwrap())
-            .join_normalized("/../../tldr/".to_string() + command + ".md")
-    };
+    let path = root_path()?;
+    // .join_normalized("/external/tldr/pages/common/".to_string() + command + ".md")
+    // .join_normalized("/../../tldr/".to_string() + command + ".md")
 
-    let path = path.to_path("");
-    info!("Path: {:?}", path);
+    // let path = path.to_path("");
+    // info!("Path: {:?}", path);
 
-    Ok(fs::read_to_string(path)?)
+    // Ok(fs::read_to_string(path)?)
+    todo!()
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
