@@ -25,7 +25,6 @@ log4rs = "0.13.0"
 is_executable = "0.1.2"
 futures = "0.3.8"
 indoc = "1.0.3"
-logos = "0.11.4"
 
 [build-dependencies]
 napi-build = { git = "https://github.com/napi-rs/napi-rs" }

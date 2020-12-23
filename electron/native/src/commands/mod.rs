@@ -1,9 +1,11 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use logos::{Lexer, Logos};
+
+use crate::util::get_executables;
 
 // enum Command {
 //     External,
-//     BuiltIn,
+//     Internal,
 // }
 
 // enum ServerMessage {
@@ -58,58 +60,10 @@ use logos::{Lexer, Logos};
 //     }
 // }
 
-fn text(lex: &mut Lexer<Token>) -> Result<Command> {
-    Ok(Command::Arg)
-}
-
-#[derive(Debug, PartialEq)]
-enum Command {
-    BuiltIn,
-    External,
-    Arg,
-}
-
-#[derive(Logos, Debug, PartialEq)]
-enum Token {
-    #[token("create")]
-    Create,
-
-    #[token("move")]
-    Move,
-
-    #[regex(r"([\w\-\d]+)", text)]
-    Text(Command),
-
-    #[error]
-    #[regex(r"\s+", logos::skip)]
-    Error,
-    // #[token("|")]
-    // Pipe,
-
-    // #[token("&&")]
-    // And,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn works() {
-        let mut command = Token::lexer("ls Downloads/Termy 1.0.app");
-
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-
-        let mut command = Token::lexer("create folder/package.json");
-
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-        println!("{:#?}\n{}\n\n", command.next(), command.slice());
-    }
+    fn works() {}
 }

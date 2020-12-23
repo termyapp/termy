@@ -29,7 +29,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
       dispatch({ type: 'set-cell', id, cell: { type: output.type } })
 
       if (output.type === 'api') {
-        // handle built-in stuff
+        // handle internal stuff
         if (output.cd) {
           dispatch({ type: 'set-cell', id, cell: { currentDir: output.cd } })
         }

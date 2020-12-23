@@ -1,7 +1,6 @@
-use crate::util::paths::root_path;
+use crate::util::{get_executables, paths::root_path};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use is_executable::IsExecutable;
 use log::info;
 use relative_path::RelativePath;
 use serde::Serialize;
@@ -209,26 +208,6 @@ enum Priority {
     High = 100,
 }
 
-fn get_executables() -> Vec<String> {
-    let path_var = std::env::var_os("PATH").unwrap();
-    let paths: Vec<_> = std::env::split_paths(&path_var).collect();
-
-    let mut executables = vec![];
-    for path in paths {
-        if let Ok(mut contents) = std::fs::read_dir(path) {
-            while let Some(Ok(item)) = contents.next() {
-                if item.path().is_executable() {
-                    if let Ok(name) = item.file_name().into_string() {
-                        executables.push(name);
-                    }
-                }
-            }
-        }
-    }
-
-    executables
-}
-
 fn get_docs(command: &str) -> Result<String> {
     let path = root_path()?;
     // .join_normalized("/external/tldr/pages/common/".to_string() + command + ".md")
@@ -247,15 +226,4 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn getting_executables() {
-        assert!(get_executables().len() > 1);
-        assert!(get_executables().contains(&("cargo".to_string())));
-    }
 }

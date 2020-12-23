@@ -1,1 +1,1 @@
-Files and folders to test the built-in commands.
+Files and folders to test the internal commands.

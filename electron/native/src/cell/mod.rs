@@ -11,9 +11,6 @@ use std::path::Path;
 use std::thread;
 use std::{fs, io::Write};
 
-// todo: refactor this huge mess
-// https://stackoverflow.com/questions/57649032/returning-a-value-from-a-function-that-spawns-threads
-
 const SHORTCUTS: &str = indoc! {"
 <br />
 
@@ -44,8 +41,8 @@ Output: <kbd>Tab</kbd>
 Prompt: <kbd>Shift + Tab</kbd>
 "};
 
-/// Synonymous with Shell or CLI
-/// Naming it Cell makes it consistent with the frontend
+/// Synonymous with "Shell" or "CLI"
+/// Naming it "Cell" makes it consistent with the frontend
 /// Once we have a name for Termy's shell language, it might make sense to rename this
 pub struct Cell {
     id: String,

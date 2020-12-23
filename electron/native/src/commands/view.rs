@@ -29,7 +29,7 @@ mod tests {
         let readme_file = test_dir().unwrap().join("readme.md");
         assert_eq!(
             view(readme_file).unwrap(),
-            "```md\nFiles and folders to test the built-in commands.\n\n```".to_string()
+            "```md\nFiles and folders to test the internal commands.\n\n```".to_string()
         );
     }
 
