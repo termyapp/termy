@@ -51,6 +51,6 @@ pub fn get_commands() -> Result<Vec<Command>> {
     Ok(commands)
 }
 
-pub struct Command {
+struct Command {
     input: String,
 }
