@@ -39,18 +39,18 @@ pub fn add_command(current_dir: &str, input: &str) -> Result<()> {
     Ok(())
 }
 
-pub fn get_commands() -> Result<Vec<Command>> {
-    let conn = connect();
+// pub fn get_commands() -> Result<Vec<Command>> {
+//     let conn = connect();
 
-    let mut stmt = conn.prepare("SELECT commands.command from commands;")?;
+//     let mut stmt = conn.prepare("SELECT commands.command from commands;")?;
 
-    let commands = stmt.query_map(NO_PARAMS, |row| Ok(Command { input: row.get(0)? }))?;
+//     let commands = stmt.query_map(NO_PARAMS, |row| Ok(Command { input: row.get(0)? }))?;
 
-    let commands = commands.filter_map(|command| command.ok()).collect();
+//     let commands = commands.filter_map(|command| command.ok()).collect();
 
-    Ok(commands)
-}
+//     Ok(commands)
+// }
 
-struct Command {
-    input: String,
-}
+// struct Command {
+//     input: String,
+// }

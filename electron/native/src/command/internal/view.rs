@@ -36,7 +36,7 @@ mod tests {
     #[test]
     fn file_does_not_exist() {
         let non_existing = test_dir().unwrap().join("non_existing_file");
-        assert!(view(non_existing).is_err());
+
         assert!(view(non_existing).is_err());
     }
 }
