@@ -9,7 +9,7 @@
 //             data: ServerData::ApiData(formatdoc! {"
 //                 <Card>Changed theme to <Path>{theme}</Path></Card>
 //                 ", theme = theme.clone().unwrap()}),
-//             cell_type: CellType::Api,
+//             cell_type: OutputType::Api,
 //             cd: None,
 //             theme,
 //         }),

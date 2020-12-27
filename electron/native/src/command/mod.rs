@@ -1,18 +1,21 @@
 use crate::{
-    cell::{CellProps, Communication, ServerMessage},
+    cell::{Cell, ServerMessage},
     util::get_executables,
 };
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
+pub mod external;
 mod internal;
 
+#[derive(Debug)]
 pub struct Command {
     kind: Kind,
     args: Vec<String>,
 }
 
+#[derive(Debug)]
 enum Kind {
     Path(String),
     View,
@@ -39,10 +42,12 @@ impl Command {
         }
     }
 
-    pub fn execute(&self, props: &CellProps, communication: Communication) -> Result<()> {
+    pub fn execute(self, cell: Cell) -> Result<()> {
         let status = match &self.kind {
             Kind::Path(path) => {}
-            Kind::External(command) => {}
+            Kind::External(command) => {
+                external::external(command, self.args, cell);
+            }
             Kind::NotFound => {}
             _ => todo!(),
         };

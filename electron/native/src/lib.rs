@@ -2,12 +2,14 @@
 extern crate napi_derive;
 
 use autocomplete::Autocomplete;
-use cell::{Cell, CellChannel, CellProps, Communication, FrontendMessage, ServerMessage};
+use cell::{Cell, CellChannel, CellProps, ServerMessage};
+use command::external::FrontendMessage;
 use crossbeam_channel::{unbounded, Sender};
 use log::info;
 use napi::{
     CallContext, JsExternal, JsFunction, JsObject, JsString, JsUndefined, JsUnknown, Result,
 };
+use serde::{Deserialize, Serialize};
 use std::thread;
 mod autocomplete;
 mod cell;
@@ -66,7 +68,7 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
     let (sender, receiver) = unbounded::<CellChannel>();
     let external_sender = sender.clone();
 
-    let server_message = ctx.env.create_threadsafe_function(
+    let tsfn = ctx.env.create_threadsafe_function(
         &server_message,
         0,
         |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<ServerMessage>>| {
@@ -77,15 +79,14 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
         },
     )?;
 
-    info!("Executing command: {:?}", props);
+    info!("Running cell: {:?}", props);
 
     thread::spawn(move || {
-        let cell = Cell::new(props);
-        let tsfn = ThreadSafeFn::new(server_message);
+        let cell = Cell::new(props.clone(), tsfn, sender, receiver);
 
-        cell.run(tsfn, receiver, sender);
+        cell.run();
 
-        info!("Closing thread");
+        info!("Finished running cell: {:?}", props);
     });
 
     ctx.env.create_external(external_sender)
@@ -107,26 +108,4 @@ fn frontend_message(ctx: CallContext) -> napi::Result<JsUndefined> {
     }
 
     ctx.env.get_undefined()
-}
-
-struct ThreadSafeFn {
-    threadsafe_function: ThreadsafeFunctionType,
-}
-
-type ThreadsafeFunctionType =
-    napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<ServerMessage>>;
-
-impl ThreadSafeFn {
-    fn new(threadsafe_function: ThreadsafeFunctionType) -> ThreadSafeFn {
-        ThreadSafeFn {
-            threadsafe_function,
-        }
-    }
-
-    fn send(&self, message: ServerMessage) {
-        self.threadsafe_function.call(
-            Ok(vec![message]),
-            napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
-        );
-    }
 }

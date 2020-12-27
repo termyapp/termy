@@ -1,6 +1,6 @@
-use crate::{command::Command, ThreadSafeFn};
+use crate::{command::external::FrontendMessage, command::Command};
 use anyhow::Result;
-use crossbeam_channel::{Receiver, Sender};
+use crossbeam_channel::{Receiver, SendError, Sender};
 use indoc::{formatdoc, indoc};
 use io::Read;
 use log::{error, info, warn};
@@ -16,73 +16,76 @@ use std::{fs, io::Write};
 /// Naming it "Cell" makes it consistent with the frontend
 /// Once we have a name for Termy's shell language, it might make sense to rename this
 pub struct Cell {
-    props: CellProps,
-    command: Command, // once operators (|, &&, ||) are introduced, this could become Vec<Command>
+    id: String,
+    current_dir: String,
+    input: String,
+
+    pub tsfn: ThreadsafeFunctionType,
+    pub sender: Sender<CellChannel>,
+    pub receiver: Receiver<CellChannel>,
 }
 
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+impl Cell {
+    pub fn new(
+        props: CellProps,
+        tsfn: ThreadsafeFunctionType,
+        sender: Sender<CellChannel>,
+        receiver: Receiver<CellChannel>,
+    ) -> Self {
+        let CellProps {
+            id,
+            current_dir,
+            input,
+        } = props;
+
+        Self {
+            id,
+            current_dir,
+            input,
+
+            tsfn,
+            sender,
+            receiver,
+        }
+    }
+
+    pub fn current_dir(&self) -> &str {
+        self.current_dir.as_ref()
+    }
+
+    pub fn run(self) {
+        // once operators (|, &&, ||) are introduced, this could become Vec<Command>
+        let command = parse_input(&(self.input), &(self.current_dir));
+
+        if let Err(err) = command.execute(self) {
+            error!("Error while executing command: {}", err);
+        };
+    }
+
+    pub fn send(&self, message: ServerMessage) {
+        tsfn_send(&self.tsfn, message);
+    }
+}
+
+type ThreadsafeFunctionType =
+    napi::threadsafe_function::ThreadsafeFunction<std::vec::Vec<ServerMessage>>;
+
+pub fn tsfn_send(tsfn: &ThreadsafeFunctionType, message: ServerMessage) {
+    tsfn.call(
+        Ok(vec![message]),
+        napi::threadsafe_function::ThreadsafeFunctionCallMode::NonBlocking,
+    );
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct CellProps {
     id: String,
     current_dir: String,
     input: String,
 }
 
-pub struct Communication {
-    tsfn: ThreadSafeFn,
-    receiver: Receiver<CellChannel>,
-    sender: Sender<CellChannel>,
-}
-
 pub enum CellChannel {
-    ThreadSafeFn(ThreadSafeFn),
     FrontendMessage(FrontendMessage),
-}
-
-impl Cell {
-    pub fn new(props: CellProps) -> Cell {
-        Cell {
-            command: parse_input(&(props.input), &(props.current_dir)),
-            props,
-        }
-    }
-
-    pub fn run(
-        &self,
-        tsfn: ThreadSafeFn,
-        receiver: Receiver<CellChannel>,
-        sender: Sender<CellChannel>,
-    ) {
-        let communication = Communication {
-            tsfn,
-            receiver,
-            sender,
-        };
-
-        if let Err(err) = self.command.execute(&self.props, communication) {
-            error!("Error while executing command: {}", err);
-        };
-
-        info!(
-            "Finished running cell `{}` with input {}",
-            self.props.id, self.props.input
-        );
-    }
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-struct Size {
-    rows: u16,
-    cols: u16,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct FrontendMessage {
-    id: String,
-    stdin: Option<String>,
-    size: Option<Size>,
 }
 
 #[derive(Serialize, Debug)]
@@ -93,39 +96,44 @@ pub enum ServerMessage {
     Error(String), // Custom error type?
 }
 
+impl ServerMessage {
+    pub fn output(output_type: OutputType, action: Option<Action>) -> ServerMessage {
+        ServerMessage::Output(Output {
+            output_type,
+            action,
+        })
+    }
+}
+
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-struct Output {
+pub struct Output {
     #[serde(rename = "type")] // `type` is a reserved token...
-    output_type: CellType,
+    output_type: OutputType,
     action: Option<Action>,
 }
 
 #[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum CellType {
-    Text, // pty (external commands) is always text, except when it starts with "<Termy" OR if it's being piped and can be parsed as JSON
-    Structured(Structured),
-}
-
-#[derive(Serialize, Debug)]
-enum Structured {
-    Api,
-    Mdx, // same thing as api with cosmetic enhancements
+pub struct Action {
+    cd: String,
+    theme: String,
 }
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-enum Status {
+pub enum OutputType {
+    Text(Vec<u8>), // pty (external commands) is always text, except when it starts with "<Termy" OR if it's being piped and can be parsed as JSON
+    // Structured(Structured),
+    Api(String),
+    Mdx(String), // same thing as api with cosmetic enhancements
+}
+
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum Status {
     Running,
     Success,
     Error,
-}
-
-#[derive(Serialize, Debug)]
-struct Action {
-    cd: String,
-    theme: String,
 }
 
 fn parse_input(input: &str, current_dir: &str) -> Command {
