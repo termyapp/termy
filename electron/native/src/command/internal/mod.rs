@@ -1,3 +1,43 @@
+use crate::cell::{Cell, OutputType, ServerMessage, Status};
+use anyhow::Result;
+
+mod home;
+mod shortcuts;
+
+#[derive(Debug)]
+pub enum Internal {
+    Shortcuts,
+    Home,
+}
+
+impl Internal {
+    pub fn parse(command: &str) -> Option<Self> {
+        match command {
+            "home" => Some(Self::Home),
+            "shortcuts" => Some(Self::Shortcuts),
+            _ => None,
+        }
+    }
+
+    pub fn cell(&self, cell: Cell) -> Result<Status> {
+        let output = match self {
+            Self::Shortcuts => shortcuts::shortcuts(),
+            Self::Home => home::home(),
+        };
+
+        cell.send(ServerMessage::output(OutputType::Mdx(output), None));
+
+        Ok(Status::Success)
+    }
+
+    pub fn api(&self) -> String {
+        match self {
+            Self::Shortcuts => shortcuts::shortcuts(),
+            Self::Home => home::home(),
+        }
+    }
+}
+
 // "theme" => {
 //     let theme = if let Some(theme) = self.args.iter().next() {
 //         Some(theme.clone())
@@ -15,14 +55,6 @@
 //         }),
 //         status: Some(Status::Success),
 //     })
-// }
-// "home" => {
-//     let home_dir = dirs::home_dir().unwrap().as_os_str().to_owned();
-//     ServerMessage::api(
-//         home_dir.to_string_lossy().to_string(),
-//         None,
-//         Status::Success,
-//     )
 // }
 // root if root.chars().next().unwrap_or_default() == '/' => {
 //     let path = RelativePath::new("").to_path(root);

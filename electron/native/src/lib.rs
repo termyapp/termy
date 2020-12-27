@@ -3,14 +3,14 @@ extern crate napi_derive;
 
 use autocomplete::Autocomplete;
 use cell::{Cell, CellChannel, CellProps, ServerMessage};
-use command::external::FrontendMessage;
+use command::{external::FrontendMessage, internal::Internal};
 use crossbeam_channel::{unbounded, Sender};
 use log::info;
 use napi::{
     CallContext, JsExternal, JsFunction, JsObject, JsString, JsUndefined, JsUnknown, Result,
 };
-use serde::{Deserialize, Serialize};
 use std::thread;
+
 mod autocomplete;
 mod cell;
 mod command;
@@ -42,9 +42,13 @@ fn api(ctx: CallContext) -> napi::Result<JsString> {
 
     info!("Api call: {}", command);
 
-    todo!()
-    // let result = Cell::api(command);
-    // ctx.env.create_string(&result)
+    let result = if let Some(internal) = Internal::parse(&command) {
+        internal.api()
+    } else {
+        "Internal command not found".to_string()
+    };
+
+    ctx.env.create_string(&result)
 }
 
 #[js_function(2)]

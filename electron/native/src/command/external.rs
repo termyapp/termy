@@ -15,7 +15,7 @@ use std::path::Path;
 use std::thread;
 use std::{fs, io::Write};
 
-pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<()> {
+pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Status> {
     info!("running pty command: {:#?}", command);
     let pty_system = native_pty_system();
     let mut pair = pty_system.openpty(PtySize {
@@ -121,7 +121,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<()> {
     //     break;
     // }
 
-    Ok(())
+    Ok(Status::Success)
 }
 
 #[derive(Deserialize, Debug)]

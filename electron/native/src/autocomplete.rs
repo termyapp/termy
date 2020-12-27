@@ -2,12 +2,10 @@ use crate::util::{get_executables, paths::root_path};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use log::info;
-use relative_path::RelativePath;
 use serde::Serialize;
 use std::io;
 use std::{
     collections::HashMap,
-    env,
     fs::{self, File},
     io::BufRead,
     path::Path,
@@ -37,7 +35,7 @@ impl Autocomplete {
         }
 
         // order matters since we're using a hashmap
-        self.directories();
+        self.directories().unwrap();
         self.executables();
         self.zsh_history();
 
@@ -214,7 +212,7 @@ fn get_docs(command: &str) -> Result<String> {
     // .join_normalized("/../../tldr/".to_string() + command + ".md")
 
     // let path = path.to_path("");
-    // info!("Path: {:?}", path);
+    info!("Path: {:?}", path);
 
     // Ok(fs::read_to_string(path)?)
     Ok("".to_string())

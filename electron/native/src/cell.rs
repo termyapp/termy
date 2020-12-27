@@ -1,21 +1,13 @@
 use crate::{command::external::FrontendMessage, command::Command};
-use anyhow::Result;
-use crossbeam_channel::{Receiver, SendError, Sender};
-use indoc::{formatdoc, indoc};
-use io::Read;
-use log::{error, info, warn};
-use portable_pty::{native_pty_system, CommandBuilder, PtySize};
-use relative_path::RelativePath;
+use crossbeam_channel::{Receiver, Sender};
+use log::error;
 use serde::{Deserialize, Serialize};
-use std::io;
-use std::path::Path;
-use std::thread;
-use std::{fs, io::Write};
 
 /// Synonymous with "Shell" or "CLI"
 /// Naming it "Cell" makes it consistent with the frontend
 /// Once we have a name for Termy's shell language, it might make sense to rename this
 pub struct Cell {
+    #[allow(dead_code)]
     id: String,
     current_dir: String,
     input: String,
@@ -54,6 +46,8 @@ impl Cell {
     }
 
     pub fn run(self) {
+        self.send(ServerMessage::Status(Status::Running));
+
         // once operators (|, &&, ||) are introduced, this could become Vec<Command>
         let command = parse_input(&(self.input), &(self.current_dir));
 
@@ -109,7 +103,7 @@ impl ServerMessage {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Output {
-    #[serde(rename = "type")] // `type` is a reserved token...
+    #[serde(flatten)]
     output_type: OutputType,
     action: Option<Action>,
 }
@@ -124,7 +118,6 @@ pub struct Action {
 #[serde(rename_all = "camelCase")]
 pub enum OutputType {
     Text(Vec<u8>), // pty (external commands) is always text, except when it starts with "<Termy" OR if it's being piped and can be parsed as JSON
-    // Structured(Structured),
     Api(String),
     Mdx(String), // same thing as api with cosmetic enhancements
 }
