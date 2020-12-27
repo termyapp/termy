@@ -78,6 +78,7 @@ pub fn tsfn_send(tsfn: &ThreadsafeFunctionType, message: ServerMessage) {
 }
 
 #[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct CellProps {
     id: String,
     current_dir: String,

@@ -217,7 +217,7 @@ fn get_docs(command: &str) -> Result<String> {
     // info!("Path: {:?}", path);
 
     // Ok(fs::read_to_string(path)?)
-    todo!()
+    Ok("".to_string())
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
