@@ -1,5 +1,8 @@
 import type { Node } from 'slate'
-import type { Status } from './shared'
+
+export type Status = 'running' | 'success' | 'error' | null
+
+export type OutputType = 'text' | 'mdx' | null
 
 export type ThemeMode = '#fff' | '#000'
 

@@ -46,7 +46,7 @@ impl Cell {
     }
 
     pub fn run(self) {
-        self.send(ServerMessage::Status(Status::Running));
+        self.send(ServerMessage::status(Status::Running));
 
         // once operators (|, &&, ||) are introduced, this could become Vec<Command>
         let command = parse_input(&(self.input), &(self.current_dir));
@@ -86,41 +86,34 @@ pub enum CellChannel {
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub enum ServerMessage {
-    Output(Output),
-    Status(Status),
-    Error(String), // Custom error type?
+pub struct ServerMessage {
+    #[serde(flatten)]
+    data: Data,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    action: Option<Action>,
 }
 
 impl ServerMessage {
-    pub fn output(output_type: OutputType, action: Option<Action>) -> ServerMessage {
-        ServerMessage::Output(Output {
-            output_type,
-            action,
-        })
+    pub fn new(data: Data, action: Option<Action>) -> Self {
+        Self { data, action }
+    }
+
+    pub fn status(status: Status) -> Self {
+        Self {
+            data: Data::Status(status),
+            action: None,
+        }
     }
 }
 
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Output {
-    #[serde(flatten)]
-    output_type: OutputType,
-    action: Option<Action>,
-}
-
-#[derive(Serialize, Debug)]
-pub struct Action {
-    cd: String,
-    theme: String,
-}
-
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub enum OutputType {
+pub enum Data {
     Text(Vec<u8>), // pty (external commands) is always text, except when it starts with "<Termy" OR if it's being piped and can be parsed as JSON
     Api(String),
     Mdx(String), // same thing as api with cosmetic enhancements
+    Status(Status),
+    Error(String),
 }
 
 #[derive(Serialize, Debug)]
@@ -129,6 +122,12 @@ pub enum Status {
     Running,
     Success,
     Error,
+}
+
+#[derive(Serialize, Debug)]
+pub struct Action {
+    cd: String,
+    theme: String,
 }
 
 fn parse_input(input: &str, current_dir: &str) -> Command {

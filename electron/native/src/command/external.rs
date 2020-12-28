@@ -1,4 +1,4 @@
-use crate::cell::{tsfn_send, Cell, CellChannel, OutputType, ServerMessage, Status};
+use crate::cell::{tsfn_send, Cell, CellChannel, Data, ServerMessage, Status};
 use anyhow::Result;
 use io::Read;
 use log::{error, info, warn};
@@ -64,7 +64,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
                 // let data = ServerData::PtyData(chunk.to_vec());
                 tsfn_send(
                     &tsfn_clone,
-                    ServerMessage::output(OutputType::Text(chunk.to_vec()), None),
+                    ServerMessage::new(Data::Text(chunk.to_vec()), None),
                 );
             } else {
                 error!("Err: {}", read.unwrap_err());

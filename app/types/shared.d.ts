@@ -1,10 +1,6 @@
 // In sync with ../electron/shared.d.ts
 // todo: figure out a way to reference the types
 
-export type Status = 'running' | 'success' | 'error' | null
-
-export type OutputType = 'pty' | 'api' | null
-
 export type RunCell = {
   id: string
   input: string
@@ -33,12 +29,19 @@ export type Message =
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
 
-export type ServerMessage = {
+export interface ServerMessage {
   id: string
-  output?:
-    | { type: 'pty'; data: { ptyData: number[] } }
-    | { type: 'api'; data: { apiData: string }; cd?: string; theme?: string }
+  action?: Action
+  text?: number[]
+  mdx?: string
+  api?: string
   status?: Status
+  error?: string
+}
+
+export interface Action {
+  cd?: string
+  theme?: string
 }
 
 export type Suggestion = {

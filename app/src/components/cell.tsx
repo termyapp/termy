@@ -19,29 +19,41 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
 
   useListener(`message-${id}`, (_, message: ServerMessage) => {
     console.log('received', message)
-    const { output, status } = message
-
-    if (status) {
-      dispatch({ type: 'set-cell', id, cell: { status } })
-    }
-
-    if (output) {
-      dispatch({ type: 'set-cell', id, cell: { type: output.type } })
-
-      if (output.type === 'api') {
-        // handle internal stuff
-        if (output.cd) {
-          dispatch({ type: 'set-cell', id, cell: { currentDir: output.cd } })
+    for (const [key, value] of Object.entries(message)) {
+      switch (key) {
+        case 'error': {
+          console.error(message.error)
+          break
         }
-
-        if (output.theme) {
-          dispatch({ type: 'set-theme', theme: output.theme as ThemeMode })
+        case 'status': {
+          dispatch({ type: 'set-cell', id, cell: { status: value } })
+          break
         }
+        case 'text': {
+          dispatch({ type: 'set-cell', id, cell: { type: 'text' } })
+          terminalRef.current?.write(new Uint8Array(value))
+          // console.log('writing chunk', output.data)
+          break
+        }
+        case 'mdx': {
+          dispatch({ type: 'set-cell', id, cell: { type: 'mdx' } })
+          setOutput(value)
+          break
+        }
+        case 'api': {
+          break
+        }
+        case 'action': {
+          // handle internal stuff
+          if (value.cd) {
+            dispatch({ type: 'set-cell', id, cell: { currentDir: value.cd } })
+          }
 
-        setOutput(output.data.apiData)
-      } else if (output.type === 'pty') {
-        terminalRef.current?.write(new Uint8Array(output.data.ptyData))
-        // console.log('writing chunk', output.data)
+          if (value.theme) {
+            dispatch({ type: 'set-theme', theme: value.theme as ThemeMode })
+          }
+          break
+        }
       }
     }
   })
@@ -65,7 +77,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
     <Card onFocus={() => dispatch({ type: 'focus', id })} focused={focused}>
       <Prompt {...cell} focused={focused} />
       <Output>
-        <Pty show={cell.type === 'pty'}>
+        <Pty show={cell.type === 'text'}>
           <Div
             ref={terminalContainerRef}
             css={{
@@ -79,7 +91,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
         </Pty>
         <Div
           css={{
-            display: cell.type === 'api' ? 'block' : 'none',
+            display: cell.type === 'mdx' ? 'block' : 'none',
             fontSize: '$sm',
             color: '$secondaryTextColor',
           }}

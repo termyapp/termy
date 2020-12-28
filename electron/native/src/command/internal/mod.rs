@@ -1,4 +1,4 @@
-use crate::cell::{Cell, OutputType, ServerMessage, Status};
+use crate::cell::{Cell, Data, ServerMessage, Status};
 use anyhow::Result;
 
 mod home;
@@ -25,7 +25,7 @@ impl Internal {
             Self::Home => home::home(),
         };
 
-        cell.send(ServerMessage::output(OutputType::Mdx(output), None));
+        cell.send(ServerMessage::new(Data::Mdx(output), None));
 
         Ok(Status::Success)
     }

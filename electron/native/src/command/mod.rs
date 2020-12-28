@@ -2,9 +2,8 @@ use crate::{
     cell::{tsfn_send, Cell, ServerMessage, Status},
     util::get_executables,
 };
-use anyhow::{bail, Result};
+use anyhow::Result;
 use internal::Internal;
-use serde::{Deserialize, Serialize};
 use std::path::Path;
 
 pub mod external;
@@ -53,7 +52,7 @@ impl Command {
 
         tsfn_send(
             &tsfn_clone,
-            ServerMessage::Status(status.unwrap_or(Status::Error)),
+            ServerMessage::status(status.unwrap_or(Status::Error)),
         );
 
         Ok(())
