@@ -81,6 +81,7 @@ pub struct CellProps {
 
 pub enum CellChannel {
     FrontendMessage(FrontendMessage),
+    Exit,
 }
 
 #[derive(Serialize, Debug)]

@@ -212,7 +212,7 @@ fn get_docs(command: &str) -> Result<String> {
     // .join_normalized("/../../tldr/".to_string() + command + ".md")
 
     // let path = path.to_path("");
-    info!("Path: {:?}", path);
+    // info!("Path: {:?}", path);
 
     // Ok(fs::read_to_string(path)?)
     Ok("".to_string())

@@ -1,22 +1,15 @@
-use crate::{
-    cell::{tsfn_send, Cell, CellChannel, Output, OutputType, ServerMessage, Status},
-    command::Command,
-};
+use crate::cell::{tsfn_send, Cell, CellChannel, OutputType, ServerMessage, Status};
 use anyhow::Result;
-use crossbeam_channel::{Receiver, Sender};
-use indoc::{formatdoc, indoc};
 use io::Read;
 use log::{error, info, warn};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
-use relative_path::RelativePath;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::io;
-use std::path::Path;
+use std::io::Write;
 use std::thread;
-use std::{fs, io::Write};
 
 pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Status> {
-    info!("running pty command: {:#?}", command);
+    info!("Running pty command: {:#?}", command);
     let pty_system = native_pty_system();
     let mut pair = pty_system.openpty(PtySize {
         rows: 15,
@@ -47,6 +40,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
         .tsfn
         .try_clone()
         .expect("Failed to clone threadsafe function");
+    let sender_clone = cell.sender.clone();
 
     thread::spawn(move || {
         let mut chunk = [0u8; 1024];
@@ -76,12 +70,16 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
                 error!("Err: {}", read.unwrap_err());
             }
         }
-        info!("Passed over send_message");
+
+        if let Err(err) = sender_clone.send(CellChannel::Exit) {
+            error!("Error while sending exit code: {}", err);
+        };
     });
 
-    while child.try_wait()?.is_none() {
-        // receive stdin message
-        let received = cell.receiver.recv();
+    loop {
+        // receive cell channel message
+        let received = cell.receiver.recv(); // hangs
+
         match received {
             Ok(CellChannel::FrontendMessage(FrontendMessage { id, stdin, size })) => {
                 if let Some(message) = stdin {
@@ -104,24 +102,16 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
                     warn!("Invalid frontend message")
                 }
             }
-            _ => {
-                error!("Received no message or error");
+            Ok(CellChannel::Exit) => {
+                return Ok(if child.wait()?.success() {
+                    Status::Success
+                } else {
+                    Status::Error
+                });
             }
+            Err(err) => error!("Error while receiving message: {}", err),
         }
     }
-
-    // Ok(CellChannel::Cell(cell)) => {
-    //     info!("Exiting");
-    //     // portable_pty only has boolean support for now
-    //     cell.send(ServerMessage::Status(if child.wait().unwrap().success() {
-    //         Status::Success
-    //     } else {
-    //         Status::Error
-    //     }));
-    //     break;
-    // }
-
-    Ok(Status::Success)
 }
 
 #[derive(Deserialize, Debug)]
