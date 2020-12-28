@@ -31,7 +31,7 @@ export type Message =
 
 export interface ServerMessage {
   id: string
-  action?: Action
+  action?: [ActionKeys, string][]
   text?: number[]
   mdx?: string
   api?: string
@@ -39,10 +39,7 @@ export interface ServerMessage {
   error?: string
 }
 
-export interface Action {
-  cd?: string
-  theme?: string
-}
+export type ActionKeys = 'cd' | 'theme'
 
 export type Suggestion = {
   fullCommand?: string

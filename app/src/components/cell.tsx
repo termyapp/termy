@@ -43,17 +43,31 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
         case 'api': {
           break
         }
-        case 'action': {
-          // handle internal stuff
-          if (value.cd) {
-            dispatch({ type: 'set-cell', id, cell: { currentDir: value.cd } })
+        case 'action':
+          {
+            if (!message.action) return
+            // handle internal stuff
+
+            message.action.forEach(([actionKey, actionValue]) => {
+              switch (actionKey) {
+                case 'cd': {
+                  dispatch({
+                    type: 'set-cell',
+                    id,
+                    cell: { currentDir: actionValue },
+                  })
+                }
+                case 'theme': {
+                  dispatch({
+                    type: 'set-theme',
+                    theme: actionValue as ThemeMode,
+                  })
+                }
+              }
+            })
           }
 
-          if (value.theme) {
-            dispatch({ type: 'set-theme', theme: value.theme as ThemeMode })
-          }
           break
-        }
       }
     }
   })

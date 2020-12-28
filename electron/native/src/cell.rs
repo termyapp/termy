@@ -93,6 +93,8 @@ pub struct ServerMessage {
     action: Option<Action>,
 }
 
+type Action = Vec<(String, String)>;
+
 impl ServerMessage {
     pub fn new(data: Data, action: Option<Action>) -> Self {
         Self { data, action }
@@ -122,12 +124,6 @@ pub enum Status {
     Running,
     Success,
     Error,
-}
-
-#[derive(Serialize, Debug)]
-pub struct Action {
-    cd: String,
-    theme: String,
 }
 
 fn parse_input(input: &str, current_dir: &str) -> Command {
