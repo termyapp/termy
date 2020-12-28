@@ -3,7 +3,7 @@ import type { CellType, ServerMessage, ThemeMode } from '../../types'
 import { useListener, useXterm } from '../lib'
 import { styled } from '../stitches.config'
 import useStore, { focusCell } from '../store'
-import Api from './api'
+import Mdx from './mdx'
 import Prompt from './prompt'
 import { Div, Flex } from './shared'
 
@@ -11,7 +11,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   const cell = useStore(useCallback(state => state.cells[id], [id]))
   const dispatch = useStore(state => state.dispatch)
 
-  // api
+  // mdx
   const [output, setOutput] = useState('')
 
   // pty
@@ -110,7 +110,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
             color: '$secondaryTextColor',
           }}
         >
-          <Api>{output}</Api>
+          <Mdx>{output}</Mdx>
         </Div>
       </Output>
     </Card>
