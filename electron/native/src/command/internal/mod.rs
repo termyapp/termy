@@ -1,15 +1,19 @@
+use std::path::{Path, PathBuf};
+
 use crate::cell::{Cell, Data, ServerMessage, Status};
 use anyhow::Result;
 
 mod home;
 mod shortcuts;
 mod theme;
+mod view;
 
 #[derive(Debug)]
 pub enum Internal {
     Shortcuts,
     Home,
     Theme,
+    View,
 }
 
 impl Internal {
@@ -18,6 +22,7 @@ impl Internal {
             "home" => Some(Self::Home),
             "shortcuts" => Some(Self::Shortcuts),
             "theme" => Some(Self::Theme),
+            "view" => Some(Self::View),
             _ => None,
         }
     }
@@ -27,6 +32,13 @@ impl Internal {
             Self::Shortcuts => (shortcuts::shortcuts(), None),
             Self::Home => (home::home(), None),
             Self::Theme => theme::theme(args),
+            Self::View => (
+                view::view(find_path(
+                    cell.current_dir(),
+                    args.into_iter().next().unwrap(),
+                ))?,
+                None,
+            ),
         };
 
         cell.send(ServerMessage::new(Data::Mdx(mdx), action));
@@ -43,14 +55,12 @@ impl Internal {
     }
 }
 
-// "move" => {
-//     // move arg1 arg2
-//     let mut args = self.args.iter();
-//     let from = self.current_dir.clone() + args.next().unwrap();
-//     let from = Path::new(&from);
-//     let to = self.current_dir.clone() + args.next().unwrap();
-//     let to = Path::new(&to);
-//     from.canonicalize()?;
-//     fs::rename(from, to)?;
-//     ServerMessage::api("Moved file".to_owned(), None, Status::Success)
-// }
+fn find_path(current_dir: &str, path: String) -> Option<PathBuf> {
+    if Path::new(&path).exists() {
+        Some(PathBuf::from(path))
+    } else if Path::new(current_dir).join(&path).exists() {
+        Some(Path::new(current_dir).join(path))
+    } else {
+        None
+    }
+}

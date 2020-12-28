@@ -24,7 +24,7 @@ pub fn init() -> Result<()> {
             Root::builder()
                 // .appender("logfile")
                 .appender("console")
-                .build(LevelFilter::Info),
+                .build(LevelFilter::Info), // todo: include error and others as well
         )?;
 
     log4rs::init_config(config)?;
