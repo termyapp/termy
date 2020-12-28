@@ -3,11 +3,13 @@ use anyhow::Result;
 
 mod home;
 mod shortcuts;
+mod theme;
 
 #[derive(Debug)]
 pub enum Internal {
     Shortcuts,
     Home,
+    Theme,
 }
 
 impl Internal {
@@ -15,17 +17,19 @@ impl Internal {
         match command {
             "home" => Some(Self::Home),
             "shortcuts" => Some(Self::Shortcuts),
+            "theme" => Some(Self::Theme),
             _ => None,
         }
     }
 
-    pub fn cell(&self, cell: Cell) -> Result<Status> {
-        let output = match self {
-            Self::Shortcuts => shortcuts::shortcuts(),
-            Self::Home => home::home(),
+    pub fn mdx(&self, args: Vec<String>, cell: Cell) -> Result<Status> {
+        let (mdx, action) = match self {
+            Self::Shortcuts => (shortcuts::shortcuts(), None),
+            Self::Home => (home::home(), None),
+            Self::Theme => theme::theme(args),
         };
 
-        cell.send(ServerMessage::new(Data::Mdx(output), None));
+        cell.send(ServerMessage::new(Data::Mdx(mdx), action));
 
         Ok(Status::Success)
     }
@@ -34,60 +38,10 @@ impl Internal {
         match self {
             Self::Shortcuts => shortcuts::shortcuts(),
             Self::Home => home::home(),
+            _ => todo!(),
         }
     }
 }
-
-// "theme" => {
-//     let theme = if let Some(theme) = self.args.iter().next() {
-//         Some(theme.clone())
-//     } else {
-//         None
-//     };
-//     Some(ServerMessage {
-//         output: Some(Output {
-//             data: ServerData::ApiData(formatdoc! {"
-//                 <Card>Changed theme to <Path>{theme}</Path></Card>
-//                 ", theme = theme.clone().unwrap()}),
-//             cell_type: OutputType::Api,
-//             cd: None,
-//             theme,
-//         }),
-//         status: Some(Status::Success),
-//     })
-// }
-
-// "cd" => {
-//     // todo: absolute paths and /, ~, ...
-//     let path = self.args.iter().next().unwrap();
-//     let relative_path = RelativePath::new(path);
-//     let cwd = RelativePath::new(&self.current_dir);
-//     let absolute_path = if path.chars().next().unwrap_or_default() == '/' {
-//         RelativePath::new("").to_path(path)
-//     } else {
-//         cwd.join_normalized(relative_path).to_path(Path::new(""))
-//     };
-
-//     if absolute_path.is_dir() {
-//         ServerMessage::api(
-//             format!(
-//                 "Changed current directory to {}",
-//                 absolute_path.to_string_lossy()
-//             ),
-//             Some(absolute_path.to_string_lossy().to_string()),
-//             Status::Success,
-//         )
-//     } else {
-//         ServerMessage::api(
-//             format!(
-//                 "{} is not a valid directory",
-//                 absolute_path.to_string_lossy()
-//             ),
-//             None,
-//             Status::Error,
-//         )
-//     }
-// }
 
 // "move" => {
 //     // move arg1 arg2
@@ -98,6 +52,5 @@ impl Internal {
 //     let to = Path::new(&to);
 //     from.canonicalize()?;
 //     fs::rename(from, to)?;
-
 //     ServerMessage::api("Moved file".to_owned(), None, Status::Success)
 // }

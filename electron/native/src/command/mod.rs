@@ -67,7 +67,7 @@ impl Command {
 
         let status: Result<Status> = match &self.kind {
             Kind::Path(path) => path::path(path, cell),
-            Kind::Internal(internal) => internal.cell(cell),
+            Kind::Internal(internal) => internal.mdx(self.args, cell),
             Kind::External(command) => external::external(command, self.args, cell),
             Kind::NotFound => Ok(Status::Error),
         };

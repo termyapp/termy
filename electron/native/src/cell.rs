@@ -93,7 +93,7 @@ pub struct ServerMessage {
     action: Option<Action>,
 }
 
-type Action = Vec<(String, String)>;
+pub type Action = Vec<(String, String)>;
 
 impl ServerMessage {
     pub fn new(data: Data, action: Option<Action>) -> Self {
