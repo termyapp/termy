@@ -10,7 +10,8 @@
     "**/.hg": true,
     "**/CVS": true,
     "**/.DS_Store": true,
-    "**/node_modules": true
+    "**/node_modules": true,
+    "**/app/public/fonts/*": true
   },
   "git.detectSubmodules": false, // prevent electron/external/tldr from showing up
   "rust-analyzer.linkedProjects": [
