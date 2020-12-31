@@ -29,6 +29,13 @@ const Input: React.FC<CellType> = ({
     // todo: https://gist.github.com/mattpowell/221f7d35c4ae1273dc2e1ee469d000a7
     // MonacoReact.config({ paths: { vs: '/monaco-editor' } })
 
+    const background = focused
+      ? theme.colors.$focusedBackground
+      : theme.colors.$background
+    const foreground = focused
+      ? theme.colors.$focusedForeground
+      : theme.colors.$foreground
+
     monaco.init().then(monacoInstance => {
       monacoRef.current = monacoInstance
       monacoRef.current.editor.defineTheme('terminal', {
@@ -36,8 +43,11 @@ const Input: React.FC<CellType> = ({
         inherit: true,
         rules: [],
         colors: {
-          'editor.foreground': '#000',
-          'editor.background': '#fff',
+          'editor.foreground': foreground,
+          'editor.background': background,
+          'editor.lineHighlightBackground': background,
+          'editorSuggestWidget.background': background,
+          'editorSuggestWidget.highlightForeground': theme.colors.$accent,
         },
       })
 
@@ -46,7 +56,7 @@ const Input: React.FC<CellType> = ({
       )
       setIsEditorReady(true)
     })
-  }, [])
+  }, [focused, theme])
 
   return (
     <>
@@ -56,7 +66,6 @@ const Input: React.FC<CellType> = ({
           width: '100%',
           height: '$8',
           position: 'relative',
-          // color: focused ? '$focusedForeground' : '$foreground',
           // cursor: status === 'running' ? 'default' : 'text',
         }}
       >
@@ -87,6 +96,7 @@ const Input: React.FC<CellType> = ({
               fontSize: 20,
               suggestFontSize: 16,
               fontFamily: theme.fonts.$mono,
+              fontWeight: theme.fontWeights.$medium,
 
               minimap: { enabled: false },
               scrollbar: {
