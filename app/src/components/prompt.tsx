@@ -39,7 +39,7 @@ export default Prompt
 const Wrapper = styled(Div, {
   px: '$4',
   display: 'flex',
-  alignItems: 'baseline',
+  alignItems: 'center',
 
   variants: {
     focused: {

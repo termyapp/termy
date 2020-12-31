@@ -18,6 +18,7 @@ const Input: React.FC<CellType> = ({
   status,
 }) => {
   const dispatch = useStore(state => state.dispatch)
+  const theme = useStore(state => state.theme)
   const inputRef = useRef<HTMLDivElement>(null)
 
   const monacoRef = useRef<typeof Monaco | null>(null)
@@ -35,8 +36,8 @@ const Input: React.FC<CellType> = ({
         inherit: true,
         rules: [],
         colors: {
-          'editor.foreground': '#aaFFaa',
-          'editor.background': '#00ff00',
+          'editor.foreground': '#000',
+          'editor.background': '#fff',
         },
       })
 
@@ -53,23 +54,52 @@ const Input: React.FC<CellType> = ({
         ref={inputRef}
         css={{
           width: '100%',
+          height: '$8',
           position: 'relative',
-          fontWeight: '$semibold',
-          letterSpacing: '$tight',
-          fontSize: '$lg',
-          color: focused ? '$focusedForeground' : '$foreground',
-          cursor: status === 'running' ? 'default' : 'text',
-          height: '1rem',
+          // color: focused ? '$focusedForeground' : '$foreground',
+          // cursor: status === 'running' ? 'default' : 'text',
         }}
       >
-        <Editor
-          height="16px"
-          theme="terminal"
-          editorDidMount={(_, editor) => {
-            editorRef.current = editor
+        <Div
+          css={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
           }}
-        />
-        {/*
+        >
+          <Editor
+            theme="terminal"
+            editorDidMount={(_, editor) => {
+              editorRef.current = editor
+            }}
+            options={{
+              // remove margin
+              glyphMargin: false,
+              folding: false,
+              lineNumbers: 'off',
+              lineDecorationsWidth: 0,
+              lineNumbersMinChars: 0,
+
+              padding: {
+                top: 0,
+                bottom: 0,
+              },
+              fontSize: 20,
+              suggestFontSize: 16,
+              fontFamily: theme.fonts.$mono,
+
+              minimap: { enabled: false },
+              scrollbar: {
+                vertical: 'hidden',
+                horizontal: 'hidden',
+              },
+              overviewRulerLanes: 0,
+              quickSuggestions: true,
+              quickSuggestionsDelay: 0,
+              // model: this.model,
+            }}
+          />
+          {/*
         id={id}
         autoFocus
         placeholder=">"
@@ -87,8 +117,7 @@ const Input: React.FC<CellType> = ({
                 event.preventDefault() // prevent multiline input
               }
             }} */}
-      </Div>
-      {/* <Suggestions
+          {/* <Suggestions
         id={id}
         input={input}
         editor={editor}
@@ -96,6 +125,8 @@ const Input: React.FC<CellType> = ({
         focused={focused}
         currentDir={currentDir}
       /> */}
+        </Div>
+      </Div>
     </>
   )
 }
