@@ -1,5 +1,3 @@
-import type { Node } from 'slate'
-
 export type Status = 'running' | 'success' | 'error' | null
 
 export type OutputType = 'text' | 'mdx' | null
@@ -8,7 +6,7 @@ export type ThemeMode = '#fff' | '#000'
 
 export type CellType = {
   id: string
-  value: Node[]
+  value: string
   currentDir: string
   type: OutputType
   status: Status

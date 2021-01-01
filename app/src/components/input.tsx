@@ -1,19 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import type { CellType, Message } from '../../types'
-import useStore from '../store'
-import { Div } from './shared'
 import Editor, { monaco } from '@monaco-editor/react'
 import type * as Monaco from 'monaco-editor'
-
-if (import.meta.hot) {
-  // slate not happy w/ hot reload
-  import.meta.hot.decline()
-}
+import { KeyCode } from 'monaco-editor'
+import React, { useEffect, useRef, useState } from 'react'
+import type { CellType } from '../../types'
+import useStore from '../store'
+import { Div } from './shared'
 
 const Input: React.FC<CellType> = ({
   id,
   currentDir,
-  value,
+  value: defaultValue,
   focused,
   status,
 }) => {
@@ -35,7 +31,6 @@ const Input: React.FC<CellType> = ({
     const foreground = focused
       ? theme.colors.$focusedForeground
       : theme.colors.$foreground
-
     monaco.init().then(monacoInstance => {
       monacoRef.current = monacoInstance
       monacoRef.current.editor.defineTheme('terminal', {
@@ -51,9 +46,6 @@ const Input: React.FC<CellType> = ({
         },
       })
 
-      monacoRef.current.languages.typescript.javascriptDefaults.setEagerModelSync(
-        true,
-      )
       setIsEditorReady(true)
     })
   }, [focused, theme])
@@ -79,8 +71,24 @@ const Input: React.FC<CellType> = ({
           <Editor
             theme="terminal"
             editorDidMount={(_, editor) => {
+              editor.addAction({
+                id: 'run-cell',
+                label: 'Run cell',
+                keybindings: [KeyCode.Enter],
+
+                run: editor => {
+                  dispatch({ type: 'run-cell', id, input: editor.getValue() })
+                },
+              })
+
               editorRef.current = editor
             }}
+            value={defaultValue}
+            // ControlledEditor doesn't work
+            // onChange={(_, value) => {
+            //   dispatch({ type: 'set-cell', id, cell: { value } })
+            //   return value
+            // }}
             options={{
               // remove margin
               glyphMargin: false,
@@ -127,14 +135,6 @@ const Input: React.FC<CellType> = ({
                 event.preventDefault() // prevent multiline input
               }
             }} */}
-          {/* <Suggestions
-        id={id}
-        input={input}
-        editor={editor}
-        inputRef={inputRef}
-        focused={focused}
-        currentDir={currentDir}
-      /> */}
         </Div>
       </Div>
     </>

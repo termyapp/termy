@@ -79,9 +79,8 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   }, [focused, cell.status])
 
   useEffect(() => {
-    // @ts-ignore very hacky i know i know
-    if (cell.value[0].children[0].text === 'shortcuts')
-      dispatch({ type: 'run-cell', id, input: 'shortcuts' })
+    if (cell.value === 'shortcuts')
+      dispatch({ type: 'run-cell', id, input: cell.value })
   }, [])
 
   // it only breaks after we remove the first cell
