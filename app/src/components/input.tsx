@@ -42,7 +42,10 @@ const Input: React.FC<CellType> = ({
           'editor.background': background,
           'editor.lineHighlightBackground': background,
           'editorSuggestWidget.background': background,
-          'editorSuggestWidget.highlightForeground': theme.colors.$accent,
+          'editor.selectionBackground': theme.colors.$selection,
+          'editorSuggestWidget.highlightForeground': theme.colors.$selection,
+          'editor.selectionHighlightBackground': background,
+          'editorCursor.foreground': theme.colors.$caret,
         },
       })
 
@@ -69,6 +72,7 @@ const Input: React.FC<CellType> = ({
           }}
         >
           <Editor
+            key={theme.colors.$background}
             theme="terminal"
             editorDidMount={(_, editor) => {
               editor.addAction({
