@@ -1,10 +1,12 @@
-import Editor, { monaco } from '@monaco-editor/react'
+import Editor, { monaco as MonacoReact } from '@monaco-editor/react'
 import type * as Monaco from 'monaco-editor'
 import { KeyCode } from 'monaco-editor'
 import React, { useEffect, useRef, useState } from 'react'
 import type { CellType } from '../../types'
 import useStore from '../store'
 import { Div } from './shared'
+
+export const TERMY = 'shell'
 
 const Input: React.FC<CellType> = ({
   id,
@@ -31,9 +33,8 @@ const Input: React.FC<CellType> = ({
     const foreground = focused
       ? theme.colors.$focusedForeground
       : theme.colors.$foreground
-    monaco.init().then(monacoInstance => {
-      monacoRef.current = monacoInstance
-      monacoRef.current.editor.defineTheme('terminal', {
+    MonacoReact.init().then(monaco => {
+      monaco.editor.defineTheme(TERMY, {
         base: 'vs',
         inherit: true,
         rules: [],
@@ -48,6 +49,36 @@ const Input: React.FC<CellType> = ({
           'editorCursor.foreground': theme.colors.$caret,
         },
       })
+
+      monaco.languages.registerCompletionItemProvider(TERMY, {
+        triggerCharacters: [' ', '>'],
+        provideCompletionItems: (
+          model: Monaco.editor.ITextModel,
+          position: Monaco.Position,
+          context: Monaco.languages.CompletionContext,
+          token: Monaco.CancellationToken,
+        ) => {
+          const word = model.getWordUntilPosition(position)
+
+          // todo (we are currently using shell as lang to make suggestions work)
+          monaco.editor.createModel('', TERMY)
+
+          const item = {
+            suggestions: [
+              {
+                kind: monaco.languages.CompletionItemKind.Interface,
+                label: 'label',
+                insertText: 'insertText',
+              } as Monaco.languages.CompletionItem,
+            ],
+          }
+
+          console.log('item', item)
+          return item
+        },
+      })
+
+      monacoRef.current = monaco
 
       setIsEditorReady(true)
     })
@@ -73,7 +104,8 @@ const Input: React.FC<CellType> = ({
         >
           <Editor
             key={theme.colors.$background}
-            theme="terminal"
+            theme={TERMY}
+            language={TERMY}
             editorDidMount={(_, editor) => {
               editor.addAction({
                 id: 'run-cell',
