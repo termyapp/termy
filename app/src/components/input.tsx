@@ -111,7 +111,7 @@ const Input: React.FC<CellType> = ({
                 id: 'run-cell',
                 label: 'Run cell',
                 keybindings: [KeyCode.Enter],
-
+                precondition: '!suggestWidgetVisible',
                 run: editor => {
                   dispatch({ type: 'run-cell', id, input: editor.getValue() })
                 },
