@@ -1,13 +1,11 @@
+use crate::util::{get_executables, paths::root_path};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use is_executable::IsExecutable;
 use log::info;
-use relative_path::RelativePath;
 use serde::Serialize;
 use std::io;
 use std::{
     collections::HashMap,
-    env,
     fs::{self, File},
     io::BufRead,
     path::Path,
@@ -37,7 +35,7 @@ impl Autocomplete {
         }
 
         // order matters since we're using a hashmap
-        self.directories();
+        self.directories().unwrap();
         self.executables();
         self.zsh_history();
 
@@ -166,7 +164,7 @@ impl Autocomplete {
                                     command,
                                     score: score - Priority::High as i64,
                                     indexes,
-                                    kind: SuggestionType::Bash,
+                                    kind: SuggestionType::ExternalHistory,
                                     tldr_documentation: None,
                                     date: None,
                                 },
@@ -196,9 +194,9 @@ pub struct Suggestion {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 enum SuggestionType {
-    Bash,
     Directory,
     Executable,
+    ExternalHistory,
 }
 
 // to boost suggestions' score
@@ -208,37 +206,14 @@ enum Priority {
     High = 100,
 }
 
-fn get_executables() -> Vec<String> {
-    let path_var = std::env::var_os("PATH").unwrap();
-    let paths: Vec<_> = std::env::split_paths(&path_var).collect();
-
-    let mut executables = vec![];
-    for path in paths {
-        if let Ok(mut contents) = std::fs::read_dir(path) {
-            while let Some(Ok(item)) = contents.next() {
-                if item.path().is_executable() {
-                    if let Ok(name) = item.file_name().into_string() {
-                        executables.push(name);
-                    }
-                }
-            }
-        }
-    }
-
-    executables
-}
-
 fn get_docs(command: &str) -> Result<String> {
-    let path = if cfg!(debug_assertions) {
-        RelativePath::new(env::current_dir()?.to_str().unwrap())
-            .join_normalized("/external/tldr/pages/common/".to_string() + command + ".md")
-    } else {
-        // https://www.electron.build/configuration/contents.html#filesetto
-        RelativePath::new(env::current_exe()?.to_str().unwrap())
-            .join_normalized("/../../tldr/".to_string() + command + ".md")
-    };
+    // .join_normalized("/../../tldr/".to_string() + command + ".md")
+    let path = format!(
+        "{}/external/tldr/pages/common/{}.md",
+        root_path()?.to_string_lossy(),
+        command
+    );
 
-    let path = path.to_path("");
     info!("Path: {:?}", path);
 
     Ok(fs::read_to_string(path)?)
@@ -250,15 +225,4 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn getting_executables() {
-        assert!(get_executables().len() > 1);
-        assert!(get_executables().contains(&("cargo".to_string())));
-    }
 }

@@ -24,12 +24,7 @@ const getDefaultCell = (): Omit<CellType, 'focused'> => {
   return {
     id,
     currentDir: api('home'),
-    value: [
-      {
-        type: 'paragraph',
-        children: [{ text: '' }],
-      },
-    ],
+    value: '',
     type: null,
     status: null,
   }
@@ -45,8 +40,8 @@ export const focusCell = (id: string) => {
 // todo: init cell input with `help` or `guide` on first launch
 const initialState = (() => {
   const cell = getDefaultCell()
-  // @ts-ignore
-  cell.value[0].children[0].text = 'shortcuts'
+
+  cell.value = 'shortcuts'
   return {
     cells: {
       [cell.id]: cell,

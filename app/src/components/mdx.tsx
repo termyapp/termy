@@ -1,6 +1,5 @@
 import React from 'react'
 import Markdown from 'markdown-to-jsx'
-
 import { Card, Path } from './shared'
 
 // Provide custom components for markdown elements
