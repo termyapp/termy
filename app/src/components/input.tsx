@@ -2,7 +2,8 @@ import Editor, { monaco as MonacoReact } from '@monaco-editor/react'
 import type * as Monaco from 'monaco-editor'
 import { KeyCode } from 'monaco-editor'
 import React, { useEffect, useRef, useState } from 'react'
-import type { CellType } from '../../types'
+import { ipc } from '../lib'
+import type { CellType, Suggestion } from '../../types'
 import useStore from '../store'
 import { Div } from './shared'
 
@@ -17,7 +18,6 @@ const Input: React.FC<CellType> = ({
 }) => {
   const dispatch = useStore(state => state.dispatch)
   const theme = useStore(state => state.theme)
-  const inputRef = useRef<HTMLDivElement>(null)
 
   const monacoRef = useRef<typeof Monaco | null>(null)
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
@@ -44,7 +44,7 @@ const Input: React.FC<CellType> = ({
           'editor.lineHighlightBackground': background,
           'editorSuggestWidget.background': background,
           'editor.selectionBackground': theme.colors.$selection,
-          'editorSuggestWidget.highlightForeground': theme.colors.$selection,
+          // 'editorSuggestWidget.highlightForeground': theme.colors.$selection,
           'editor.selectionHighlightBackground': background,
           'editorCursor.foreground': theme.colors.$caret,
         },
@@ -52,30 +52,36 @@ const Input: React.FC<CellType> = ({
 
       monaco.languages.registerCompletionItemProvider(TERMY, {
         triggerCharacters: [' '],
-        provideCompletionItems: (
+        provideCompletionItems: async (
           model: Monaco.editor.ITextModel,
           position: Monaco.Position,
           context: Monaco.languages.CompletionContext,
           token: Monaco.CancellationToken,
         ) => {
-          const word = model.getWordUntilPosition(position)
-
           // todo: use a custom language model
           // we are currently using shell as lang to make suggestions work
           // monaco.editor.createModel('', TERMY)
 
-          const item = {
-            suggestions: [
-              {
-                kind: monaco.languages.CompletionItemKind.Interface,
-                label: 'label',
-                insertText: 'insertText',
-              } as Monaco.languages.CompletionItem,
-            ],
-          }
+          const input = model.getValue()
+          const rawSuggestions: Suggestion[] = await ipc.invoke(
+            'suggestions',
+            input,
+            currentDir,
+          )
+          const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
+            suggestion => ({
+              // https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
+              kind:
+                suggestion.kind === 'executable'
+                  ? monaco.languages.CompletionItemKind.Event
+                  : monaco.languages.CompletionItemKind.Folder,
+              label: suggestion.command,
+              insertText: suggestion.command,
+            }),
+          )
 
-          console.log('item', item)
-          return item
+          console.log('item', suggestions)
+          return { incomplete: false, suggestions }
         },
       })
 
@@ -88,7 +94,6 @@ const Input: React.FC<CellType> = ({
   return (
     <>
       <Div
-        ref={inputRef}
         css={{
           width: '100%',
           height: '$8',

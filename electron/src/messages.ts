@@ -7,6 +7,12 @@ export default () => {
     console.log('message', message)
     event.returnValue = handleMessage(event, message)
   })
+
+  ipcMain.handle('suggestions', async (event, input, currentDir) => {
+    const suggestions = await native.getSuggestions(input, currentDir)
+    console.log(input, currentDir, suggestions)
+    return suggestions
+  })
 }
 
 const runningCells: { [key: string]: any } = {}
@@ -17,9 +23,6 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
       const result = native.api(message.command)
       console.log('api result', result)
       return result
-    }
-    case 'get-suggestions': {
-      return native.getSuggestions(message.input, message.currentDir)
     }
     case 'run-cell': {
       const { id, input, currentDir } = message
