@@ -74,9 +74,14 @@ const Input: React.FC<CellType> = ({
               kind:
                 suggestion.kind === 'executable'
                   ? monaco.languages.CompletionItemKind.Event
-                  : monaco.languages.CompletionItemKind.Folder,
+                  : suggestion.kind === 'directory'
+                  ? monaco.languages.CompletionItemKind.Folder
+                  : monaco.languages.CompletionItemKind.Enum,
               label: suggestion.command,
               insertText: suggestion.command,
+              documentation: suggestion.tldrDocumentation
+                ? { value: suggestion.tldrDocumentation }
+                : undefined,
             }),
           )
 

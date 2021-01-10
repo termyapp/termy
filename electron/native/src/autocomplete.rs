@@ -164,7 +164,7 @@ impl Autocomplete {
                                     command,
                                     score: score - Priority::High as i64,
                                     indexes,
-                                    kind: SuggestionType::Bash,
+                                    kind: SuggestionType::ExternalHistory,
                                     tldr_documentation: None,
                                     date: None,
                                 },
@@ -194,9 +194,9 @@ pub struct Suggestion {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 enum SuggestionType {
-    Bash,
     Directory,
     Executable,
+    ExternalHistory,
 }
 
 // to boost suggestions' score
@@ -207,15 +207,16 @@ enum Priority {
 }
 
 fn get_docs(command: &str) -> Result<String> {
-    let path = root_path()?;
-    // .join_normalized("/external/tldr/pages/common/".to_string() + command + ".md")
     // .join_normalized("/../../tldr/".to_string() + command + ".md")
+    let path = format!(
+        "{}/external/tldr/pages/common/{}.md",
+        root_path()?.to_string_lossy(),
+        command
+    );
 
-    // let path = path.to_path("");
-    // info!("Path: {:?}", path);
+    info!("Path: {:?}", path);
 
-    // Ok(fs::read_to_string(path)?)
-    Ok("".to_string())
+    Ok(fs::read_to_string(path)?)
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>

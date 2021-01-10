@@ -20,12 +20,6 @@ export type FrontendMessage = {
 
 export type Message =
   | { type: 'api'; command: string } // todo: create types for the api
-  | {
-      type: 'get-suggestions'
-      id: string
-      input: string
-      currentDir: string
-    }
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
 
@@ -46,7 +40,7 @@ export type Suggestion = {
   command: string
   score: number
   indexes: bigint[] // fuzzy indexes to be highlighted
-  kind: 'executable' | 'directory' | 'bash'
+  kind: 'executable' | 'directory' | 'externalHistory'
   date?: string
   tldrDocumentation?: string // md
 }

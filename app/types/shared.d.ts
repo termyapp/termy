@@ -40,7 +40,7 @@ export type Suggestion = {
   command: string
   score: number
   indexes: bigint[] // fuzzy indexes to be highlighted
-  kind: 'executable' | 'directory' | 'bash'
+  kind: 'executable' | 'directory' | 'externalHistory'
   date?: string
   tldrDocumentation?: string // md
 }
