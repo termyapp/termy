@@ -51,7 +51,7 @@ const Input: React.FC<CellType> = ({
       })
 
       monaco.languages.registerCompletionItemProvider(TERMY, {
-        triggerCharacters: [' ', '>'],
+        triggerCharacters: [' '],
         provideCompletionItems: (
           model: Monaco.editor.ITextModel,
           position: Monaco.Position,
@@ -60,8 +60,9 @@ const Input: React.FC<CellType> = ({
         ) => {
           const word = model.getWordUntilPosition(position)
 
-          // todo (we are currently using shell as lang to make suggestions work)
-          monaco.editor.createModel('', TERMY)
+          // todo: use a custom language model
+          // we are currently using shell as lang to make suggestions work
+          // monaco.editor.createModel('', TERMY)
 
           const item = {
             suggestions: [
@@ -92,7 +93,6 @@ const Input: React.FC<CellType> = ({
           width: '100%',
           height: '$8',
           position: 'relative',
-          // cursor: status === 'running' ? 'default' : 'text',
         }}
       >
         <Div
@@ -111,11 +111,14 @@ const Input: React.FC<CellType> = ({
                 id: 'run-cell',
                 label: 'Run cell',
                 keybindings: [KeyCode.Enter],
+                // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
                 precondition: '!suggestWidgetVisible',
                 run: editor => {
                   dispatch({ type: 'run-cell', id, input: editor.getValue() })
                 },
               })
+
+              editor.focus()
 
               editorRef.current = editor
             }}
@@ -154,11 +157,10 @@ const Input: React.FC<CellType> = ({
             }}
           />
           {/*
-        id={id}
-        autoFocus
-        placeholder=">"
-        readOnly={status === 'running'}
-        onFocus={() => {
+          id={id}
+          readOnly={status === 'running'}
+          cursor: status === 'running' ? 'default' : 'text',
+          onFocus={() => {
               dispatch({ type: 'focus', id })
 
               if (status !== 'running') {
@@ -170,7 +172,8 @@ const Input: React.FC<CellType> = ({
               if (event.key === 'Enter') {
                 event.preventDefault() // prevent multiline input
               }
-            }} */}
+            }}
+            */}
         </Div>
       </Div>
     </>
