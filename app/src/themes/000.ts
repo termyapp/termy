@@ -5,6 +5,8 @@ export const darkTheme = {
   colors: {
     ...baseTheme.colors,
 
+    base: 'vs-dark',
+
     $background: '#000',
     $foreground: baseTheme.colors.$white,
     $secondaryForeground: baseTheme.colors.$gray400,

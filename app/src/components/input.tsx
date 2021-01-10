@@ -35,7 +35,7 @@ const Input: React.FC<CellType> = ({
       : theme.colors.$foreground
     MonacoReact.init().then(monaco => {
       monaco.editor.defineTheme(TERMY, {
-        base: 'vs',
+        base: theme.colors.base as Monaco.editor.BuiltinTheme,
         inherit: true,
         rules: [],
         colors: {
