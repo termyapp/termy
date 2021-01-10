@@ -79,7 +79,7 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
   // debounced onResize
   const [, cancel] = useDebounce(
     () => {
-      if (!terminalRef.current || type !== 'pty') return
+      if (!terminalRef.current || type !== 'text') return
       console.log('resize', size)
 
       terminalRef.current.loadAddon(fitAddon)
