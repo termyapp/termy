@@ -1,18 +1,18 @@
 // In sync with ../electron/shared.d.ts
 // todo: figure out a way to reference the types
 
-export type RunCell = {
+export interface RunCell {
   id: string
   input: string
   currentDir: string
 }
 
-export type XtermSize = {
+export interface XtermSize {
   rows: number
   cols: number
 }
 
-export type FrontendMessage = {
+export interface FrontendMessage {
   id: string
   stdin?: string
   size?: XtermSize
@@ -35,12 +35,15 @@ export interface ServerMessage {
 
 export type ActionKeys = 'cd' | 'theme'
 
-export type Suggestion = {
-  fullCommand?: string
-  command: string
-  score: number
-  indexes: bigint[] // fuzzy indexes to be highlighted
-  kind: 'executable' | 'directory' | 'externalHistory'
-  date?: string
-  tldrDocumentation?: string // md
+export interface Suggestion {
+  label: string
+  insertText: string
+  kind: SuggestionKind
+  documentation?: string
 }
+
+export interface NativeSuggestion extends Suggestion {
+  tldrDocumentation?: string // markdown
+}
+
+export type SuggestionKind = 'executable' | 'directory' | 'externalHistory'

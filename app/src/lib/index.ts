@@ -18,3 +18,4 @@ export const getTheme = (mode?: ThemeMode) =>
 export * from './ipc'
 export * from './listener'
 export * from './xterm'
+export * from './typed-cli'

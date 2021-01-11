@@ -1,13 +1,37 @@
 import Editor, { monaco as MonacoReact } from '@monaco-editor/react'
-import type * as Monaco from 'monaco-editor'
+import * as Monaco from 'monaco-editor'
 import { KeyCode } from 'monaco-editor'
 import React, { useEffect, useRef, useState } from 'react'
-import { ipc } from '../lib'
-import type { CellType, Suggestion } from '../../types'
+import { ipc, getTypedCliSuggestions } from '../lib'
+import type { CellType, Suggestion, SuggestionKind } from '../../types'
 import useStore from '../store'
 import { Div } from './shared'
 
 export const TERMY = 'shell'
+
+const suggestionToCompletionItem = (
+  suggestion: Suggestion,
+): Monaco.languages.CompletionItem => {
+  // todo: filter unique
+  return {
+    ...suggestion,
+    kind: toMonacoKind(suggestion.kind),
+  } as Monaco.languages.CompletionItem
+}
+
+const toMonacoKind = (kind: SuggestionKind) => {
+  // info: https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
+  switch (kind) {
+    case 'executable':
+      return Monaco.languages.CompletionItemKind.Event
+    case 'directory':
+      return Monaco.languages.CompletionItemKind.Folder
+    case 'externalHistory':
+      return Monaco.languages.CompletionItemKind.Enum
+    default:
+      return Monaco.languages.CompletionItemKind.Text
+  }
+}
 
 const Input: React.FC<CellType> = ({
   id,
@@ -24,9 +48,15 @@ const Input: React.FC<CellType> = ({
   const [isEditorReady, setIsEditorReady] = useState(false)
 
   useEffect(() => {
-    // todo: https://gist.github.com/mattpowell/221f7d35c4ae1273dc2e1ee469d000a7
+    // todo: load packaged monaco
     // MonacoReact.config({ paths: { vs: '/monaco-editor' } })
+    // https://gist.github.com/mattpowell/221f7d35c4ae1273dc2e1ee469d000a7
 
+    /**
+     * Monaco doesn't support seperate themes so changing theme dynamically won't work
+     *
+     * https://github.com/Microsoft/monaco-editor/issues/338
+     */
     const background = focused
       ? theme.colors.$focusedBackground
       : theme.colors.$background
@@ -68,24 +98,47 @@ const Input: React.FC<CellType> = ({
             input,
             currentDir,
           )
+
+          // @ts-ignore
           const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
             suggestion => ({
-              // https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
               kind:
                 suggestion.kind === 'executable'
                   ? monaco.languages.CompletionItemKind.Event
                   : suggestion.kind === 'directory'
                   ? monaco.languages.CompletionItemKind.Folder
                   : monaco.languages.CompletionItemKind.Enum,
+              // @ts-ignore
               label: suggestion.command,
+              // @ts-ignore
               insertText: suggestion.command,
+              // @ts-ignore
               documentation: suggestion.tldrDocumentation
-                ? { value: suggestion.tldrDocumentation }
+                ? // @ts-ignore
+                  { value: suggestion.tldrDocumentation }
                 : undefined,
             }),
           )
 
           console.log('item', suggestions)
+          return { incomplete: false, suggestions }
+        },
+      })
+
+      monaco.languages.registerCompletionItemProvider(TERMY, {
+        triggerCharacters: [' '],
+        provideCompletionItems: async (
+          model: Monaco.editor.ITextModel,
+          position: Monaco.Position,
+          context: Monaco.languages.CompletionContext,
+          token: Monaco.CancellationToken,
+        ) => {
+          const input = model.getValue()
+
+          const suggestions = getTypedCliSuggestions(input).map(
+            suggestionToCompletionItem,
+          )
+
           return { incomplete: false, suggestions }
         },
       })
@@ -128,7 +181,13 @@ const Input: React.FC<CellType> = ({
                 },
               })
 
+              // auto focus on init
               editor.focus()
+              // move cursor to the end of the line
+              editor.setPosition({
+                lineNumber: Number.MAX_SAFE_INTEGER,
+                column: 1,
+              })
 
               editorRef.current = editor
             }}
