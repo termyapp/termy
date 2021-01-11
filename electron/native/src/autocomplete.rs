@@ -79,17 +79,15 @@ impl Autocomplete {
                 continue;
             }
             let name = entry.file_name().to_string_lossy().to_string();
-            if let Some((score, indexes)) =
-                self.matcher.fuzzy_indices(name.as_str(), input.as_ref())
-            {
+            if let Some((score, _)) = self.matcher.fuzzy_indices(name.as_str(), input.as_ref()) {
                 self.insert(
                     name.clone(),
                     Suggestion {
-                        full_command: Some(dir.clone() + &name),
-                        command: name.clone(),
+                        label: name.clone(),
+                        insert_text: Some(name),
                         score: score + Priority::Medium as i64,
-                        indexes,
                         kind: SuggestionType::Directory,
+                        documentation: None,
                         tldr_documentation: None,
                         date: Some(
                             entry
@@ -113,14 +111,12 @@ impl Autocomplete {
     fn executables(&mut self) {
         for executable in get_executables() {
             // if let Ok(suggestion) = get_docs(&executable) {
-            if let Some((score, indexes)) =
-                self.matcher.fuzzy_indices(&executable, self.input.as_ref())
-            {
+            if let Some((score, _)) = self.matcher.fuzzy_indices(&executable, self.input.as_ref()) {
                 self.suggestions.insert(
                     executable.clone(),
                     Suggestion {
-                        full_command: Some(executable.clone()),
-                        command: executable.clone(),
+                        label: executable.clone(),
+                        insert_text: None,
                         score: if self.input == executable {
                             // boosting so for something like `bash`, the
                             // `bash` executable shows up as the 1st suggestion
@@ -128,8 +124,8 @@ impl Autocomplete {
                         } else {
                             score
                         },
-                        indexes,
                         kind: SuggestionType::Executable,
+                        documentation: None,
                         tldr_documentation: if let Ok(docs) = get_docs(&executable) {
                             Some(docs)
                         } else {
@@ -154,17 +150,18 @@ impl Autocomplete {
                 if let Ok(line) = line {
                     if let Some(command) = line.split(";").last() {
                         let command = command.to_string();
-                        if let Some((score, indexes)) =
+                        if let Some((score, _)) =
                             self.matcher.fuzzy_indices(&command, self.input.as_ref())
                         {
                             self.insert(
                                 command.clone(),
                                 Suggestion {
-                                    full_command: Some(command.clone()),
-                                    command,
+                                    label: command.clone(),
+                                    insert_text: Some(command),
                                     score: score - Priority::High as i64,
-                                    indexes,
+
                                     kind: SuggestionType::ExternalHistory,
+                                    documentation: None,
                                     tldr_documentation: None,
                                     date: None,
                                 },
@@ -180,13 +177,19 @@ impl Autocomplete {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Suggestion {
-    full_command: Option<String>, // the full command that will be inserted
-    command: String,
+    label: String,
+    kind: SuggestionType,
     score: i64,
-    indexes: Vec<usize>,
-    kind: SuggestionType, // `type` is reserved keyword smh...
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    insert_text: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    documentation: Option<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     tldr_documentation: Option<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     date: Option<String>,
 }

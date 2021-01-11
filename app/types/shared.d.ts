@@ -37,12 +37,14 @@ export type ActionKeys = 'cd' | 'theme'
 
 export interface Suggestion {
   label: string
-  insertText: string
   kind: SuggestionKind
+  insertText?: string // defaults to label if not defined
   documentation?: string
 }
 
 export interface NativeSuggestion extends Suggestion {
+  score: number
+  date?: string
   tldrDocumentation?: string // markdown
 }
 

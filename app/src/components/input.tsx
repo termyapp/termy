@@ -3,11 +3,19 @@ import * as Monaco from 'monaco-editor'
 import { KeyCode } from 'monaco-editor'
 import React, { useEffect, useRef, useState } from 'react'
 import { ipc, getTypedCliSuggestions } from '../lib'
-import type { CellType, Suggestion, SuggestionKind } from '../../types'
+import type {
+  CellType,
+  NativeSuggestion,
+  Suggestion,
+  SuggestionKind,
+} from '../../types'
 import useStore from '../store'
 import { Div } from './shared'
 
 export const TERMY = 'shell'
+// todo: use a custom language model
+// we are currently using shell as lang to make suggestions work
+// monaco.editor.createModel('', TERMY)
 
 const suggestionToCompletionItem = (
   suggestion: Suggestion,
@@ -16,6 +24,23 @@ const suggestionToCompletionItem = (
   return {
     ...suggestion,
     kind: toMonacoKind(suggestion.kind),
+  } as Monaco.languages.CompletionItem
+}
+
+const nativeSuggestionToCompletionItem = (
+  suggestion: NativeSuggestion,
+): Monaco.languages.CompletionItem => {
+  return {
+    label: suggestion.label,
+    insertText: suggestion.insertText
+      ? suggestion.insertText
+      : suggestion.label,
+    kind: toMonacoKind(suggestion.kind),
+    documentation: suggestion.documentation
+      ? suggestion.documentation
+      : suggestion.tldrDocumentation
+      ? { value: suggestion.tldrDocumentation }
+      : undefined,
   } as Monaco.languages.CompletionItem
 }
 
@@ -88,39 +113,16 @@ const Input: React.FC<CellType> = ({
           context: Monaco.languages.CompletionContext,
           token: Monaco.CancellationToken,
         ) => {
-          // todo: use a custom language model
-          // we are currently using shell as lang to make suggestions work
-          // monaco.editor.createModel('', TERMY)
-
           const input = model.getValue()
-          const rawSuggestions: Suggestion[] = await ipc.invoke(
+          const rawSuggestions: NativeSuggestion[] = await ipc.invoke(
             'suggestions',
             input,
             currentDir,
           )
-
-          // @ts-ignore
           const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
-            suggestion => ({
-              kind:
-                suggestion.kind === 'executable'
-                  ? monaco.languages.CompletionItemKind.Event
-                  : suggestion.kind === 'directory'
-                  ? monaco.languages.CompletionItemKind.Folder
-                  : monaco.languages.CompletionItemKind.Enum,
-              // @ts-ignore
-              label: suggestion.command,
-              // @ts-ignore
-              insertText: suggestion.command,
-              // @ts-ignore
-              documentation: suggestion.tldrDocumentation
-                ? // @ts-ignore
-                  { value: suggestion.tldrDocumentation }
-                : undefined,
-            }),
+            nativeSuggestionToCompletionItem,
           )
 
-          console.log('item', suggestions)
           return { incomplete: false, suggestions }
         },
       })
