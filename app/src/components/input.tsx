@@ -18,29 +18,20 @@ export const TERMY = 'shell'
 // monaco.editor.createModel('', TERMY)
 
 const suggestionToCompletionItem = (
-  suggestion: Suggestion,
+  suggestion: Suggestion | NativeSuggestion,
 ): Monaco.languages.CompletionItem => {
-  // todo: filter unique
-  return {
-    ...suggestion,
-    kind: toMonacoKind(suggestion.kind),
-  } as Monaco.languages.CompletionItem
-}
+  let documentation = suggestion.documentation
+  if ('tldrDocumentation' in suggestion) {
+    documentation = suggestion.tldrDocumentation
+  }
 
-const nativeSuggestionToCompletionItem = (
-  suggestion: NativeSuggestion,
-): Monaco.languages.CompletionItem => {
   return {
     label: suggestion.label,
     insertText: suggestion.insertText
       ? suggestion.insertText
       : suggestion.label,
     kind: toMonacoKind(suggestion.kind),
-    documentation: suggestion.documentation
-      ? suggestion.documentation
-      : suggestion.tldrDocumentation
-      ? { value: suggestion.tldrDocumentation }
-      : undefined,
+    documentation: documentation ? { value: documentation } : undefined,
   } as Monaco.languages.CompletionItem
 }
 
@@ -120,7 +111,7 @@ const Input: React.FC<CellType> = ({
             currentDir,
           )
           const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
-            nativeSuggestionToCompletionItem,
+            suggestionToCompletionItem,
           )
 
           return { incomplete: false, suggestions }

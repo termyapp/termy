@@ -7,17 +7,43 @@ interface Command {
   subCommands?: Command[]
 }
 
-const theme = {
+const theme: Command = {
   name: 'theme',
-  documentation: "Change Termy's theme",
+  documentation: "Changes Termy's theme",
   subCommands: [
     { name: '#fff', documentation: '🌞 Light theme' },
     { name: '#000', documentation: '🌚 Dark theme' },
   ],
 }
 
+const shortcuts: Command = {
+  name: 'shortcuts',
+  documentation: "Lists Termy's shortcuts",
+}
+
+const home: Command = {
+  name: 'home',
+  documentation: 'Returns your `HOME` directory',
+}
+
+const view: Command = {
+  name: 'view',
+  documentation: `
+# View
+
+View files and folders
+
+### Example usage
+
+\`view package.json\`
+`,
+}
+
 const typedCli: { [key: string]: Command } = {
   theme,
+  shortcuts,
+  home,
+  view,
 }
 
 const getSuggestionsFromCommands = (commands: Command[]): Suggestion[] => {
