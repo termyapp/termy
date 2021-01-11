@@ -11,6 +11,7 @@ import type {
 } from '../../types'
 import useStore from '../store'
 import { Div } from './shared'
+import { formatDistanceToNow } from 'date-fns'
 
 export const TERMY = 'shell'
 // todo: use a custom language model
@@ -25,8 +26,18 @@ const suggestionToCompletionItem = (
     documentation = suggestion.tldrDocumentation
   }
 
+  let label: any = suggestion.label
+  if ('date' in suggestion && suggestion.date) {
+    label = {
+      name: label,
+      qualifier: `Modified ${formatDistanceToNow(
+        parseInt(suggestion.date),
+      )} ago`,
+    }
+  }
+
   return {
-    label: suggestion.label,
+    label,
     insertText: suggestion.insertText
       ? suggestion.insertText
       : suggestion.label,
