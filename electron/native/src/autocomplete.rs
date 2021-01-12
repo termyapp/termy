@@ -3,7 +3,7 @@ use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use log::{error, info};
 use serde::Serialize;
-use std::io;
+use std::{cmp, io};
 use std::{
     collections::HashMap,
     fs::{self, File},
@@ -242,20 +242,18 @@ where
 }
 
 fn find_common_words_index(a: &str, b: &str) -> usize {
-    let a = a.split_whitespace().into_iter();
-    let mut b = b.split_whitespace().into_iter();
-
     let mut index = 0;
 
-    for i in a {
-        if let Some(j) = b.next() {
+    let mut other = b.split_whitespace().into_iter();
+    for i in a.split_whitespace().into_iter() {
+        if let Some(j) = other.next() {
             if i == j {
-                index += i.len() + 1; // +1 for whitespace
+                index += i.len() + 1; // +1 for whitespace (might overlow, so we return the minimum)
             }
         }
     }
 
-    index
+    cmp::min(index, cmp::min(a.len(), b.len()))
 }
 
 #[cfg(test)]
@@ -263,10 +261,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn finds_common_words() {
+    fn find_common_words() {
         let a = "git commit --message \"Init\"";
         let b = "git commit -m";
 
         assert_eq!(find_common_words_index(a, b), 11);
+    }
+
+    #[test]
+    fn doesnt_overflow() {
+        let a = "l";
+        let b = "l arg";
+        let c = "n";
+
+        assert_eq!(find_common_words_index(a, b), 1);
+
+        assert_eq!(find_common_words_index(b, c), 0);
     }
 }
