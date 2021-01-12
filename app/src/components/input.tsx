@@ -70,9 +70,14 @@ const Input: React.FC<CellType> = ({
   const dispatch = useStore(state => state.dispatch)
   const theme = useStore(state => state.theme)
 
+  const currentDirRef = useRef<string>(currentDir)
   const monacoRef = useRef<typeof Monaco | null>(null)
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [isEditorReady, setIsEditorReady] = useState(false)
+
+  useEffect(() => {
+    currentDirRef.current = currentDir
+  }, [currentDir])
 
   useEffect(() => {
     // todo: load packaged monaco
@@ -84,22 +89,22 @@ const Input: React.FC<CellType> = ({
         base: theme.colors.base as Monaco.editor.BuiltinTheme,
         inherit: true,
         rules: [],
+
         colors: {
-          'editor.foreground': theme.colors.$foreground,
           // Monaco doesn't allow instances to have different themes
           // We use one and set the background to transparent to make it blend in
           'editor.background': theme.colors.$background,
+          'editor.foreground': theme.colors.$foreground,
           'editor.lineHighlightBackground': theme.colors.$background,
           'editorSuggestWidget.background': theme.colors.$background,
           'editor.selectionBackground': theme.colors.$selection,
-          // 'editorSuggestWidget.highlightForeground': theme.colors.$selection,
           'editor.selectionHighlightBackground': theme.colors.$background,
           'editorCursor.foreground': theme.colors.$caret,
         },
       })
 
       monaco.languages.registerCompletionItemProvider(TERMY, {
-        triggerCharacters: [' '],
+        triggerCharacters: [' ', '/'],
         provideCompletionItems: async (
           model: Monaco.editor.ITextModel,
           position: Monaco.Position,
@@ -110,12 +115,13 @@ const Input: React.FC<CellType> = ({
           const rawSuggestions: NativeSuggestion[] = await ipc.invoke(
             'suggestions',
             input,
-            currentDir,
+            currentDirRef.current,
           )
           const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
             suggestionToCompletionItem,
           )
 
+          console.log(input, currentDirRef.current, suggestions)
           return { incomplete: false, suggestions }
         },
       })
@@ -142,7 +148,7 @@ const Input: React.FC<CellType> = ({
 
       setIsEditorReady(true)
     })
-  }, [focused, theme])
+  }, [])
 
   return (
     <>
@@ -161,7 +167,6 @@ const Input: React.FC<CellType> = ({
             position: 'absolute',
           }}
           onFocus={() => {
-            console.log('onFocus', value, editorRef.current)
             if (status !== 'running') {
               editorRef.current?.focus()
             }
@@ -173,6 +178,7 @@ const Input: React.FC<CellType> = ({
             theme={TERMY}
             language={TERMY}
             editorDidMount={(_, editor) => {
+              // run cell on enter
               editor.addAction({
                 id: 'run-cell',
                 label: 'Run cell',
@@ -184,12 +190,14 @@ const Input: React.FC<CellType> = ({
                 },
               })
 
+              // override default CtrlCmd + K
               editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
                 dispatch({ type: 'focus-previous' })
               })
 
               // auto focus on init
               editor.focus()
+
               // move cursor to the end of the line
               editor.setPosition({
                 lineNumber: Number.MAX_SAFE_INTEGER,

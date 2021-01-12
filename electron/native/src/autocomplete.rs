@@ -1,7 +1,7 @@
 use crate::util::{get_executables, paths::root_path};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use log::info;
+use log::{error, info};
 use serde::Serialize;
 use std::io;
 use std::{
@@ -35,7 +35,7 @@ impl Autocomplete {
         }
 
         // order matters since we're using a hashmap
-        self.directories().unwrap();
+        self.directories().expect("Error in directories");
         self.executables();
         self.zsh_history();
 
@@ -73,36 +73,44 @@ impl Autocomplete {
             dir += &(format!("{}/", chunk));
         }
 
-        for entry in fs::read_dir(self.current_dir.clone() + &(format!("/{}", dir.clone())))? {
-            let entry = entry.unwrap();
-            if !entry.metadata().unwrap().is_dir() {
-                continue;
+        let dir = self.current_dir.clone() + &(format!("/{}", dir.clone()));
+        info!("Suggestions from directory: {}", dir);
+
+        if let Ok(read_dir) = fs::read_dir(&dir) {
+            for entry in read_dir {
+                let entry = entry.unwrap();
+                if !entry.metadata().unwrap().is_dir() {
+                    continue;
+                }
+                let name = entry.file_name().to_string_lossy().to_string();
+                if let Some((score, _)) = self.matcher.fuzzy_indices(name.as_str(), input.as_ref())
+                {
+                    self.insert(
+                        name.clone(),
+                        Suggestion {
+                            label: name.clone(),
+                            insert_text: Some(name),
+                            score: score + Priority::Medium as i64,
+                            kind: SuggestionType::Directory,
+                            documentation: None,
+                            tldr_documentation: None,
+                            date: Some(
+                                entry
+                                    .metadata()
+                                    .unwrap()
+                                    .modified()
+                                    .unwrap()
+                                    .duration_since(UNIX_EPOCH)
+                                    .unwrap()
+                                    .as_millis()
+                                    .to_string(),
+                            ),
+                        },
+                    );
+                }
             }
-            let name = entry.file_name().to_string_lossy().to_string();
-            if let Some((score, _)) = self.matcher.fuzzy_indices(name.as_str(), input.as_ref()) {
-                self.insert(
-                    name.clone(),
-                    Suggestion {
-                        label: name.clone(),
-                        insert_text: Some(name),
-                        score: score + Priority::Medium as i64,
-                        kind: SuggestionType::Directory,
-                        documentation: None,
-                        tldr_documentation: None,
-                        date: Some(
-                            entry
-                                .metadata()
-                                .unwrap()
-                                .modified()
-                                .unwrap()
-                                .duration_since(UNIX_EPOCH)
-                                .unwrap()
-                                .as_millis()
-                                .to_string(),
-                        ),
-                    },
-                );
-            }
+        } else {
+            error!("Invalid directory: {}", dir);
         }
 
         Ok(())
