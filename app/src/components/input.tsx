@@ -79,30 +79,21 @@ const Input: React.FC<CellType> = ({
     // MonacoReact.config({ paths: { vs: '/monaco-editor' } })
     // https://gist.github.com/mattpowell/221f7d35c4ae1273dc2e1ee469d000a7
 
-    /**
-     * Monaco doesn't support seperate themes so changing theme dynamically won't work
-     *
-     * https://github.com/Microsoft/monaco-editor/issues/338
-     */
-    const background = focused
-      ? theme.colors.$focusedBackground
-      : theme.colors.$background
-    const foreground = focused
-      ? theme.colors.$focusedForeground
-      : theme.colors.$foreground
     MonacoReact.init().then(monaco => {
       monaco.editor.defineTheme(TERMY, {
         base: theme.colors.base as Monaco.editor.BuiltinTheme,
         inherit: true,
         rules: [],
         colors: {
-          'editor.foreground': foreground,
-          'editor.background': background,
-          'editor.lineHighlightBackground': background,
-          'editorSuggestWidget.background': background,
+          'editor.foreground': theme.colors.$foreground,
+          // Monaco doesn't allow instances to have different themes
+          // We use one and set the background to transparent to make it blend in
+          'editor.background': theme.colors.$background,
+          'editor.lineHighlightBackground': theme.colors.$background,
+          'editorSuggestWidget.background': theme.colors.$background,
           'editor.selectionBackground': theme.colors.$selection,
           // 'editorSuggestWidget.highlightForeground': theme.colors.$selection,
-          'editor.selectionHighlightBackground': background,
+          'editor.selectionHighlightBackground': theme.colors.$background,
           'editorCursor.foreground': theme.colors.$caret,
         },
       })

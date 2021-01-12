@@ -22,3 +22,18 @@
 ::-webkit-scrollbar {
   display: none;
 }
+
+/* Monaco-editor */
+.monaco-editor .view-overlays .current-line {
+  background-color: transparent !important;
+}
+
+.monaco-editor,
+.monaco-editor-background,
+.monaco-editor .inputarea.ime-input {
+  background-color: transparent !important;
+}
+
+.monaco-editor .selectionHighlight {
+  background-color: transparent !important;
+}
