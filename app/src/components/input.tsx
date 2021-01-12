@@ -1,4 +1,4 @@
-import Editor, { monaco as MonacoReact } from '@monaco-editor/react'
+import { ControlledEditor, monaco as MonacoReact } from '@monaco-editor/react'
 import * as Monaco from 'monaco-editor'
 import { KeyCode } from 'monaco-editor'
 import React, { useEffect, useRef, useState } from 'react'
@@ -169,7 +169,7 @@ const Input: React.FC<CellType> = ({
             position: 'absolute',
           }}
         >
-          <Editor
+          <ControlledEditor
             key={theme.colors.$background}
             theme={TERMY}
             language={TERMY}
@@ -196,11 +196,10 @@ const Input: React.FC<CellType> = ({
               editorRef.current = editor
             }}
             value={defaultValue}
-            // ControlledEditor doesn't work
-            // onChange={(_, value) => {
-            //   dispatch({ type: 'set-cell', id, cell: { value } })
-            //   return value
-            // }}
+            onChange={(_, value) => {
+              dispatch({ type: 'set-cell', id, cell: { value } })
+              return value
+            }}
             options={{
               // remove margin
               glyphMargin: false,
