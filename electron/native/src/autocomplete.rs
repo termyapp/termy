@@ -1,9 +1,9 @@
 use crate::util::{get_executables, paths::root_path};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use log::info;
+use log::{error, info};
 use serde::Serialize;
-use std::io;
+use std::{cmp, io};
 use std::{
     collections::HashMap,
     fs::{self, File},
@@ -35,7 +35,7 @@ impl Autocomplete {
         }
 
         // order matters since we're using a hashmap
-        self.directories().unwrap();
+        self.directories().expect("Error in directories");
         self.executables();
         self.zsh_history();
 
@@ -73,38 +73,44 @@ impl Autocomplete {
             dir += &(format!("{}/", chunk));
         }
 
-        for entry in fs::read_dir(self.current_dir.clone() + &(format!("/{}", dir.clone())))? {
-            let entry = entry.unwrap();
-            if !entry.metadata().unwrap().is_dir() {
-                continue;
+        let dir = self.current_dir.clone() + &(format!("/{}", dir.clone()));
+        info!("Suggestions from directory: {}", dir);
+
+        if let Ok(read_dir) = fs::read_dir(&dir) {
+            for entry in read_dir {
+                let entry = entry.unwrap();
+                if !entry.metadata().unwrap().is_dir() {
+                    continue;
+                }
+                let name = entry.file_name().to_string_lossy().to_string();
+                if let Some((score, _)) = self.matcher.fuzzy_indices(name.as_str(), input.as_ref())
+                {
+                    self.insert(
+                        name.clone(),
+                        Suggestion {
+                            label: name.clone(),
+                            insert_text: Some(name),
+                            score: score + Priority::Medium as i64,
+                            kind: SuggestionType::Directory,
+                            documentation: None,
+                            tldr_documentation: None,
+                            date: Some(
+                                entry
+                                    .metadata()
+                                    .unwrap()
+                                    .modified()
+                                    .unwrap()
+                                    .duration_since(UNIX_EPOCH)
+                                    .unwrap()
+                                    .as_millis()
+                                    .to_string(),
+                            ),
+                        },
+                    );
+                }
             }
-            let name = entry.file_name().to_string_lossy().to_string();
-            if let Some((score, indexes)) =
-                self.matcher.fuzzy_indices(name.as_str(), input.as_ref())
-            {
-                self.insert(
-                    name.clone(),
-                    Suggestion {
-                        full_command: Some(dir.clone() + &name),
-                        command: name.clone(),
-                        score: score + Priority::Medium as i64,
-                        indexes,
-                        kind: SuggestionType::Directory,
-                        tldr_documentation: None,
-                        date: Some(
-                            entry
-                                .metadata()
-                                .unwrap()
-                                .modified()
-                                .unwrap()
-                                .duration_since(UNIX_EPOCH)
-                                .unwrap()
-                                .as_millis()
-                                .to_string(),
-                        ),
-                    },
-                );
-            }
+        } else {
+            error!("Invalid directory: {}", dir);
         }
 
         Ok(())
@@ -113,14 +119,12 @@ impl Autocomplete {
     fn executables(&mut self) {
         for executable in get_executables() {
             // if let Ok(suggestion) = get_docs(&executable) {
-            if let Some((score, indexes)) =
-                self.matcher.fuzzy_indices(&executable, self.input.as_ref())
-            {
+            if let Some((score, _)) = self.matcher.fuzzy_indices(&executable, self.input.as_ref()) {
                 self.suggestions.insert(
                     executable.clone(),
                     Suggestion {
-                        full_command: Some(executable.clone()),
-                        command: executable.clone(),
+                        label: executable.clone(),
+                        insert_text: None,
                         score: if self.input == executable {
                             // boosting so for something like `bash`, the
                             // `bash` executable shows up as the 1st suggestion
@@ -128,8 +132,8 @@ impl Autocomplete {
                         } else {
                             score
                         },
-                        indexes,
                         kind: SuggestionType::Executable,
+                        documentation: None,
                         tldr_documentation: if let Ok(docs) = get_docs(&executable) {
                             Some(docs)
                         } else {
@@ -154,17 +158,21 @@ impl Autocomplete {
                 if let Ok(line) = line {
                     if let Some(command) = line.split(";").last() {
                         let command = command.to_string();
-                        if let Some((score, indexes)) =
+                        if let Some((score, _)) =
                             self.matcher.fuzzy_indices(&command, self.input.as_ref())
                         {
+                            let label = String::from(
+                                &command[find_common_words_index(self.input.as_ref(), &command)..],
+                            );
                             self.insert(
                                 command.clone(),
                                 Suggestion {
-                                    full_command: Some(command.clone()),
-                                    command,
+                                    insert_text: Some(label.clone()),
+                                    label,
                                     score: score - Priority::High as i64,
-                                    indexes,
+
                                     kind: SuggestionType::ExternalHistory,
+                                    documentation: None,
                                     tldr_documentation: None,
                                     date: None,
                                 },
@@ -180,13 +188,19 @@ impl Autocomplete {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Suggestion {
-    full_command: Option<String>, // the full command that will be inserted
-    command: String,
+    label: String,
+    kind: SuggestionType,
     score: i64,
-    indexes: Vec<usize>,
-    kind: SuggestionType, // `type` is reserved keyword smh...
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    insert_text: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    documentation: Option<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     tldr_documentation: Option<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     date: Option<String>,
 }
@@ -225,4 +239,43 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+fn find_common_words_index(a: &str, b: &str) -> usize {
+    let mut index = 0;
+
+    let mut other = b.split_whitespace().into_iter();
+    for i in a.split_whitespace().into_iter() {
+        if let Some(j) = other.next() {
+            if i == j {
+                index += i.len() + 1; // +1 for whitespace (might overlow, so we return the minimum)
+            }
+        }
+    }
+
+    cmp::min(index, cmp::min(a.len(), b.len()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn find_common_words() {
+        let a = "git commit --message \"Init\"";
+        let b = "git commit -m";
+
+        assert_eq!(find_common_words_index(a, b), 11);
+    }
+
+    #[test]
+    fn doesnt_overflow() {
+        let a = "l";
+        let b = "l arg";
+        let c = "n";
+
+        assert_eq!(find_common_words_index(a, b), 1);
+
+        assert_eq!(find_common_words_index(b, c), 0);
+    }
 }

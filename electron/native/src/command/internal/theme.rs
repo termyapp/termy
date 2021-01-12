@@ -8,7 +8,7 @@ pub fn theme(args: Vec<String>) -> (String, Option<Action>) {
             Some(vec![(String::from("theme"), theme)]),
         )
     } else {
-        (String::from("<Card>Invalid theme provided</Card>"), None)
+        (String::from("<Card>Invalid theme</Card>"), None)
     }
 }
 

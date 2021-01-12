@@ -15,26 +15,7 @@ export const formatCurrentDir = (currentDir: string) => {
 export const getTheme = (mode?: ThemeMode) =>
   mode === '#000' ? darkTheme : lightTheme
 
-export const shortenDate = (date: string) =>
-  date
-    .replace('seconds', 's')
-    .replace('minutes', 'min')
-    .replace('hours', 'h')
-    .replace('days', 's')
-    .replace('months', 'm')
-    .replace('years', 'y')
-
 export * from './ipc'
 export * from './listener'
 export * from './xterm'
-
-// todo: replace below ones w/ api
-export const readFile = (path: string): string | null => {
-  return null
-}
-
-export const writeFile = (path: string, content: string) => {}
-
-export const getLanguage = (path: string): string | undefined => {
-  return undefined
-}
+export * from './typed-cli'

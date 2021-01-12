@@ -14,7 +14,7 @@ const Tab: React.FC = () => {
   const focusedCellId = useStore(state => state.focus) // this might rerender all the cells on change
   const dispatch = useStore(state => state.dispatch)
 
-  useKey('d', e => e.metaKey && dispatch({ type: 'new' }))
+  useKey('n', e => e.metaKey && dispatch({ type: 'new' }))
   useKey('j', e => e.metaKey && dispatch({ type: 'focus-next' }))
   useKey('k', e => e.metaKey && dispatch({ type: 'focus-previous' }))
   useKey(

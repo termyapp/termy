@@ -8,10 +8,6 @@
   outline: none;
 }
 
-/* *:focus {
-  border: 3px solid black !important; */
-/* } */
-
 /* Make it draggable: https://stackoverflow.com/questions/44818508/how-do-i-move-a-frameless-window-in-electron-without-using-webkit-app-region */
 .header {
   /* With dev tools open, this breaks. Latest Electron will fix this: https://github.com/electron/electron/pull/26361 */
@@ -21,4 +17,19 @@
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* Monaco-editor */
+.monaco-editor .view-overlays .current-line {
+  background-color: transparent !important;
+}
+
+.monaco-editor,
+.monaco-editor-background,
+.monaco-editor .inputarea.ime-input {
+  background-color: transparent !important;
+}
+
+.monaco-editor .selectionHighlight {
+  background-color: transparent !important;
 }
