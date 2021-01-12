@@ -9,7 +9,7 @@ const SHORTCUTS: &str = indoc! {"
 
 ### Cell
 
-New: <kbd>Cmd + D</kbd>
+New: <kbd>Cmd + N</kbd>
 
 Remove: <kbd>Cmd + W</kbd>
 

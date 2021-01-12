@@ -1,17 +1,17 @@
 import { ControlledEditor, monaco as MonacoReact } from '@monaco-editor/react'
+import { formatDistanceToNow } from 'date-fns'
 import * as Monaco from 'monaco-editor'
-import { KeyCode } from 'monaco-editor'
+import { KeyCode, KeyMod } from 'monaco-editor'
 import React, { useEffect, useRef, useState } from 'react'
-import { ipc, getTypedCliSuggestions } from '../lib'
 import type {
   CellType,
   NativeSuggestion,
   Suggestion,
   SuggestionKind,
 } from '../../types'
+import { getTypedCliSuggestions, ipc } from '../lib'
 import useStore from '../store'
 import { Div } from './shared'
-import { formatDistanceToNow } from 'date-fns'
 
 export const TERMY = 'shell'
 // todo: use a custom language model
@@ -63,7 +63,7 @@ const toMonacoKind = (kind: SuggestionKind) => {
 const Input: React.FC<CellType> = ({
   id,
   currentDir,
-  value: defaultValue,
+  value,
   focused,
   status,
 }) => {
@@ -154,11 +154,19 @@ const Input: React.FC<CellType> = ({
         }}
       >
         <Div
+          id={id}
           css={{
             width: '100%',
             height: '100%',
             position: 'absolute',
           }}
+          onFocus={() => {
+            console.log('onFocus', value, editorRef.current)
+            if (status !== 'running') {
+              editorRef.current?.focus()
+            }
+          }}
+          tabIndex={0}
         >
           <ControlledEditor
             key={theme.colors.$background}
@@ -176,6 +184,10 @@ const Input: React.FC<CellType> = ({
                 },
               })
 
+              editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
+                dispatch({ type: 'focus-previous' })
+              })
+
               // auto focus on init
               editor.focus()
               // move cursor to the end of the line
@@ -186,7 +198,7 @@ const Input: React.FC<CellType> = ({
 
               editorRef.current = editor
             }}
-            value={defaultValue}
+            value={value}
             onChange={(_, value) => {
               dispatch({ type: 'set-cell', id, cell: { value } })
               return value
@@ -220,22 +232,8 @@ const Input: React.FC<CellType> = ({
             }}
           />
           {/*
-          id={id}
-          readOnly={status === 'running'}
-          cursor: status === 'running' ? 'default' : 'text',
-          onFocus={() => {
-              dispatch({ type: 'focus', id })
-
-              if (status !== 'running') {
-                Transforms.select(editor, Editor.end(editor, []))
-                ReactEditor.focus(editor)
-              }
-            }}
-            onKeyDown={event => {
-              if (event.key === 'Enter') {
-                event.preventDefault() // prevent multiline input
-              }
-            }}
+            readOnly={status === 'running'}
+            cursor: status === 'running' ? 'default' : 'text',
             */}
         </Div>
       </Div>

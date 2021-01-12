@@ -8,10 +8,6 @@
   outline: none;
 }
 
-/* *:focus {
-  border: 3px solid black !important; */
-/* } */
-
 /* Make it draggable: https://stackoverflow.com/questions/44818508/how-do-i-move-a-frameless-window-in-electron-without-using-webkit-app-region */
 .header {
   /* With dev tools open, this breaks. Latest Electron will fix this: https://github.com/electron/electron/pull/26361 */
