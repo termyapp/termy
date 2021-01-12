@@ -5,6 +5,7 @@ use log::info;
 use std::path::PathBuf;
 
 pub fn path(path: &PathBuf, cell: Cell) -> Result<Status> {
+    let path = path.canonicalize().expect("Failed to canonicalize path");
     info!("Running path: {}", path.display());
 
     if path.is_dir() {
