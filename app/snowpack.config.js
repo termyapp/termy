@@ -3,6 +3,13 @@ module.exports = {
   mount: {
     public: '/',
     src: '/_dist_',
+
+    // monaco-editor
+    'node_modules/monaco-editor/min/vs': {
+      url: '/monaco-editor',
+      static: true,
+      resolve: false,
+    },
   },
   plugins: [
     // '@snowpack/plugin-react-refresh',

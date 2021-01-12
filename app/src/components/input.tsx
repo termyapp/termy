@@ -1,7 +1,7 @@
 import { ControlledEditor, monaco as MonacoReact } from '@monaco-editor/react'
 import { formatDistanceToNow } from 'date-fns'
-import * as Monaco from 'monaco-editor'
-import { KeyCode, KeyMod } from 'monaco-editor'
+// only import it as type, otherwise it overrides @monaco-editor/react instance
+import type * as Monaco from 'monaco-editor'
 import React, { useEffect, useRef, useState } from 'react'
 import type {
   CellType,
@@ -17,20 +17,6 @@ export const TERMY = 'shell'
 // todo: use a custom language model
 // we are currently using shell as lang to make suggestions work
 // monaco.editor.createModel('', TERMY)
-
-const toMonacoKind = (kind: SuggestionKind) => {
-  // info: https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
-  switch (kind) {
-    case 'executable':
-      return Monaco.languages.CompletionItemKind.Event
-    case 'directory':
-      return Monaco.languages.CompletionItemKind.Folder
-    case 'externalHistory':
-      return Monaco.languages.CompletionItemKind.Enum
-    default:
-      return Monaco.languages.CompletionItemKind.Text
-  }
-}
 
 const Input: React.FC<CellType> = ({
   id,
@@ -52,9 +38,7 @@ const Input: React.FC<CellType> = ({
   }, [currentDir])
 
   useEffect(() => {
-    // todo: load packaged monaco
-    // MonacoReact.config({ paths: { vs: '/monaco-editor' } })
-    // https://gist.github.com/mattpowell/221f7d35c4ae1273dc2e1ee469d000a7
+    MonacoReact.config({ paths: { vs: 'monaco-editor' } })
 
     MonacoReact.init().then(monaco => {
       monaco.editor.defineTheme(TERMY, {
@@ -74,6 +58,49 @@ const Input: React.FC<CellType> = ({
           'editorCursor.foreground': theme.colors.$caret,
         },
       })
+
+      const toMonacoKind = (kind: SuggestionKind) => {
+        // info: https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
+        const completionItemKind = monaco.languages.CompletionItemKind
+        switch (kind) {
+          case 'executable':
+            return completionItemKind.Event
+          case 'directory':
+            return completionItemKind.Folder
+          case 'externalHistory':
+            return completionItemKind.Enum
+          default:
+            return completionItemKind.Text
+        }
+      }
+
+      const suggestionToCompletionItem = (
+        suggestion: Suggestion | NativeSuggestion,
+      ): Monaco.languages.CompletionItem => {
+        let documentation = suggestion.documentation
+        if ('tldrDocumentation' in suggestion) {
+          documentation = suggestion.tldrDocumentation
+        }
+
+        let label: any = suggestion.label
+        if ('date' in suggestion && suggestion.date) {
+          label = {
+            name: label,
+            qualifier: `Modified ${formatDistanceToNow(
+              parseInt(suggestion.date),
+            )} ago`,
+          }
+        }
+
+        return {
+          label,
+          insertText: suggestion.insertText
+            ? suggestion.insertText
+            : suggestion.label,
+          kind: toMonacoKind(suggestion.kind),
+          documentation: documentation ? { value: documentation } : undefined,
+        } as Monaco.languages.CompletionItem
+      }
 
       monaco.languages.registerCompletionItemProvider(TERMY, {
         triggerCharacters: [' ', '/'],
@@ -151,21 +178,25 @@ const Input: React.FC<CellType> = ({
             language={TERMY}
             editorDidMount={(_, editor) => {
               // run cell on enter
-              editor.addAction({
-                id: 'run-cell',
-                label: 'Run cell',
-                keybindings: [KeyCode.Enter],
-                // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
-                precondition: '!suggestWidgetVisible',
-                run: editor => {
-                  dispatch({ type: 'run-cell', id, input: editor.getValue() })
-                },
-              })
 
-              // override default CtrlCmd + K
-              editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
-                dispatch({ type: 'focus-previous' })
-              })
+              if (monacoRef.current) {
+                const { KeyCode, KeyMod } = monacoRef.current
+                editor.addAction({
+                  id: 'run-cell',
+                  label: 'Run cell',
+                  keybindings: [KeyCode.Enter],
+                  // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
+                  precondition: '!suggestWidgetVisible',
+                  run: editor => {
+                    dispatch({ type: 'run-cell', id, input: editor.getValue() })
+                  },
+                })
+
+                // override default CtrlCmd + K
+                editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
+                  dispatch({ type: 'focus-previous' })
+                })
+              }
 
               // auto focus on init
               editor.focus()
@@ -219,34 +250,6 @@ const Input: React.FC<CellType> = ({
       </Div>
     </>
   )
-}
-
-const suggestionToCompletionItem = (
-  suggestion: Suggestion | NativeSuggestion,
-): Monaco.languages.CompletionItem => {
-  let documentation = suggestion.documentation
-  if ('tldrDocumentation' in suggestion) {
-    documentation = suggestion.tldrDocumentation
-  }
-
-  let label: any = suggestion.label
-  if ('date' in suggestion && suggestion.date) {
-    label = {
-      name: label,
-      qualifier: `Modified ${formatDistanceToNow(
-        parseInt(suggestion.date),
-      )} ago`,
-    }
-  }
-
-  return {
-    label,
-    insertText: suggestion.insertText
-      ? suggestion.insertText
-      : suggestion.label,
-    kind: toMonacoKind(suggestion.kind),
-    documentation: documentation ? { value: documentation } : undefined,
-  } as Monaco.languages.CompletionItem
 }
 
 export default Input
