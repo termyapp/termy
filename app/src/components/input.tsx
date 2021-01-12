@@ -18,34 +18,6 @@ export const TERMY = 'shell'
 // we are currently using shell as lang to make suggestions work
 // monaco.editor.createModel('', TERMY)
 
-const suggestionToCompletionItem = (
-  suggestion: Suggestion | NativeSuggestion,
-): Monaco.languages.CompletionItem => {
-  let documentation = suggestion.documentation
-  if ('tldrDocumentation' in suggestion) {
-    documentation = suggestion.tldrDocumentation
-  }
-
-  let label: any = suggestion.label
-  if ('date' in suggestion && suggestion.date) {
-    label = {
-      name: label,
-      qualifier: `Modified ${formatDistanceToNow(
-        parseInt(suggestion.date),
-      )} ago`,
-    }
-  }
-
-  return {
-    label,
-    insertText: suggestion.insertText
-      ? suggestion.insertText
-      : suggestion.label,
-    kind: toMonacoKind(suggestion.kind),
-    documentation: documentation ? { value: documentation } : undefined,
-  } as Monaco.languages.CompletionItem
-}
-
 const toMonacoKind = (kind: SuggestionKind) => {
   // info: https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
   switch (kind) {
@@ -247,6 +219,34 @@ const Input: React.FC<CellType> = ({
       </Div>
     </>
   )
+}
+
+const suggestionToCompletionItem = (
+  suggestion: Suggestion | NativeSuggestion,
+): Monaco.languages.CompletionItem => {
+  let documentation = suggestion.documentation
+  if ('tldrDocumentation' in suggestion) {
+    documentation = suggestion.tldrDocumentation
+  }
+
+  let label: any = suggestion.label
+  if ('date' in suggestion && suggestion.date) {
+    label = {
+      name: label,
+      qualifier: `Modified ${formatDistanceToNow(
+        parseInt(suggestion.date),
+      )} ago`,
+    }
+  }
+
+  return {
+    label,
+    insertText: suggestion.insertText
+      ? suggestion.insertText
+      : suggestion.label,
+    kind: toMonacoKind(suggestion.kind),
+    documentation: documentation ? { value: documentation } : undefined,
+  } as Monaco.languages.CompletionItem
 }
 
 export default Input

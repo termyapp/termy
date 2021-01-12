@@ -161,11 +161,14 @@ impl Autocomplete {
                         if let Some((score, _)) =
                             self.matcher.fuzzy_indices(&command, self.input.as_ref())
                         {
+                            let label = String::from(
+                                &command[find_common_words_index(self.input.as_ref(), &command)..],
+                            );
                             self.insert(
                                 command.clone(),
                                 Suggestion {
-                                    label: command.clone(),
-                                    insert_text: Some(command),
+                                    insert_text: Some(label.clone()),
+                                    label,
                                     score: score - Priority::High as i64,
 
                                     kind: SuggestionType::ExternalHistory,
@@ -236,4 +239,34 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+fn find_common_words_index(a: &str, b: &str) -> usize {
+    let a = a.split_whitespace().into_iter();
+    let mut b = b.split_whitespace().into_iter();
+
+    let mut index = 0;
+
+    for i in a {
+        if let Some(j) = b.next() {
+            if i == j {
+                index += i.len() + 1; // +1 for whitespace
+            }
+        }
+    }
+
+    index
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn finds_common_words() {
+        let a = "git commit --message \"Init\"";
+        let b = "git commit -m";
+
+        assert_eq!(find_common_words_index(a, b), 11);
+    }
 }
