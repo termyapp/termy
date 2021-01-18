@@ -78,11 +78,16 @@ const Input: React.FC<CellType> = ({
         suggestion: Suggestion | NativeSuggestion,
       ): Monaco.languages.CompletionItem => {
         let documentation = suggestion.documentation
-        if ('tldrDocumentation' in suggestion) {
-          documentation = suggestion.tldrDocumentation
+        let label: any = suggestion.label
+
+        const tldr = ipc.sendSync('message', {
+          type: 'tldr',
+          command: suggestion.label,
+        })
+        if (tldr) {
+          documentation = tldr
         }
 
-        let label: any = suggestion.label
         if ('date' in suggestion && suggestion.date) {
           label = {
             name: label,

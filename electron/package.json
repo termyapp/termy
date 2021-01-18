@@ -27,7 +27,7 @@
       "build/**/*"
     ],
     "extraFiles": {
-      "from": "external/tldr/pages/common",
+      "from": "external/tldr/pages",
       "to": "tldr"
     }
   },

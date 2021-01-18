@@ -1,4 +1,4 @@
-use crate::util::{get_executables, paths::root_path};
+use crate::util::get_executables;
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use log::{error, info};
@@ -93,7 +93,6 @@ impl Autocomplete {
                             score: score + Priority::Medium as i64,
                             kind: SuggestionType::Directory,
                             documentation: None,
-                            tldr_documentation: None,
                             date: Some(
                                 entry
                                     .metadata()
@@ -134,11 +133,6 @@ impl Autocomplete {
                         },
                         kind: SuggestionType::Executable,
                         documentation: None,
-                        tldr_documentation: if let Ok(docs) = get_docs(&executable) {
-                            Some(docs)
-                        } else {
-                            None
-                        },
                         date: None,
                     },
                 );
@@ -173,7 +167,6 @@ impl Autocomplete {
 
                                     kind: SuggestionType::ExternalHistory,
                                     documentation: None,
-                                    tldr_documentation: None,
                                     date: None,
                                 },
                             );
@@ -199,9 +192,6 @@ pub struct Suggestion {
     documentation: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    tldr_documentation: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
     date: Option<String>,
 }
 
@@ -218,19 +208,6 @@ enum Priority {
     Low = 1,
     Medium = 25,
     High = 100,
-}
-
-fn get_docs(command: &str) -> Result<String> {
-    // .join_normalized("/../../tldr/".to_string() + command + ".md")
-    let path = format!(
-        "{}/external/tldr/pages/common/{}.md",
-        root_path()?.to_string_lossy(),
-        command
-    );
-
-    info!("Path: {:?}", path);
-
-    Ok(fs::read_to_string(path)?)
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>

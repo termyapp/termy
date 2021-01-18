@@ -1,4 +1,7 @@
-import { ipcMain } from 'electron'
+import { app, ipcMain } from 'electron'
+import isDev from 'electron-is-dev'
+import fs from 'fs'
+import path from 'path'
 import native from '../native'
 import type { Message, ServerMessage } from '../shared'
 
@@ -65,6 +68,24 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
         console.warn('external callback does not exit for cell:', message.id)
       }
       return
+    }
+    case 'tldr': {
+      const { command } = message
+      try {
+        const content = fs.readFileSync(
+          path.resolve(
+            app.getAppPath(),
+            isDev
+              ? `../../electron/external/tldr/pages/common/${command}.md`
+              : `../../tldr/common/${command}.md`,
+          ),
+          { encoding: 'utf-8' },
+        )
+        return content
+      } catch {
+        // file does not exist
+        return null
+      }
     }
   }
 }

@@ -4,7 +4,7 @@ use std::{env, path::PathBuf};
 /// Path to Termy's root directory
 ///
 /// Used for:
-///  - External resources (eg. TLDR pages)
+///  - external resources
 ///  - setting.json
 ///  - termy.db
 ///  - ...

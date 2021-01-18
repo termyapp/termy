@@ -22,6 +22,7 @@ export type Message =
   | { type: 'api'; command: string } // todo: create types for the api
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
+  | { type: 'tldr'; command: string }
 
 export interface ServerMessage {
   id: string
@@ -45,7 +46,6 @@ export interface Suggestion {
 export interface NativeSuggestion extends Suggestion {
   score: number
   date?: string
-  tldrDocumentation?: string // markdown
 }
 
 export type SuggestionKind = 'executable' | 'directory' | 'externalHistory'
