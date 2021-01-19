@@ -2,7 +2,8 @@
   "search.exclude": {
     "**/build": true,
     "**/dist": true,
-    "**/electron/external": true
+    "**/external": true,
+    "**/app/public/fonts/*": true
   },
   "files.exclude": {
     "**/.git": true,
@@ -10,10 +11,9 @@
     "**/.hg": true,
     "**/CVS": true,
     "**/.DS_Store": true,
-    "**/node_modules": true,
-    "**/app/public/fonts/*": true
+    "**/node_modules": true
   },
-  "git.detectSubmodules": false, // prevent electron/external/tldr from showing up
+  "git.detectSubmodules": false, // prevent tldr from showing up
   "rust-analyzer.linkedProjects": [
     "electron/native/Cargo.toml",
     "electron\\native\\Cargo.toml"

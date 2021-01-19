@@ -1,4 +1,8 @@
-@import-normalize; /* bring in normalize.css styles (supposedly a cra feature) */
+/* CSS reset https://www.digitalocean.com/community/tutorials/css-minimal-css-reset */
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+}
 
 *,
 *::before,
@@ -6,9 +10,21 @@
   margin: 0;
   padding: 0;
   outline: none;
+  box-sizing: inherit;
+  font-weight: normal;
 }
 
-/* Make it draggable: https://stackoverflow.com/questions/44818508/how-do-i-move-a-frameless-window-in-electron-without-using-webkit-app-region */
+ol,
+ul {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Make navbar draggable: https://stackoverflow.com/questions/44818508/how-do-i-move-a-frameless-window-in-electron-without-using-webkit-app-region */
 .header {
   /* With dev tools open, this breaks. Latest Electron will fix this: https://github.com/electron/electron/pull/26361 */
   -webkit-user-select: none;

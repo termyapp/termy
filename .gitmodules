@@ -1,3 +1,3 @@
-[submodule "electron/external/tldr"]
-	path = electron/external/tldr
+[submodule "tldr"]
+	path = external/tldr
 	url = https://github.com/tldr-pages/tldr/

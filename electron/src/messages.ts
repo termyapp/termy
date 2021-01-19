@@ -76,7 +76,7 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
           path.resolve(
             app.getAppPath(),
             isDev
-              ? `../../electron/external/tldr/pages/common/${command}.md`
+              ? `../../external/tldr/pages/common/${command}.md`
               : `../../tldr/common/${command}.md`,
           ),
           { encoding: 'utf-8' },

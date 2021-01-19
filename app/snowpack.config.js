@@ -1,15 +1,25 @@
 /** @type {import("snowpack").SnowpackUserConfig } */
 module.exports = {
+  alias: {
+    '@app': './src',
+  },
   mount: {
-    public: '/',
-    src: '/_dist_',
+    public: { url: '/', static: true, resolve: false },
+    src: '/dist',
 
     // monaco-editor
-    'node_modules/monaco-editor/min/vs': {
+    '../external/monaco-editor/min/vs': {
       url: '/monaco-editor',
       static: true,
       resolve: false,
     },
+
+    // https://github.com/suren-atoyan/monaco-react/issues/12
+    // '../external/monaco-editor/min-maps': {
+    //   url: '/min-maps',
+    //   static: true,
+    //   resolve: false,
+    // },
   },
   plugins: [
     // '@snowpack/plugin-react-refresh',
@@ -17,23 +27,11 @@ module.exports = {
     '@snowpack/plugin-typescript',
     '@snowpack/plugin-webpack',
   ],
-  install: [
-    /* ... */
-  ],
-  // installOptions: { https://github.com/snowpackjs/snowpack/discussions/1606
-  //   namedExports: ['xterm'],
-  // },
   devOptions: {
     port: 8080,
     open: 'none',
   },
   buildOptions: {
-    // out: '../electron/build', has issues with babel-loader
-  },
-  proxy: {
-    /* ... */
-  },
-  alias: {
-    /* ... */
+    out: '../electron/build',
   },
 }

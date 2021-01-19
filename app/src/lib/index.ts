@@ -1,7 +1,7 @@
 import type { ThemeMode } from '../../types'
 import { darkTheme, lightTheme } from '../themes'
 
-export const isDev = import.meta.env.SNOWPACK_PUBLIC_NODE_ENV === 'development'
+export const isDev = import.meta.env.MODE === 'development'
 
 export const formatCurrentDir = (currentDir: string) => {
   const path = currentDir.split('/')

@@ -18,6 +18,7 @@
 7. In a separate console go to the app directory: `cd app`
 8. Install dependencies: `yarn`
 9. Start the app: `yarn dev`
+10. Download [monaco-editor](https://microsoft.github.io/monaco-editor) and put it inside (https://github.com/snowpackjs/snowpack/issues/1286)
 
 ### Windows
 
