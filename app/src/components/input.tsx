@@ -235,6 +235,24 @@ const Input: React.FC<CellType> = ({
               dispatch({ type: 'set-cell', id, cell: { value } })
               return value
             }}
+            overrideServices={{
+              // Enable expandSuggestionDocs by default (otherwise one would have to press Ctrl + Space each time)
+              // https://github.com/microsoft/monaco-editor/issues/2241
+              storageService: {
+                get() {},
+                remove() {},
+                getBoolean(key: any) {
+                  // if (key === "expandSuggestionDocs")
+                  return true
+                },
+                getNumber(key: any) {
+                  return 0
+                },
+                store() {},
+                onWillSaveState() {},
+                onDidChangeStorage() {},
+              },
+            }}
             options={{
               // remove margin
               glyphMargin: false,
