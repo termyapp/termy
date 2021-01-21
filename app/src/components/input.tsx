@@ -33,31 +33,12 @@ const Input: React.FC<CellType> = ({
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const [isEditorReady, setIsEditorReady] = useState(false)
 
-  useEffect(() => {
-    currentDirRef.current = currentDir
-  }, [currentDir])
-
+  // mount
   useEffect(() => {
     MonacoReact.config({ paths: { vs: 'monaco-editor' } })
 
     MonacoReact.init().then(monaco => {
-      monaco.editor.defineTheme(TERMY, {
-        base: theme.colors.base as Monaco.editor.BuiltinTheme,
-        inherit: true,
-        rules: [],
-
-        colors: {
-          // Monaco doesn't allow instances to have different themes
-          // We use one and set the background to transparent to make it blend in
-          'editor.background': theme.colors.$background,
-          'editor.foreground': theme.colors.$foreground,
-          'editor.lineHighlightBackground': theme.colors.$background,
-          'editorSuggestWidget.background': theme.colors.$background,
-          'editor.selectionBackground': theme.colors.$selection,
-          'editor.selectionHighlightBackground': theme.colors.$background,
-          'editorCursor.foreground': theme.colors.$caret,
-        },
-      })
+      monaco.editor.defineTheme(TERMY, getThemeData(theme))
 
       const toMonacoKind = (kind: SuggestionKind) => {
         // info: https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
@@ -153,6 +134,16 @@ const Input: React.FC<CellType> = ({
       setIsEditorReady(true)
     })
   }, [])
+
+  // update current dir ref
+  useEffect(() => {
+    currentDirRef.current = currentDir
+  }, [currentDir])
+
+  // update theme
+  useEffect(() => {
+    monacoRef.current?.editor.defineTheme(TERMY, getThemeData(theme))
+  }, [theme])
 
   return (
     <>
@@ -257,5 +248,23 @@ const Input: React.FC<CellType> = ({
     </>
   )
 }
+
+const getThemeData = (theme: any) => ({
+  base: theme.colors.base as Monaco.editor.BuiltinTheme,
+  inherit: true,
+  rules: [],
+
+  colors: {
+    // Monaco doesn't allow instances to have different themes
+    // We use one and set the background to transparent to make it blend in
+    'editor.background': theme.colors.$background,
+    'editor.foreground': theme.colors.$foreground,
+    'editor.lineHighlightBackground': theme.colors.$background,
+    'editorSuggestWidget.background': theme.colors.$background,
+    'editor.selectionBackground': theme.colors.$selection,
+    'editor.selectionHighlightBackground': theme.colors.$background,
+    'editorCursor.foreground': theme.colors.$caret,
+  },
+})
 
 export default Input
