@@ -1112,7 +1112,7 @@
     execa "^4.0.3"
     npm-run-path "^4.0.1"
 
-"@snowpack/plugin-webpack@^2.1.1":
+"@snowpack/plugin-webpack@^2.3.0":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@snowpack/plugin-webpack/-/plugin-webpack-2.3.0.tgz#5f4da0c4afbb8d0151cdd78bdbaf78074925ef08"
   integrity sha512-x/U29rdYkqPQDHpkAMY+qBhLSOY79KzGPMxfwOv0VlWirYnkMSbRctQ8btZ9tfyUB85Or+wVY2TWj//E8Nf98A==
@@ -5271,10 +5271,10 @@ immediate@~3.0.5:
   resolved "https://registry.yarnpkg.com/immediate/-/immediate-3.0.6.tgz#9db1dbd0faf8de6fbe0f5dd5e56bb606280de69b"
   integrity sha1-nbHb0Pr43m++D13V5Wu2BigN5ps=
 
-immer@^7.0.14:
-  version "7.0.15"
-  resolved "https://registry.yarnpkg.com/immer/-/immer-7.0.15.tgz#dc3bc6db87401659d2e737c67a21b227c484a4ad"
-  integrity sha512-yM7jo9+hvYgvdCQdqvhCNRRio0SCXc8xDPzA25SvKWa7b1WVPjLwQs1VYU5JPXjcJPTqAa5NP5dqpORGYBQ2AA==
+"immer@^8.0.1:":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-8.0.1.tgz#9c73db683e2b3975c424fb0572af5889877ae656"
+  integrity sha512-aqXhGP7//Gui2+UrEtvxZxSquQVXTpZ7KDxfCcKAF3Vysvw0CViVaW9RZ1j1xlIYqaaaipBoqdqeibkc18PNvA==
 
 import-fresh@^2.0.0:
   version "2.0.0"
