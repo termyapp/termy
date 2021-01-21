@@ -89,7 +89,7 @@ impl Autocomplete {
                         name.clone(),
                         Suggestion {
                             label: name.clone(),
-                            insert_text: Some(name),
+                            insert_text: Some(format!("{}/", name)),
                             score: score + Priority::Medium as i64,
                             kind: SuggestionType::Directory,
                             documentation: None,

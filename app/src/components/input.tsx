@@ -177,22 +177,46 @@ const Input: React.FC<CellType> = ({
 
               if (monacoRef.current) {
                 const { KeyCode, KeyMod } = monacoRef.current
-                editor.addAction({
-                  id: 'run-cell',
-                  label: 'Run cell',
-                  keybindings: [KeyCode.Enter],
-                  // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
-                  precondition: '!suggestWidgetVisible',
-                  run: editor => {
+
+                // Contexts:
+                // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
+
+                editor.addCommand(
+                  KeyMod.CtrlCmd | KeyCode.Enter,
+                  () => {
+                    console.log('here')
+                    editor.trigger('', 'acceptSelectedSuggestion', {})
                     dispatch({ type: 'run-cell', id, input: editor.getValue() })
                   },
+                  'suggestWidgetVisible',
+                )
+
+                editor.addCommand(KeyCode.Enter, () => {
+                  editor.trigger('', 'hideSuggestWidget', {})
+                  dispatch({ type: 'run-cell', id, input: editor.getValue() })
                 })
+
+                editor.addCommand(
+                  KeyCode.Tab,
+                  () => {
+                    editor.trigger('', 'acceptSelectedSuggestion', {})
+                    editor.trigger('', 'editor.action.triggerSuggest', {})
+                  },
+                  'suggestWidgetVisible',
+                )
 
                 // override default CtrlCmd + K
                 editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
                   dispatch({ type: 'focus-previous' })
                 })
               }
+
+              // https://github.com/microsoft/monaco-editor/issues/102
+              ;(editor as any)._standaloneKeybindingService.addDynamicKeybinding(
+                `-actions.find`,
+                undefined,
+                () => {},
+              )
 
               // auto focus on init
               editor.focus()
