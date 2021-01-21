@@ -159,7 +159,7 @@ const Input: React.FC<CellType> = ({
       <Div
         css={{
           width: '100%',
-          height: '$8',
+          height: '27px',
           position: 'relative',
         }}
       >
@@ -215,7 +215,8 @@ const Input: React.FC<CellType> = ({
               editorRef.current = editor
             }}
             value={value}
-            onChange={(_, value) => {
+            onChange={(_, value = '') => {
+              value = value.replace(/\n|\r/g, '') // remove line breaks
               dispatch({ type: 'set-cell', id, cell: { value } })
               return value
             }}
