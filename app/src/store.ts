@@ -3,7 +3,7 @@ import { v4 } from 'uuid'
 import create, { UseStore } from 'zustand'
 import { devtools, redux } from 'zustand/middleware'
 import type { CellType, Message, ThemeMode } from '../types'
-import { api, getTheme, ipc, isDev } from './lib'
+import { api, getTheme, ipc, isDev } from './utils'
 
 type State = typeof initialState
 

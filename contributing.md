@@ -9,7 +9,7 @@
 
 ## Start developing
 
-1. Go into the native folder: `cd electron/native`
+1. Go into the native folder: `cd native`
 2. Install dependencies: `yarn`
 3. Build a the native package: `yarn build`
 4. Go back to electron folder: `cd ..`
@@ -29,7 +29,7 @@ https://stackoverflow.com/a/57843860
 # Building
 
 0. Remove /app/public/\*.node
-1. /electron/native: yarn build-release
+1. /native: yarn build-release
 2. /electron: yarn build-webpack
 3. /app: yarn build
 4. /electron: yarn build
