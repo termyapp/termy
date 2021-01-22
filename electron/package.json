@@ -47,6 +47,7 @@
     "wait-on": "^5.2.0",
     "webpack": "^5.4.0",
     "webpack-cli": "^4.2.0",
-    "webpack-electron-reload": "^1.0.1"
+    "webpack-electron-reload": "^1.0.1",
+    "electron-context-menu": "^2.4.0"
   }
 }

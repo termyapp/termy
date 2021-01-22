@@ -2,9 +2,13 @@ import { app, BrowserWindow } from 'electron'
 import setupMessages from './messages'
 import { createWindow } from './window'
 import fixPath from 'fix-path'
+import contextMenu from 'electron-context-menu'
 
 // // fixes: https://github.com/termyapp/termy/issues/8
 fixPath()
+
+// https://www.npmjs.com/package/electron-context-menu
+const dispose = contextMenu()
 
 app.allowRendererProcessReuse = true // default true in >=9
 

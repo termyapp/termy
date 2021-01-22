@@ -73,12 +73,6 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   })
 
   useEffect(() => {
-    if (focused && cell.status !== 'running') {
-      focusCell(id)
-    }
-  }, [focused, cell.status])
-
-  useEffect(() => {
     if (cell.value === 'shortcuts')
       dispatch({ type: 'run-cell', id, input: cell.value })
   }, [])
@@ -120,16 +114,16 @@ export default Cell
 
 const Card = styled(Flex, {
   position: 'relative',
-  borderRadius: '$lg',
+  borderRadius: '$sm',
   flexDirection: 'column',
-  border: '1px solid transparent',
+  // border: '1px solid transparent',
 
   variants: {
     focused: {
       true: {
         backgroundColor: '$focusedBackground',
         color: '$focusedForeground',
-        border: '1px solid $accent',
+        // border: '1px solid $accent',
       },
     },
   },

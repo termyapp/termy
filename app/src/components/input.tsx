@@ -145,6 +145,18 @@ const Input: React.FC<CellType> = ({
     monacoRef.current?.editor.defineTheme(TERMY, getThemeData(theme))
   }, [theme])
 
+  // update options
+  useEffect(() => {
+    editorRef.current?.updateOptions({
+      readOnly: status === 'running',
+    })
+  }, [status])
+
+  // focus
+  useEffect(() => {
+    if (focused) editorRef.current?.focus()
+  }, [focused])
+
   return (
     <>
       <Div
@@ -161,19 +173,15 @@ const Input: React.FC<CellType> = ({
             height: '100%',
             position: 'absolute',
           }}
-          onFocus={() => {
-            if (status !== 'running') {
-              editorRef.current?.focus()
-            }
-          }}
-          tabIndex={0}
         >
           <ControlledEditor
-            key={theme.colors.$background}
             theme={TERMY}
             language={TERMY}
             editorDidMount={(_, editor) => {
-              // run cell on enter
+              // bring back native context menu actions
+              // https://github.com/microsoft/monaco-editor/issues/1084#issuecomment-509397388
+              const el = editor.getDomNode()
+              if (el) el.contentEditable = 'true'
 
               if (monacoRef.current) {
                 const { KeyCode, KeyMod } = monacoRef.current
@@ -278,13 +286,10 @@ const Input: React.FC<CellType> = ({
               overviewRulerLanes: 0,
               quickSuggestions: true,
               quickSuggestionsDelay: 0,
+              contextmenu: false,
               // model: this.model,
             }}
           />
-          {/*
-            readOnly={status === 'running'}
-            cursor: status === 'running' ? 'default' : 'text',
-            */}
         </Div>
       </Div>
     </>
