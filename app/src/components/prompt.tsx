@@ -38,6 +38,7 @@ export default Prompt
 
 const Wrapper = styled(Div, {
   px: '$4',
+  py: '$1',
   display: 'flex',
   alignItems: 'center',
 

@@ -162,7 +162,7 @@ const Input: React.FC<CellType> = ({
       <Div
         css={{
           width: '100%',
-          height: '27px',
+          height: '25px',
           position: 'relative',
         }}
       >
@@ -273,7 +273,7 @@ const Input: React.FC<CellType> = ({
                 top: 0,
                 bottom: 0,
               },
-              fontSize: 20,
+              fontSize: 18,
               suggestFontSize: 16,
               fontFamily: theme.fonts.$mono,
               fontWeight: theme.fontWeights.$medium,
