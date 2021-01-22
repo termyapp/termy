@@ -28,7 +28,6 @@ https://stackoverflow.com/a/57843860
 
 # Building
 
-0. Remove /app/public/\*.node
 1. /native: yarn build-release
 2. /electron: yarn build-webpack
 3. /app: yarn build
