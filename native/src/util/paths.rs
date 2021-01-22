@@ -27,7 +27,7 @@ pub fn root_path() -> Result<PathBuf> {
 }
 
 pub fn test_dir() -> Result<PathBuf> {
-    Ok(root_path()?.join(".test"))
+    Ok(root_path()?.join("test"))
 }
 
 #[cfg(test)]

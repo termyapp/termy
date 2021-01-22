@@ -1,4 +1,4 @@
-import { RunCell, FrontendMessage, Suggestion } from '../shared'
+import { RunCell, FrontendMessage, Suggestion } from '../electron/shared'
 
 declare function api(command: string): any
 

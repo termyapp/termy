@@ -2,7 +2,7 @@ import { app, ipcMain } from 'electron'
 import isDev from 'electron-is-dev'
 import fs from 'fs'
 import path from 'path'
-import native from '../native'
+import native from '../../native'
 import type { Message, ServerMessage } from '../shared'
 
 export default () => {
