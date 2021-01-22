@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo } from 'react'
 import { useKey } from 'react-use'
-import Header, { headerHeight } from './components/header'
-import { Div } from './components/shared'
-import Tab from './components/tab'
-import { isDev } from './lib'
+import Header, { headerHeight } from './terminal/header'
+import { Div } from './components'
+import Tab from './terminal/tab'
+import { isDev } from './utils'
 import { css, globalStyles } from './stitches.config'
 import useStore from './store'
 

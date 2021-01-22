@@ -7,11 +7,10 @@ import {
   UpdateIcon,
 } from '@modulz/radix-icons'
 import React from 'react'
-import type { CellType } from '../../types'
-import { formatCurrentDir } from '../lib'
-import { styled } from '../stitches.config'
+import type { CellType } from '@types'
+import { styled } from '@src/stitches.config'
 import Input from './input'
-import { Div, Flex, Path } from './shared'
+import { Div, Flex, Path } from '@components'
 
 const Prompt: React.FC<CellType> = cell => {
   const { focused, currentDir } = cell
@@ -85,3 +84,12 @@ const Status = styled(Flex, {
     },
   },
 })
+
+const formatCurrentDir = (currentDir: string) => {
+  const path = currentDir.split('/')
+  if (path.length < 3) {
+    return currentDir
+  }
+  const relativePath = currentDir.split('/').slice(3).join('/')
+  return (relativePath.length > 0 ? '~/' : '~') + relativePath
+}

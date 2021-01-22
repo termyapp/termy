@@ -1,11 +1,11 @@
+import useStore, { focusCell } from '@src/store'
+import { ipc } from '@src/utils'
+import type { CellType, Message, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
 import { useDebounce } from 'react-use'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
-import type { CellType, Message, XtermSize } from '../../types'
-import useStore, { focusCell } from '../store'
-import { ipc } from './'
 
 export const useXterm = ({ id, status, focused, type }: CellType) => {
   const theme = useStore(state => state.theme)

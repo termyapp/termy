@@ -1,5 +1,5 @@
 import React from 'react'
-import { Div } from './shared'
+import { Div } from '@components'
 
 export const headerHeight = '29px'
 

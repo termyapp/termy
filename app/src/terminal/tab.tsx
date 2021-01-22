@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect } from 'react'
+import { Grid } from '@components'
+import React, { useCallback } from 'react'
 import { useKey } from 'react-use'
 import shallow from 'zustand/shallow'
-import useStore, { focusCell } from '../store'
+import useStore from '../store'
 import Cell from './cell'
-import { Grid } from './shared'
 
 const Tab: React.FC = () => {
   // Mapped picks, re-renders the component when state.treats changes in order, count or keys

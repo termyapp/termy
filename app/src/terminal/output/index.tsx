@@ -1,18 +1,21 @@
+import { styled } from '@src/stitches.config'
 import React, { useCallback, useEffect, useState } from 'react'
-import type { CellType, ServerMessage, ThemeMode } from '../../types'
-import { useListener, useXterm } from '../lib'
-import { styled } from '../stitches.config'
-import useStore, { focusCell } from '../store'
+import type { CellType, ServerMessage, ThemeMode } from '../../../types'
+import { Div } from '../../components'
+import useStore from '../../store'
+import { useListener } from '../../utils'
 import Mdx from './mdx'
-import Prompt from './prompt'
-import { Div, Flex } from './shared'
+import { useXterm } from './xterm'
 
-const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
+const Output: React.FC<Pick<CellType, 'id' | 'focused'>> = ({
+  id,
+  focused,
+}) => {
   const cell = useStore(useCallback(state => state.cells[id], [id]))
   const dispatch = useStore(state => state.dispatch)
 
   // mdx
-  const [output, setOutput] = useState('')
+  const [mdx, setMdx] = useState('')
 
   // pty
   const { terminalContainerRef, terminalRef } = useXterm({ ...cell, focused })
@@ -37,7 +40,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
         }
         case 'mdx': {
           dispatch({ type: 'set-cell', id, cell: { type: 'mdx' } })
-          setOutput(value)
+          setMdx(value)
           break
         }
         case 'api': {
@@ -81,55 +84,35 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
   if (typeof cell === 'undefined') return null
 
   return (
-    <Card onFocus={() => dispatch({ type: 'focus', id })} focused={focused}>
-      <Prompt {...cell} focused={focused} />
-      <Output>
-        <Pty show={cell.type === 'text'}>
-          <Div
-            ref={terminalContainerRef}
-            css={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-            }}
-          />
-        </Pty>
+    <Wrapper>
+      <Pty show={cell.type === 'text'}>
         <Div
+          ref={terminalContainerRef}
           css={{
-            display: cell.type === 'mdx' ? 'block' : 'none',
-            fontSize: '$sm',
-            color: '$secondaryTextColor',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
           }}
-        >
-          <Mdx>{output}</Mdx>
-        </Div>
-      </Output>
-    </Card>
+        />
+      </Pty>
+      <Div
+        css={{
+          display: cell.type === 'mdx' ? 'block' : 'none',
+          fontSize: '$sm',
+          color: '$secondaryTextColor',
+        }}
+      >
+        <Mdx>{mdx}</Mdx>
+      </Div>
+    </Wrapper>
   )
 }
 
-export default Cell
+export default Output
 
-const Card = styled(Flex, {
-  position: 'relative',
-  borderRadius: '$sm',
-  flexDirection: 'column',
-  // border: '1px solid transparent',
-
-  variants: {
-    focused: {
-      true: {
-        backgroundColor: '$focusedBackground',
-        color: '$focusedForeground',
-        // border: '1px solid $accent',
-      },
-    },
-  },
-})
-
-const Output = styled(Div, {
+const Wrapper = styled(Div, {
   px: '$4',
   py: '$1',
   height: '100%',

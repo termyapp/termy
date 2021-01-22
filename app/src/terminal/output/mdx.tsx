@@ -1,6 +1,6 @@
-import React from 'react'
+import { Card, Path } from '@components'
 import Markdown from 'markdown-to-jsx'
-import { Card, Path } from './shared'
+import React from 'react'
 
 // Provide custom components for markdown elements
 const overrides = {

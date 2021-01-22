@@ -8,10 +8,10 @@ import type {
   NativeSuggestion,
   Suggestion,
   SuggestionKind,
-} from '../../types'
-import { getTypedCliSuggestions, ipc } from '../lib'
-import useStore from '../store'
-import { Div } from './shared'
+} from '../../../types'
+import { getTypedCliSuggestions, ipc } from '../../utils'
+import useStore from '../../store'
+import { Div } from '../../components'
 
 export const TERMY = 'shell'
 // todo: use a custom language model
@@ -212,7 +212,7 @@ const Input: React.FC<CellType> = ({
                   },
                   'suggestWidgetVisible',
                 )
-
+                editor.restoreViewState
                 // override default CtrlCmd + K
                 editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
                   dispatch({ type: 'focus-previous' })
