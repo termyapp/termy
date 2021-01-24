@@ -6,8 +6,12 @@ import useStore from '../store'
 import Output from './output'
 import Prompt from './prompt'
 
-const Cell: React.FC<Pick<CellType, 'id' | 'focused'>> = ({ id, focused }) => {
-  const cell = useStore(useCallback(state => state.cells[id], [id]))
+const Cell: React.FC<Pick<CellType, 'id' | 'focused'> & { tabId: string }> = ({
+  id,
+  tabId,
+  focused,
+}) => {
+  const cell = useStore(useCallback(state => state.tabs[tabId][id], [id]))
   const dispatch = useStore(state => state.dispatch)
 
   useEffect(() => {

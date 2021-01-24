@@ -1,18 +1,18 @@
 import React from 'react'
 import { Div } from '@components'
 
-export const headerHeight = '29px'
+export const navHeight = '29px'
 
-const Header: React.FC = () => {
+const Nav: React.FC<{ tabs: string[] }> = ({ tabs }) => {
   return (
     <Div
       className="header"
       css={{
-        height: headerHeight,
+        height: navHeight,
         width: '100%',
       }}
     />
   )
 }
 
-export default Header
+export default Nav

@@ -5,10 +5,13 @@ import shallow from 'zustand/shallow'
 import useStore from '../store'
 import Cell from './cell'
 
-const Tab: React.FC = () => {
-  // Mapped picks, re-renders the component when state.treats changes in order, count or keys
+const Tab: React.FC<{ tabId: string; active: boolean }> = ({
+  tabId,
+  active,
+}) => {
+  // Mapped picks, re-renders the component when state.cells changes in order, count or keys
   const cellIds = useStore(
-    useCallback(state => Object.keys(state.cells), []),
+    useCallback(state => Object.keys(state.tabs[tabId]), []),
     shallow,
   )
   const focusedCellId = useStore(state => state.focus) // this might rerender all the cells on change
@@ -32,13 +35,14 @@ const Tab: React.FC = () => {
   return (
     <Grid
       css={{
+        display: active ? 'grid' : 'none',
         height: '100%',
         gridAutoRows: 'minmax(0, 1fr)',
         rowGap: '$2',
       }}
     >
       {cellIds.map(id => (
-        <Cell key={id} id={id} focused={id === focusedCellId} />
+        <Cell key={id} id={id} focused={id === focusedCellId} tabId={tabId} />
       ))}
     </Grid>
   )

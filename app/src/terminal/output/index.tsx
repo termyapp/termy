@@ -7,18 +7,15 @@ import { useListener } from '../../utils'
 import Mdx from './mdx'
 import { useXterm } from './xterm'
 
-const Output: React.FC<Pick<CellType, 'id' | 'focused'>> = ({
-  id,
-  focused,
-}) => {
-  const cell = useStore(useCallback(state => state.cells[id], [id]))
+const Output: React.FC<CellType> = cell => {
   const dispatch = useStore(state => state.dispatch)
+  const { id } = cell
 
   // mdx
   const [mdx, setMdx] = useState('')
 
   // pty
-  const { terminalContainerRef, terminalRef } = useXterm({ ...cell, focused })
+  const { terminalContainerRef, terminalRef } = useXterm(cell)
 
   useListener(`message-${id}`, (_, message: ServerMessage) => {
     console.log('received', message)

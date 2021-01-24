@@ -1,26 +1,31 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useKey } from 'react-use'
 import { Div } from '@components'
 import { css, globalStyles } from '../stitches.config'
 import useStore from '../store'
-import Header, { headerHeight } from './header'
+import Nav, { navHeight } from './nav'
 import Tab from './tab'
 import { isDev, loadMonaco, getThemeData } from '../utils'
 import { TERMY } from './prompt/input'
 import { useMonaco } from '@monaco-editor/react'
+import shallow from 'zustand/shallow'
 
 loadMonaco()
 
 const App: React.FC = () => {
-  useMemo(() => globalStyles(), [])
+  const tabs = useStore(
+    useCallback(state => Object.keys(state.tabs), []),
+    shallow,
+  )
   const theme = useStore(state => state.theme)
+  const activeTab = useStore(state => state.activeTab)
+  useMemo(() => globalStyles(), [])
   const themeClass = useMemo(() => css.theme(theme), [theme])
 
   const monaco = useMonaco()
 
   //   update theme
   useEffect(() => {
-    console.log('here', monaco)
     monaco?.editor.defineTheme(TERMY, getThemeData(theme))
   }, [theme, monaco])
 
@@ -36,22 +41,32 @@ const App: React.FC = () => {
     }
   })
 
+  // prevent reload (allow force reload)
+  useKey('t', e => {
+    // note electron-debug overrides this in dev
+    if (e.metaKey) {
+      e.preventDefault()
+      // dispatch({type:})
+    }
+  })
+
   return (
     <>
-      <Header />
+      <Nav tabs={tabs} />
       <Div
         css={{
           position: 'absolute',
-          height: `calc(100% - ${headerHeight})`,
+          height: `calc(100% - ${navHeight})nav`,
           width: '100%',
-          top: headerHeight,
+          top: navHeight,
           right: 0,
           bottom: 0,
           left: 0,
         }}
       >
-        {/* todo: tabs */}
-        <Tab />
+        {tabs.map(id => (
+          <Tab key={id} tabId={id} active={activeTab === id} />
+        ))}
       </Div>
     </>
   )
