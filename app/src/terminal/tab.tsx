@@ -29,10 +29,6 @@ const Tab: React.FC = () => {
     [focusedCellId],
   )
 
-  // useEffect(() => {
-  //   focusCell(focusedCellId)
-  // }, [focusedCellId])
-
   return (
     <Grid
       css={{

@@ -9,3 +9,4 @@ export const getTheme = (mode?: ThemeMode) =>
 export * from './ipc'
 export * from './listener'
 export * from './typed-cli'
+export * from './monaco'
