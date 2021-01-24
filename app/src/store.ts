@@ -85,7 +85,7 @@ const reducer = (state: State, action: Action) => {
       }
       case 'run-cell': {
         const cell = draft.cells[action.id]
-        if (!cell || !action.input) return
+        if (!cell || !action.input || cell.status === 'running') return
         console.log('running', action.input)
 
         // reset
