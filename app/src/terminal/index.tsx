@@ -1,16 +1,28 @@
 import React, { useEffect, useMemo } from 'react'
 import { useKey } from 'react-use'
-import Header, { headerHeight } from './terminal/header'
-import { Div } from './components'
-import Tab from './terminal/tab'
-import { isDev } from './utils'
-import { css, globalStyles } from './stitches.config'
-import useStore from './store'
+import { Div } from '@components'
+import { css, globalStyles } from '../stitches.config'
+import useStore from '../store'
+import Header, { headerHeight } from './header'
+import Tab from './tab'
+import { isDev, loadMonaco, getThemeData } from '../utils'
+import { TERMY } from './prompt/input'
+import { useMonaco } from '@monaco-editor/react'
+
+loadMonaco()
 
 const App: React.FC = () => {
   useMemo(() => globalStyles(), [])
   const theme = useStore(state => state.theme)
   const themeClass = useMemo(() => css.theme(theme), [theme])
+
+  const monaco = useMonaco()
+
+  //   update theme
+  useEffect(() => {
+    console.log('here', monaco)
+    monaco?.editor.defineTheme(TERMY, getThemeData(theme))
+  }, [theme, monaco])
 
   useEffect(() => {
     document.body.className = themeClass

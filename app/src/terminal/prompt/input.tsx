@@ -1,22 +1,12 @@
-import { ControlledEditor, monaco as MonacoReact } from '@monaco-editor/react'
-import { formatDistanceToNow } from 'date-fns'
+import Editor from '@monaco-editor/react'
 // only import it as type, otherwise it overrides @monaco-editor/react instance
 import type * as Monaco from 'monaco-editor'
-import React, { useEffect, useRef, useState } from 'react'
-import type {
-  CellType,
-  NativeSuggestion,
-  Suggestion,
-  SuggestionKind,
-} from '../../../types'
-import { getTypedCliSuggestions, ipc } from '../../utils'
-import useStore from '../../store'
+import React, { useEffect, useRef } from 'react'
+import type { CellType } from '../../../types'
 import { Div } from '../../components'
+import useStore from '../../store'
 
 export const TERMY = 'shell'
-// todo: use a custom language model
-// we are currently using shell as lang to make suggestions work
-// monaco.editor.createModel('', TERMY)
 
 const Input: React.FC<CellType> = ({
   id,
@@ -29,121 +19,12 @@ const Input: React.FC<CellType> = ({
   const theme = useStore(state => state.theme)
 
   const currentDirRef = useRef<string>(currentDir)
-  const monacoRef = useRef<typeof Monaco | null>(null)
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
-  const [isEditorReady, setIsEditorReady] = useState(false)
-
-  // mount
-  useEffect(() => {
-    MonacoReact.config({ paths: { vs: 'monaco-editor' } })
-
-    MonacoReact.init().then(monaco => {
-      monaco.editor.defineTheme(TERMY, getThemeData(theme))
-
-      const toMonacoKind = (kind: SuggestionKind) => {
-        // info: https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
-        const completionItemKind = monaco.languages.CompletionItemKind
-        switch (kind) {
-          case 'executable':
-            return completionItemKind.Event
-          case 'directory':
-            return completionItemKind.Folder
-          case 'externalHistory':
-            return completionItemKind.Enum
-          default:
-            return completionItemKind.Text
-        }
-      }
-
-      const suggestionToCompletionItem = (
-        suggestion: Suggestion | NativeSuggestion,
-      ): Monaco.languages.CompletionItem => {
-        let documentation = suggestion.documentation
-        let label: any = suggestion.label
-
-        const tldr = ipc.sendSync('message', {
-          type: 'tldr',
-          command: suggestion.label,
-        })
-        if (tldr) {
-          documentation = tldr
-        }
-
-        if ('date' in suggestion && suggestion.date) {
-          label = {
-            name: label,
-            qualifier: `Modified ${formatDistanceToNow(
-              parseInt(suggestion.date),
-            )} ago`,
-          }
-        }
-
-        return {
-          label,
-          insertText: suggestion.insertText
-            ? suggestion.insertText
-            : suggestion.label,
-          kind: toMonacoKind(suggestion.kind),
-          documentation: documentation ? { value: documentation } : undefined,
-        } as Monaco.languages.CompletionItem
-      }
-
-      monaco.languages.registerCompletionItemProvider(TERMY, {
-        triggerCharacters: [' ', '/'],
-        provideCompletionItems: async (
-          model: Monaco.editor.ITextModel,
-          position: Monaco.Position,
-          context: Monaco.languages.CompletionContext,
-          token: Monaco.CancellationToken,
-        ) => {
-          const input = model.getValue()
-          const rawSuggestions: NativeSuggestion[] = await ipc.invoke(
-            'suggestions',
-            input,
-            currentDirRef.current,
-          )
-          const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
-            suggestionToCompletionItem,
-          )
-
-          console.log(input, currentDirRef.current, suggestions)
-          return { incomplete: false, suggestions }
-        },
-      })
-
-      monaco.languages.registerCompletionItemProvider(TERMY, {
-        triggerCharacters: [' '],
-        provideCompletionItems: async (
-          model: Monaco.editor.ITextModel,
-          position: Monaco.Position,
-          context: Monaco.languages.CompletionContext,
-          token: Monaco.CancellationToken,
-        ) => {
-          const input = model.getValue()
-
-          const suggestions = getTypedCliSuggestions(input).map(
-            suggestionToCompletionItem,
-          )
-
-          return { incomplete: false, suggestions }
-        },
-      })
-
-      monacoRef.current = monaco
-
-      setIsEditorReady(true)
-    })
-  }, [])
 
   // update current dir ref
   useEffect(() => {
     currentDirRef.current = currentDir
   }, [currentDir])
-
-  // update theme
-  useEffect(() => {
-    monacoRef.current?.editor.defineTheme(TERMY, getThemeData(theme))
-  }, [theme])
 
   // update options
   useEffect(() => {
@@ -168,23 +49,31 @@ const Input: React.FC<CellType> = ({
       >
         <Div
           id={id}
+          data-cd={currentDir} // needed for monaco completion provider
           css={{
             width: '100%',
             height: '100%',
             position: 'absolute',
           }}
         >
-          <ControlledEditor
+          <Editor
             theme={TERMY}
             language={TERMY}
-            editorDidMount={(_, editor) => {
+            onMount={(editor, monaco) => {
+              const model = monaco.editor.createModel(
+                value,
+                TERMY,
+                monaco.Uri.parse(`cell://${id}`),
+              )
+              editor.setModel(model)
+
               // bring back native context menu actions
               // https://github.com/microsoft/monaco-editor/issues/1084#issuecomment-509397388
               const el = editor.getDomNode()
               if (el) el.contentEditable = 'true'
 
-              if (monacoRef.current) {
-                const { KeyCode, KeyMod } = monacoRef.current
+              if (monaco) {
+                const { KeyCode, KeyMod } = monaco
 
                 // Contexts:
                 // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
@@ -212,7 +101,7 @@ const Input: React.FC<CellType> = ({
                   },
                   'suggestWidgetVisible',
                 )
-                editor.restoreViewState
+
                 // override default CtrlCmd + K
                 editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
                   dispatch({ type: 'focus-previous' })
@@ -238,10 +127,9 @@ const Input: React.FC<CellType> = ({
               editorRef.current = editor
             }}
             value={value}
-            onChange={(_, value = '') => {
+            onChange={(value = '', event) => {
               value = value.replace(/\n|\r/g, '') // remove line breaks
               dispatch({ type: 'set-cell', id, cell: { value } })
-              return value
             }}
             overrideServices={{
               // Enable expandSuggestionDocs by default (otherwise one would have to press Ctrl + Space each time)
@@ -295,23 +183,5 @@ const Input: React.FC<CellType> = ({
     </>
   )
 }
-
-const getThemeData = (theme: any) => ({
-  base: theme.colors.base as Monaco.editor.BuiltinTheme,
-  inherit: true,
-  rules: [],
-
-  colors: {
-    // Monaco doesn't allow instances to have different themes
-    // We use one and set the background to transparent to make it blend in
-    'editor.background': theme.colors.$background,
-    'editor.foreground': theme.colors.$foreground,
-    'editor.lineHighlightBackground': theme.colors.$background,
-    'editorSuggestWidget.background': theme.colors.$background,
-    'editor.selectionBackground': theme.colors.$selection,
-    'editor.selectionHighlightBackground': theme.colors.$background,
-    'editorCursor.foreground': theme.colors.$caret,
-  },
-})
 
 export default Input
