@@ -10,7 +10,7 @@ export default function useMouseTrap(
     mousetrap.bind(handlerKey, callback, action)
 
     return () => {
-      mousetrap.unbind(handlerKey)
+      mousetrap.unbind(handlerKey, action)
     }
   }, [handlerKey])
 }
