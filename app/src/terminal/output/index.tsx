@@ -1,11 +1,10 @@
+import { useListener, useXterm } from '@hooks'
 import { styled } from '@src/stitches.config'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import type { CellType, ServerMessage, ThemeMode } from '../../../types'
 import { Div } from '../../components'
 import useStore from '../../store'
-import { useListener } from '../../utils'
 import Mdx from './mdx'
-import { useXterm } from './xterm'
 
 const Output: React.FC<CellType> = cell => {
   const dispatch = useStore(state => state.dispatch)

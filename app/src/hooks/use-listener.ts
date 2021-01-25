@@ -1,12 +1,11 @@
 import { useEffect } from 'react'
-import type { ServerMessage } from '../../types'
-import { ipc } from './'
+import { ipc } from '../utils'
 
-export const useListener = (
+export default function useListener(
   channel: string,
   listener: (_event: any, message: any) => void,
   deps = [] as any[],
-) => {
+) {
   // receive events from server
   useEffect(() => {
     ipc.on(channel, listener)

@@ -39,6 +39,7 @@
     "@testing-library/react": "^11.0.0",
     "@types/chai": "^4.2.13",
     "@types/electron": "^1.6.10",
+    "@types/mousetrap": "^1.6.5",
     "@types/react": "^16.9.56",
     "@types/react-dom": "^16.9.8",
     "@types/react-syntax-highlighter": "^13.5.0",
