@@ -102,6 +102,14 @@ const Input: React.FC<CellType> = ({
                   'suggestWidgetVisible',
                 )
 
+                editor.addCommand(
+                  KeyCode.Tab,
+                  () => {
+                    editor.trigger('', 'editor.action.triggerSuggest', {})
+                  },
+                  '!suggestWidgetVisible',
+                )
+
                 // override default CtrlCmd + K
                 editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
                   dispatch({ type: 'focus-cell', id: 'previous' })
