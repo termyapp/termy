@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useKey } from 'react-use'
 import { Div } from '@components'
+import { useMonaco } from '@monaco-editor/react'
+import { useMouseTrap } from '@src/hooks'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import shallow from 'zustand/shallow'
 import { css, globalStyles } from '../stitches.config'
 import useStore from '../store'
+import { getThemeData, isDev, loadMonaco } from '../utils'
 import Nav, { navHeight } from './nav'
-import Tab from './tab'
-import { isDev, loadMonaco, getThemeData } from '../utils'
 import { TERMY } from './prompt/input'
-import { useMonaco } from '@monaco-editor/react'
-import shallow from 'zustand/shallow'
+import Tab from './tab'
 
 loadMonaco()
 
@@ -17,8 +17,10 @@ const App: React.FC = () => {
     useCallback(state => Object.keys(state.tabs), []),
     shallow,
   )
-  const theme = useStore(state => state.theme)
+  const dispatch = useStore(state => state.dispatch)
   const activeTab = useStore(state => state.activeTab)
+  const theme = useStore(state => state.theme)
+
   useMemo(() => globalStyles(), [])
   const themeClass = useMemo(() => css.theme(theme), [theme])
 
@@ -33,30 +35,44 @@ const App: React.FC = () => {
     document.body.className = themeClass
   }, [themeClass])
 
-  // prevent reload (allow force reload)
-  useKey('r', e => {
-    // note electron-debug overrides this in dev
-    if (!isDev && e.metaKey && !e.shiftKey) {
-      e.preventDefault()
-    }
+  useMouseTrap('meta+t', () => {
+    dispatch({ type: 'new-tab' })
+    return false
+  })
+  useMouseTrap('meta+w', () => {
+    dispatch({ type: 'remove-cell' })
+    return false
+  })
+  useMouseTrap('meta+shift+w', () => {
+    dispatch({ type: 'remove-tab' })
+    return false
+  })
+  useMouseTrap('meta+n', () => {
+    dispatch({ type: 'new-cell' })
+    return false
+  })
+  useMouseTrap('meta+r', () => {
+    // prevent reload (allow force reload)
+    // note: electron-debug overrides this in dev
+    return !isDev
+  })
+  useMouseTrap('meta+j', () => {
+    dispatch({ type: 'focus-cell', id: 'next' })
+    return false
+  })
+  useMouseTrap('meta+k', () => {
+    dispatch({ type: 'focus-cell', id: 'previous' })
+    return false
   })
 
-  // prevent reload (allow force reload)
-  useKey('t', e => {
-    // note electron-debug overrides this in dev
-    if (e.metaKey) {
-      e.preventDefault()
-      // dispatch({type:})
-    }
-  })
-
+  console.log('tabs', tabs)
   return (
     <>
       <Nav tabs={tabs} />
       <Div
         css={{
           position: 'absolute',
-          height: `calc(100% - ${navHeight})nav`,
+          height: `calc(100% - ${navHeight})`,
           width: '100%',
           top: navHeight,
           right: 0,

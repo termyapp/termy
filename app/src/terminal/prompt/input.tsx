@@ -104,7 +104,7 @@ const Input: React.FC<CellType> = ({
 
                 // override default CtrlCmd + K
                 editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
-                  dispatch({ type: 'focus-previous' })
+                  dispatch({ type: 'focus-cell', id: 'previous' })
                 })
               }
 

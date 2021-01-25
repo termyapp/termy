@@ -1,6 +1,5 @@
 import { Grid } from '@components'
 import React, { useCallback } from 'react'
-import { useKey } from 'react-use'
 import shallow from 'zustand/shallow'
 import useStore from '../store'
 import Cell from './cell'
@@ -15,22 +14,6 @@ const Tab: React.FC<{ tabId: string; active: boolean }> = ({
     shallow,
   )
   const focusedCellId = useStore(state => state.focus) // this might rerender all the cells on change
-  const dispatch = useStore(state => state.dispatch)
-
-  useKey('n', e => e.metaKey && dispatch({ type: 'new' }))
-  useKey('j', e => e.metaKey && dispatch({ type: 'focus-next' }))
-  useKey('k', e => e.metaKey && dispatch({ type: 'focus-previous' }))
-  useKey(
-    'w',
-    e => {
-      if (e.metaKey) {
-        e.preventDefault()
-        dispatch({ type: 'remove', id: focusedCellId })
-      }
-    },
-    {},
-    [focusedCellId],
-  )
 
   return (
     <Grid
