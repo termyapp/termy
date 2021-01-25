@@ -3,6 +3,7 @@ module.exports = {
   alias: {
     '@src': './src',
     '@components': './src/components',
+    '@hooks': './src/hooks',
     '@types': './types',
   },
   mount: {
