@@ -81,7 +81,6 @@ const Input: React.FC<CellType> = ({
                 editor.addCommand(
                   KeyMod.CtrlCmd | KeyCode.Enter,
                   () => {
-                    console.log('here')
                     editor.trigger('', 'acceptSelectedSuggestion', {})
                     dispatch({ type: 'run-cell', id, input: editor.getValue() })
                   },

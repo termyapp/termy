@@ -66,7 +66,6 @@ const App: React.FC = () => {
     return false
   })
 
-  console.log('tabs', tabs)
   return (
     <>
       <Nav tabs={tabs} activeTab={activeTab} />

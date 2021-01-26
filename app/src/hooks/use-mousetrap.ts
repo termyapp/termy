@@ -19,7 +19,6 @@ export default function useMouseTrap(
 
   useEffect(() => {
     mousetrap.bind(handlerKey, callbackRef.current, 'keydown')
-    console.log(handlerKey)
     return () => {
       mousetrap.unbind(handlerKey, action)
     }

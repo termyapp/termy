@@ -81,8 +81,6 @@ export const loadMonaco = () => {
           suggestionToCompletionItem,
         )
 
-        console.log(value, currentDir, suggestions)
-
         return { incomplete: false, suggestions }
       },
     })

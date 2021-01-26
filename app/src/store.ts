@@ -57,7 +57,7 @@ const initialState = (() => {
 
 const reducer = (state: State, action: Action) => {
   return produce(state, draft => {
-    console.log('dispatched', action.type.toUpperCase(), action)
+    console.log(action.type.toUpperCase(), action)
     switch (action.type) {
       case 'new-cell': {
         const cell = getDefaultCell()
@@ -118,10 +118,6 @@ const reducer = (state: State, action: Action) => {
         }
 
         draft.activeTab = active
-        console.log(
-          Object.keys(draft.tabs[active])[0],
-          Object.keys(draft.tabs[active]),
-        )
         draft.focus = Object.keys(draft.tabs[active])[0]
         break
       }
