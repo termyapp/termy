@@ -24,16 +24,17 @@ const App: React.FC = () => {
   useMemo(() => globalStyles(), [])
   const themeClass = useMemo(() => css.theme(theme), [theme])
 
-  const monaco = useMonaco()
-
-  //   update theme
-  useEffect(() => {
-    monaco?.editor.defineTheme(TERMY, getThemeData(theme))
-  }, [theme, monaco])
-
   useEffect(() => {
     document.body.className = themeClass
   }, [themeClass])
+
+  const monaco = useMonaco()
+
+  // update monaco theme
+  useEffect(() => {
+    monaco?.editor.defineTheme(TERMY, getThemeData(theme))
+    monaco?.editor.setTheme(TERMY) // force re-render
+  }, [theme, monaco])
 
   useMouseTrap('meta+t', () => {
     dispatch({ type: 'new-tab' })

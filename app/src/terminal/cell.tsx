@@ -14,6 +14,7 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'> & { tabId: string }> = ({
   const cell = useStore(useCallback(state => state.tabs[tabId][id], [id]))
   const dispatch = useStore(state => state.dispatch)
 
+  // run initial cell on mount
   useEffect(() => {
     if (cell.value === 'shortcuts')
       dispatch({ type: 'run-cell', id, input: cell.value })
@@ -23,7 +24,10 @@ const Cell: React.FC<Pick<CellType, 'id' | 'focused'> & { tabId: string }> = ({
   if (typeof cell === 'undefined') return null
 
   return (
-    <Card onFocus={() => dispatch({ type: 'focus', id })} focused={focused}>
+    <Card
+      onFocus={() => dispatch({ type: 'focus-cell', id })}
+      focused={focused}
+    >
       <Prompt {...cell} focused={focused} />
       <Output {...cell} focused={focused} />
     </Card>

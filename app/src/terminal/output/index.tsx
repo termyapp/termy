@@ -55,12 +55,14 @@ const Output: React.FC<CellType> = cell => {
                     id,
                     cell: { currentDir: actionValue },
                   })
+                  break
                 }
                 case 'theme': {
                   dispatch({
                     type: 'set-theme',
                     theme: actionValue as ThemeMode,
                   })
+                  break
                 }
               }
             })
