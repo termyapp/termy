@@ -69,7 +69,7 @@ const App: React.FC = () => {
   console.log('tabs', tabs)
   return (
     <>
-      <Nav tabs={tabs} />
+      <Nav tabs={tabs} activeTab={activeTab} />
       <Div
         css={{
           position: 'absolute',
@@ -81,8 +81,8 @@ const App: React.FC = () => {
           left: 0,
         }}
       >
-        {tabs.map(id => (
-          <Tab key={id} tabId={id} active={activeTab === id} />
+        {tabs.map((id, i) => (
+          <Tab key={id} id={id} active={activeTab === id} index={i} />
         ))}
       </Div>
     </>
