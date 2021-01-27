@@ -30,7 +30,7 @@ module.exports = {
     '@snowpack/plugin-webpack',
   ],
   devOptions: {
-    port: 8080,
+    port: 4242,
     open: 'none',
   },
   buildOptions: {

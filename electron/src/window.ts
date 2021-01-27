@@ -32,7 +32,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
 
   await window.loadURL(
     isDev
-      ? 'http://localhost:8080'
+      ? 'http://localhost:4242'
       : `file://${path.join(app.getAppPath(), 'build/index.html')}`,
   )
 
