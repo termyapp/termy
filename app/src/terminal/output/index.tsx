@@ -1,24 +1,20 @@
+import { useListener, useXterm } from '@hooks'
 import { styled } from '@src/stitches.config'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import type { CellType, ServerMessage, ThemeMode } from '../../../types'
 import { Div } from '../../components'
 import useStore from '../../store'
-import { useListener } from '../../utils'
 import Mdx from './mdx'
-import { useXterm } from './xterm'
 
-const Output: React.FC<Pick<CellType, 'id' | 'focused'>> = ({
-  id,
-  focused,
-}) => {
-  const cell = useStore(useCallback(state => state.cells[id], [id]))
+const Output: React.FC<CellType> = cell => {
   const dispatch = useStore(state => state.dispatch)
+  const { id } = cell
 
   // mdx
   const [mdx, setMdx] = useState('')
 
   // pty
-  const { terminalContainerRef, terminalRef } = useXterm({ ...cell, focused })
+  const { terminalContainerRef, terminalRef } = useXterm(cell)
 
   useListener(`message-${id}`, (_, message: ServerMessage) => {
     console.log('received', message)
@@ -59,12 +55,14 @@ const Output: React.FC<Pick<CellType, 'id' | 'focused'>> = ({
                     id,
                     cell: { currentDir: actionValue },
                   })
+                  break
                 }
                 case 'theme': {
                   dispatch({
                     type: 'set-theme',
                     theme: actionValue as ThemeMode,
                   })
+                  break
                 }
               }
             })
@@ -74,14 +72,6 @@ const Output: React.FC<Pick<CellType, 'id' | 'focused'>> = ({
       }
     }
   })
-
-  useEffect(() => {
-    if (cell.value === 'shortcuts')
-      dispatch({ type: 'run-cell', id, input: cell.value })
-  }, [])
-
-  // it only breaks after we remove the first cell
-  if (typeof cell === 'undefined') return null
 
   return (
     <Wrapper>

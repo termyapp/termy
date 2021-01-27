@@ -1,44 +1,51 @@
 import { Grid } from '@components'
-import React, { useCallback } from 'react'
-import { useKey } from 'react-use'
+import { useMousetrap } from '@src/hooks'
+import React, { useCallback, useEffect } from 'react'
 import shallow from 'zustand/shallow'
 import useStore from '../store'
-import Cell from './cell'
+import Cell, { focusCell } from './cell'
 
-const Tab: React.FC = () => {
-  // Mapped picks, re-renders the component when state.treats changes in order, count or keys
+const Tab: React.FC<{
+  id: string
+  index: number
+  activeTab: string
+}> = ({ id, index, activeTab }) => {
   const cellIds = useStore(
-    useCallback(state => Object.keys(state.cells), []),
+    useCallback(state => Object.keys(state.tabs[id].cells), [id]),
     shallow,
   )
-  const focusedCellId = useStore(state => state.focus) // this might rerender all the cells on change
+  const activeCell = useStore(
+    useCallback(state => state.tabs[id].activeCell, [id]),
+    shallow,
+  )
   const dispatch = useStore(state => state.dispatch)
 
-  useKey('n', e => e.metaKey && dispatch({ type: 'new' }))
-  useKey('j', e => e.metaKey && dispatch({ type: 'focus-next' }))
-  useKey('k', e => e.metaKey && dispatch({ type: 'focus-previous' }))
-  useKey(
-    'w',
-    e => {
-      if (e.metaKey) {
-        e.preventDefault()
-        dispatch({ type: 'remove', id: focusedCellId })
-      }
-    },
-    {},
-    [focusedCellId],
-  )
+  useMousetrap(`meta+${index + 1}`, () => {
+    dispatch({ type: 'focus-tab', id })
+  })
+
+  useEffect(() => {
+    if (activeTab === id) {
+      focusCell(activeCell)
+    }
+  }, [activeTab, activeCell])
 
   return (
     <Grid
       css={{
+        display: activeTab === id ? 'grid' : 'none',
         height: '100%',
         gridAutoRows: 'minmax(0, 1fr)',
         rowGap: '$2',
       }}
     >
-      {cellIds.map(id => (
-        <Cell key={id} id={id} focused={id === focusedCellId} />
+      {cellIds.map(cellId => (
+        <Cell
+          key={cellId}
+          tabId={id}
+          id={cellId}
+          active={cellId === activeCell}
+        />
       ))}
     </Grid>
   )

@@ -8,13 +8,7 @@ import useStore from '../../store'
 
 export const TERMY = 'shell'
 
-const Input: React.FC<CellType> = ({
-  id,
-  currentDir,
-  value,
-  focused,
-  status,
-}) => {
+const Input: React.FC<CellType> = ({ id, currentDir, value, status }) => {
   const dispatch = useStore(state => state.dispatch)
   const theme = useStore(state => state.theme)
 
@@ -33,11 +27,6 @@ const Input: React.FC<CellType> = ({
     })
   }, [status])
 
-  // focus
-  useEffect(() => {
-    if (focused) editorRef.current?.focus()
-  }, [focused])
-
   return (
     <>
       <Div
@@ -50,6 +39,8 @@ const Input: React.FC<CellType> = ({
         <Div
           id={id}
           data-cd={currentDir} // needed for monaco completion provider
+          tabIndex={-1} // make it focusable
+          onFocus={() => editorRef.current?.focus()}
           css={{
             width: '100%',
             height: '100%',
@@ -81,7 +72,6 @@ const Input: React.FC<CellType> = ({
                 editor.addCommand(
                   KeyMod.CtrlCmd | KeyCode.Enter,
                   () => {
-                    console.log('here')
                     editor.trigger('', 'acceptSelectedSuggestion', {})
                     dispatch({ type: 'run-cell', id, input: editor.getValue() })
                   },
@@ -102,9 +92,17 @@ const Input: React.FC<CellType> = ({
                   'suggestWidgetVisible',
                 )
 
+                editor.addCommand(
+                  KeyCode.Tab,
+                  () => {
+                    editor.trigger('', 'editor.action.triggerSuggest', {})
+                  },
+                  '!suggestWidgetVisible',
+                )
+
                 // override default CtrlCmd + K
                 editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_K, () => {
-                  dispatch({ type: 'focus-previous' })
+                  dispatch({ type: 'focus-cell', id: 'previous' })
                 })
               }
 

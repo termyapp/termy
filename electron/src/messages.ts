@@ -13,7 +13,6 @@ export default () => {
 
   ipcMain.handle('suggestions', async (event, input, currentDir) => {
     const suggestions = await native.getSuggestions(input, currentDir)
-    console.log(input, currentDir, suggestions)
     return suggestions
   })
 }

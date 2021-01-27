@@ -1,15 +1,15 @@
-import useStore, { focusCell } from '@src/store'
+import { useDebounce } from '@hooks'
+import useStore from '@src/store'
+import { focusCell } from '@src/terminal/cell'
 import { ipc } from '@src/utils'
 import type { CellType, Message, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
-import { useDebounce } from 'react-use'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 
-export const useXterm = ({ id, status, focused, type }: CellType) => {
+export default function useXterm({ id, status, active, type }: CellType) {
   const theme = useStore(state => state.theme)
-  const dispatch = useStore(state => state.dispatch)
 
   const [size, setSize] = useState<XtermSize>()
 
@@ -100,7 +100,7 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
 
   // update theme
   useEffect(() => {
-    const background = focused
+    const background = active
       ? theme.colors.$focusedBackground
       : theme.colors.$background
     const cursor = over ? background : theme.colors.$caret
@@ -111,7 +111,7 @@ export const useXterm = ({ id, status, focused, type }: CellType) => {
       cursor,
     })
     terminalRef.current?.setOption('fontFamily', theme.fonts.$mono)
-  }, [theme, focused, over])
+  }, [theme, active, over])
 
   // resize observer
   useEffect(() => {
