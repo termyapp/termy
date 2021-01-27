@@ -3,9 +3,6 @@ use crossbeam_channel::{Receiver, Sender};
 use log::error;
 use serde::{Deserialize, Serialize};
 
-/// Synonymous with "Shell" or "CLI"
-/// Naming it "Cell" makes it consistent with the frontend
-/// Once we have a name for Termy's shell language, it might make sense to rename this
 pub struct Cell {
     #[allow(dead_code)]
     id: String,

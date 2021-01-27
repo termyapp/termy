@@ -1,4 +1,4 @@
-use crate::cell::{tsfn_send, Cell, CellChannel, Data, ServerMessage, Status};
+use crate::shell::{tsfn_send, Cell, CellChannel, Data, ServerMessage, Status};
 use anyhow::Result;
 use io::Read;
 use log::{error, info, warn};
@@ -25,7 +25,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     cmd.env("TERM", "xterm-256color");
     cmd.env("COLORTERM", "truecolor");
     cmd.env("TERM_PROGRAM", "Termy");
-    cmd.env("TERM_PROGRAM_VERSION", "v0.1.3"); // todo: use a var here
+    cmd.env("TERM_PROGRAM_VERSION", "v0.2"); // todo: use a var here
 
     cmd.cwd(&cell.current_dir());
     cmd.args(args);

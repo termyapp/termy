@@ -2,20 +2,20 @@
 extern crate napi_derive;
 
 use autocomplete::Autocomplete;
-use cell::{Cell, CellChannel, CellProps, ServerMessage};
 use command::{external::FrontendMessage, internal::Internal};
 use crossbeam_channel::{unbounded, Sender};
 use log::info;
 use napi::{
     CallContext, JsExternal, JsFunction, JsObject, JsString, JsUndefined, JsUnknown, Result,
 };
+use shell::{Cell, CellChannel, CellProps, ServerMessage};
 use std::thread;
 
 mod autocomplete;
-mod cell;
 mod command;
 mod db;
 mod logger;
+mod shell;
 mod util;
 
 #[module_exports]

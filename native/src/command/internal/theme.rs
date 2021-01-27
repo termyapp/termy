@@ -1,4 +1,4 @@
-use crate::cell::Action;
+use crate::shell::Action;
 use indoc::formatdoc;
 
 pub fn theme(args: Vec<String>) -> (String, Option<Action>) {
