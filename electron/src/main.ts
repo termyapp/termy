@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import setupMessages from './messages'
 import { createWindow } from './window'
 import fixPath from 'fix-path'
@@ -20,6 +20,17 @@ let mainWindow: BrowserWindow
 app.on('ready', () => {
   createMainWindow()
   setupMessages()
+
+  // prevent window from closing (until we don't have a proper menu window)
+  const menu = Menu.getApplicationMenu()
+  if (menu) {
+    // @ts-ignore
+    const fileMenu = menu.items.find(item => item.role === 'filemenu')
+    if (fileMenu) {
+      fileMenu.visible = false
+      Menu.setApplicationMenu(menu)
+    }
+  }
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
