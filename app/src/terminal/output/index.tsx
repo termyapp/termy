@@ -1,6 +1,6 @@
 import { useListener, useXterm } from '@hooks'
 import { styled } from '@src/stitches.config'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import type { CellType, ServerMessage, ThemeMode } from '../../../types'
 import { Div } from '../../components'
 import useStore from '../../store'
@@ -72,14 +72,6 @@ const Output: React.FC<CellType> = cell => {
       }
     }
   })
-
-  useEffect(() => {
-    if (cell.value === 'shortcuts')
-      dispatch({ type: 'run-cell', id, input: cell.value })
-  }, [])
-
-  // it only breaks after we remove the first cell
-  if (typeof cell === 'undefined') return null
 
   return (
     <Wrapper>

@@ -1,11 +1,11 @@
 import { Div } from '@components'
 import { useMonaco } from '@monaco-editor/react'
-import { useMouseTrap } from '@src/hooks'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import { useMousetrap } from '@src/hooks'
+import React, { useEffect, useMemo } from 'react'
 import shallow from 'zustand/shallow'
 import { css, globalStyles } from '../stitches.config'
 import useStore from '../store'
-import { getThemeData, isDev, loadMonaco } from '../utils'
+import { getThemeData, loadMonaco } from '../utils'
 import Nav, { navHeight } from './nav'
 import { TERMY } from './prompt/input'
 import Tab from './tab'
@@ -13,12 +13,10 @@ import Tab from './tab'
 loadMonaco()
 
 const App: React.FC = () => {
-  const tabs = useStore(
-    useCallback(state => Object.keys(state.tabs), []),
-    shallow,
-  )
   const dispatch = useStore(state => state.dispatch)
+  const tabs = useStore(state => Object.keys(state.tabs), shallow)
   const activeTab = useStore(state => state.activeTab)
+
   const theme = useStore(state => state.theme)
 
   useMemo(() => globalStyles(), [])
@@ -36,34 +34,49 @@ const App: React.FC = () => {
     monaco?.editor.setTheme(TERMY) // force re-render
   }, [theme, monaco])
 
-  useMouseTrap('meta+t', () => {
+  useMousetrap('meta+t', () => {
     dispatch({ type: 'new-tab' })
-    return false
   })
-  useMouseTrap('meta+w', () => {
+  useMousetrap('meta+w', () => {
     dispatch({ type: 'remove-cell' })
-    return false
   })
-  useMouseTrap('meta+shift+w', () => {
+  useMousetrap('meta+shift+w', () => {
     dispatch({ type: 'remove-tab' })
-    return false
   })
-  useMouseTrap('meta+n', () => {
+  useMousetrap('meta+n', () => {
     dispatch({ type: 'new-cell' })
-    return false
   })
-  useMouseTrap('meta+r', () => {
-    // prevent reload (allow force reload)
+  useMousetrap(
+    'meta+j',
+    () => {
+      dispatch({ type: 'focus-cell', id: 'next' })
+    },
+    { repeat: true },
+  )
+  useMousetrap(
+    'meta+k',
+    () => {
+      dispatch({ type: 'focus-cell', id: 'previous' })
+    },
+    { repeat: true },
+  )
+  useMousetrap(
+    'ctrl+tab',
+    () => {
+      dispatch({ type: 'focus-tab', id: 'next' })
+    },
+    { repeat: true },
+  )
+  useMousetrap(
+    'ctrl+shift+tab',
+    () => {
+      dispatch({ type: 'focus-tab', id: 'previous' })
+    },
+    { repeat: true },
+  )
+  useMousetrap('meta+r', () => {
+    // prevent reload
     // note: electron-debug overrides this in dev
-    return !isDev
-  })
-  useMouseTrap('meta+j', () => {
-    dispatch({ type: 'focus-cell', id: 'next' })
-    return false
-  })
-  useMouseTrap('meta+k', () => {
-    dispatch({ type: 'focus-cell', id: 'previous' })
-    return false
   })
 
   return (
@@ -81,7 +94,7 @@ const App: React.FC = () => {
         }}
       >
         {tabs.map((id, i) => (
-          <Tab key={id} id={id} active={activeTab === id} index={i} />
+          <Tab key={id} id={id} index={i} activeTab={activeTab} />
         ))}
       </Div>
     </>

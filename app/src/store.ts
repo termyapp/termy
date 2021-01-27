@@ -5,21 +5,7 @@ import { devtools, redux } from 'zustand/middleware'
 import type { CellType, Message, ThemeMode } from '../types'
 import { api, getTheme, ipc, isDev } from './utils'
 
-type State = typeof initialState
-
-// todo: https://artsy.github.io/blog/2018/11/21/conditional-types-in-typescript/
-type Action =
-  | { type: 'new-cell' }
-  | { type: 'new-tab' }
-  | { type: 'remove-cell'; id?: string }
-  | { type: 'remove-tab'; id?: string }
-  | { type: 'set-cell'; id: string; cell: Partial<CellType> }
-  | { type: 'run-cell'; id: string; input: string }
-  | { type: 'set-theme'; theme: ThemeMode }
-  | { type: 'focus-cell'; id: string | 'next' | 'previous' }
-  | { type: 'focus-tab'; id: string | 'next' | 'previous' }
-
-const getDefaultCell = (): Omit<CellType, 'focused'> => {
+const getDefaultCell = (): Omit<CellType, 'active'> => {
   const id = v4()
   return {
     id,
@@ -30,28 +16,22 @@ const getDefaultCell = (): Omit<CellType, 'focused'> => {
   }
 }
 
-export const focusCell = (id: string) => {
-  const cell = document.getElementById(id)
-  if (cell) {
-    cell.focus()
-  }
-}
-
 // todo: init cell input with `help` or `guide` on first launch
 const initialState = (() => {
-  const cell = getDefaultCell()
-  cell.value = 'shortcuts'
-
+  const cell = { ...getDefaultCell(), value: 'shortcuts' }
   const tab = v4()
+
   return {
     tabs: {
       [tab]: {
-        [cell.id]: cell,
+        cells: {
+          [cell.id]: cell,
+        },
+        activeCell: cell.id,
       },
     },
     activeTab: tab,
     theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
-    focus: cell.id,
   }
 })()
 
@@ -61,77 +41,90 @@ const reducer = (state: State, action: Action) => {
     switch (action.type) {
       case 'new-cell': {
         const cell = getDefaultCell()
-        draft.tabs[draft.activeTab][cell.id] = cell
-        draft.focus = cell.id
+        const activeTab = draft.tabs[draft.activeTab]
+
+        activeTab.cells[cell.id] = cell
+        activeTab.activeCell = cell.id
         break
       }
       case 'new-tab': {
         const tab = v4()
         const cell = getDefaultCell()
-        draft.tabs[tab] = { [cell.id]: cell }
-        draft.focus = cell.id
+
+        draft.tabs[tab] = { cells: { [cell.id]: cell }, activeCell: cell.id }
         draft.activeTab = tab
         break
       }
       case 'remove-cell': {
-        const id = action.id || draft.focus
+        const id = action.id || draft.tabs[draft.activeTab].activeCell
         const tabs = Object.keys(draft.tabs)
-        const cells = Object.keys(draft.tabs[draft.activeTab])
+        const cells = Object.keys(draft.tabs[draft.activeTab].cells)
 
         if (tabs.length > 1) {
-          if (cells.length > 1) delete draft.tabs[draft.activeTab][id]
+          if (cells.length > 1) {
+            delete draft.tabs[draft.activeTab].cells[id]
+            draft.tabs[draft.activeTab].activeCell = nextOrLast(id, cells)
+          }
           // if it is the last remaining cell in the active tab, remove the tab
-          else delete draft.tabs[draft.activeTab]
+          else {
+            delete draft.tabs[draft.activeTab]
+            draft.activeTab = nextOrLast(draft.activeTab, tabs)
+          }
         } else {
           // prevent removing the last remaining cell
-          if (cells.length > 1) delete draft.tabs[draft.activeTab][id]
+          if (cells.length > 1) {
+            draft.tabs[draft.activeTab].activeCell = nextOrLast(id, cells)
+            delete draft.tabs[draft.activeTab].cells[id]
+          }
         }
 
-        // focus prev
-        const keys = Object.keys(draft.tabs)
-        const index = keys.findIndex(id => id === draft.focus)
-        let newIndex
-        if (index <= 0) {
-          newIndex = keys[keys.length - 1]
-        } else {
-          newIndex = keys[index - 1]
-        }
-        draft.activeTab = newIndex
         break
       }
       case 'remove-tab': {
-        const id = action.id || draft.focus
+        const id = action.id || draft.activeTab
         const tabs = Object.keys(draft.tabs)
 
+        // prevent removing the last tab
         if (tabs.length > 1) {
-          // prevent removing the last tab
           delete draft.tabs[id]
+          draft.activeTab = nextOrLast(id, tabs)
+        }
+        break
+      }
+      case 'focus-cell': {
+        let id = action.id
+
+        if (id === 'next' || id === 'previous') {
+          id = nextOrPrevious(
+            id,
+            draft.tabs[draft.activeTab].activeCell,
+            Object.keys(draft.tabs[draft.activeTab].cells),
+          )
         }
 
-        // focus prev
-        const index = tabs.findIndex(id => id === draft.activeTab)
-        let active
-        if (index <= 0) {
-          active = tabs[tabs.length - 1]
-        } else {
-          active = tabs[index - 1]
+        draft.tabs[draft.activeTab].activeCell = id
+        break
+      }
+      case 'focus-tab': {
+        let id = action.id
+
+        if (id === 'next' || id === 'previous') {
+          id = nextOrPrevious(id, draft.activeTab, Object.keys(draft.tabs))
         }
 
-        draft.activeTab = active
-        draft.focus = Object.keys(draft.tabs[active])[0]
+        draft.activeTab = id
         break
       }
       case 'set-cell': {
-        draft.tabs[draft.activeTab][action.id] = {
-          ...draft.tabs[draft.activeTab][action.id],
+        draft.tabs[draft.activeTab].cells[action.id] = {
+          ...draft.tabs[draft.activeTab].cells[action.id],
           ...action.cell,
         }
         break
       }
       case 'run-cell': {
-        const cell = draft.tabs[draft.activeTab][action.id]
+        const cell = draft.tabs[draft.activeTab].cells[action.id]
         if (!cell || !action.input || cell.status === 'running') return
-        console.log('running', action.input)
 
         // reset
         cell.status = null
@@ -150,57 +143,23 @@ const reducer = (state: State, action: Action) => {
         draft.theme = getTheme(action.theme)
         break
       }
-      case 'focus-cell': {
-        let focus = action.id
-
-        if (action.id === 'next') {
-          const keys = Object.keys(draft.tabs[draft.activeTab])
-          const index = keys.findIndex(id => id === draft.focus)
-          if (index >= keys.length - 1) {
-            focus = keys[0]
-          } else {
-            focus = keys[index + 1]
-          }
-        } else if (action.id === 'previous') {
-          const keys = Object.keys(draft.tabs[draft.activeTab])
-          const index = keys.findIndex(id => id === draft.focus)
-          if (index <= 0) {
-            focus = keys[keys.length - 1]
-          } else {
-            focus = keys[index - 1]
-          }
-        }
-
-        draft.focus = focus
-        break
-      }
-      case 'focus-tab': {
-        let active = action.id
-
-        if (action.id === 'next') {
-          const keys = Object.keys(draft.tabs)
-          const index = keys.findIndex(id => id === draft.activeTab)
-          if (index >= keys.length - 1) {
-            active = keys[0]
-          } else {
-            active = keys[index + 1]
-          }
-        } else if (action.id === 'previous') {
-          const keys = Object.keys(draft.tabs)
-          const index = keys.findIndex(id => id === draft.activeTab)
-          if (index <= 0) {
-            active = keys[keys.length - 1]
-          } else {
-            active = keys[index - 1]
-          }
-        }
-
-        draft.activeTab = active
-        break
-      }
     }
   })
 }
+
+type State = typeof initialState
+
+// todo: https://artsy.github.io/blog/2018/11/21/conditional-types-in-typescript/
+type Action =
+  | { type: 'new-cell' }
+  | { type: 'new-tab' }
+  | { type: 'remove-cell'; id?: string }
+  | { type: 'remove-tab'; id?: string }
+  | { type: 'set-cell'; id: string; cell: Partial<CellType> }
+  | { type: 'run-cell'; id: string; input: string }
+  | { type: 'set-theme'; theme: ThemeMode }
+  | { type: 'focus-cell'; id: string | 'next' | 'previous' }
+  | { type: 'focus-tab'; id: string | 'next' | 'previous' }
 
 // @ts-ignore
 const useStore: UseStore<
@@ -208,3 +167,26 @@ const useStore: UseStore<
 > = create(devtools(redux(reducer, initialState)))
 
 export default useStore
+
+const nextOrLast = (key: string, keys: string[]) => {
+  const index = keys.indexOf(key)
+  const newIndex = index === keys.length - 1 ? index - 1 : index + 1
+  return keys[newIndex]
+}
+
+const nextOrPrevious = (
+  direction: 'next' | 'previous',
+  key: string,
+  keys: string[],
+) => {
+  if (keys.length <= 1) return key
+
+  const index = keys.indexOf(key)
+  let newIndex
+  if (direction === 'next') {
+    newIndex = keys.length - 1 > index ? index + 1 : 0
+  } else {
+    newIndex = index > 0 ? index - 1 : keys.length - 1
+  }
+  return keys[newIndex]
+}

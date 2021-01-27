@@ -13,11 +13,11 @@ import Input from './input'
 import { Div, Flex, Path } from '@components'
 
 const Prompt: React.FC<CellType> = cell => {
-  const { focused, currentDir } = cell
+  const { active, currentDir } = cell
 
   return (
     <Wrapper
-      focused={focused}
+      active={active}
       // newLine={currentDir.length > 60} // todo: do better with long lines (decrease fontSize)
     >
       <CurrentDir>
@@ -42,7 +42,7 @@ const Wrapper = styled(Div, {
   alignItems: 'center',
 
   variants: {
-    focused: {
+    active: {
       true: {},
       false: {},
     },

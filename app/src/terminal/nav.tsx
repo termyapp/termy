@@ -10,6 +10,7 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
   activeTab,
 }) => {
   const dispatch = useStore(state => state.dispatch)
+
   return (
     <Flex
       className="header"
@@ -20,7 +21,7 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
       }}
     >
       {/* spacing */}
-      <Div css={{ width: '60px' }} />
+      <Div css={{ width: '69px' }} />
 
       <Flex css={{ width: '100%', mb: '$1' }}>
         {tabs.length > 1 &&
@@ -30,7 +31,7 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
               css={{
                 width: '100%',
                 alignItems: 'center',
-                justifyContent: 'flex-end',
+                justifyContent: 'center',
                 backgroundColor:
                   id === activeTab ? '$focusedBackground' : '$background',
                 px: '$3',

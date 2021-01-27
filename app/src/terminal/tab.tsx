@@ -1,31 +1,39 @@
 import { Grid } from '@components'
-import { useMouseTrap } from '@src/hooks'
-import React, { useCallback } from 'react'
+import { useMousetrap } from '@src/hooks'
+import React, { useCallback, useEffect } from 'react'
 import shallow from 'zustand/shallow'
 import useStore from '../store'
-import Cell from './cell'
+import Cell, { focusCell } from './cell'
 
-const Tab: React.FC<{ id: string; active: boolean; index: number }> = ({
-  id,
-  active,
-  index,
-}) => {
-  // Mapped picks, re-renders the component when state.cells changes in order, count or keys
+const Tab: React.FC<{
+  id: string
+  index: number
+  activeTab: string
+}> = ({ id, index, activeTab }) => {
   const cellIds = useStore(
-    useCallback(state => Object.keys(state.tabs[id]), []),
+    useCallback(state => Object.keys(state.tabs[id].cells), [id]),
     shallow,
   )
-  const focusedCellId = useStore(state => state.focus) // this might rerender all the cells on change
+  const activeCell = useStore(
+    useCallback(state => state.tabs[id].activeCell, [id]),
+    shallow,
+  )
   const dispatch = useStore(state => state.dispatch)
 
-  useMouseTrap(`meta+${index + 1}`, () => {
+  useMousetrap(`meta+${index + 1}`, () => {
     dispatch({ type: 'focus-tab', id })
   })
+
+  useEffect(() => {
+    if (activeTab === id) {
+      focusCell(activeCell)
+    }
+  }, [activeTab, activeCell])
 
   return (
     <Grid
       css={{
-        display: active ? 'grid' : 'none',
+        display: activeTab === id ? 'grid' : 'none',
         height: '100%',
         gridAutoRows: 'minmax(0, 1fr)',
         rowGap: '$2',
@@ -34,9 +42,9 @@ const Tab: React.FC<{ id: string; active: boolean; index: number }> = ({
       {cellIds.map(cellId => (
         <Cell
           key={cellId}
-          id={cellId}
-          focused={cellId === focusedCellId}
           tabId={id}
+          id={cellId}
+          active={cellId === activeCell}
         />
       ))}
     </Grid>
