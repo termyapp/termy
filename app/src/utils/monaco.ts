@@ -34,7 +34,8 @@ export const loadMonaco = () => {
         command: suggestion.label,
       })
       if (tldr) {
-        documentation = tldr
+        documentation =
+          tldr + '\n*Source:* [📚tldr](https://github.com/tldr-pages/tldr)'
       }
 
       if ('date' in suggestion && suggestion.date) {
@@ -79,8 +80,6 @@ export const loadMonaco = () => {
         const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
           suggestionToCompletionItem,
         )
-
-        console.log(value, currentDir, suggestions)
 
         return { incomplete: false, suggestions }
       },

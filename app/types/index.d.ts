@@ -10,7 +10,7 @@ export type CellType = {
   currentDir: string
   type: OutputType
   status: Status
-  focused: boolean
+  active: boolean
 }
 
 // not using these rn

@@ -6,7 +6,8 @@ export const isDev = import.meta.env.MODE === 'development'
 export const getTheme = (mode?: ThemeMode) =>
   mode === '#000' ? darkTheme : lightTheme
 
+export const isMac = /Mac/.test(navigator.userAgent)
+
 export * from './ipc'
-export * from './listener'
-export * from './typed-cli'
 export * from './monaco'
+export * from './typed-cli'
