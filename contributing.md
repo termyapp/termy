@@ -12,7 +12,7 @@
 1. Go into the native folder: `cd native`
 2. Install dependencies: `yarn`
 3. Build a the native package: `yarn build`
-4. Go back to electron folder: `cd ..`
+4. Go to the electron folder: `cd ../electron`
 5. Install electron dependencies: `yarn`
 6. Start electron: `yarn dev`
 7. In a separate console go to the app directory: `cd app`
