@@ -12,8 +12,8 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     info!("Running pty command: {:#?}", command);
     let pty_system = native_pty_system();
     let mut pair = pty_system.openpty(PtySize {
-        rows: 15,
-        cols: 80,
+        rows: 50,
+        cols: 100,
         pixel_width: 0,
         pixel_height: 0,
     })?;
