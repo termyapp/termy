@@ -56,7 +56,7 @@ const reducer = (state: State, action: Action) => {
         break
       }
       case 'remove-cell': {
-        const id = action.id || draft.tabs[draft.activeTab].activeCell
+        const id = action.id ?? draft.tabs[draft.activeTab].activeCell
         const tabs = Object.keys(draft.tabs)
         const cells = Object.keys(draft.tabs[draft.activeTab].cells)
 
@@ -70,18 +70,20 @@ const reducer = (state: State, action: Action) => {
             delete draft.tabs[draft.activeTab]
             draft.activeTab = nextOrLast(draft.activeTab, tabs)
           }
+          kill(id)
         } else {
           // prevent removing the last remaining cell
           if (cells.length > 1) {
             draft.tabs[draft.activeTab].activeCell = nextOrLast(id, cells)
             delete draft.tabs[draft.activeTab].cells[id]
+            kill(id)
           }
         }
 
         break
       }
       case 'remove-tab': {
-        const id = action.id || draft.activeTab
+        const id = action.id ?? draft.activeTab
         const tabs = Object.keys(draft.tabs)
 
         // prevent removing the last tab
@@ -123,8 +125,14 @@ const reducer = (state: State, action: Action) => {
         break
       }
       case 'run-cell': {
-        const cell = draft.tabs[draft.activeTab].cells[action.id]
-        if (!cell || !action.input || cell.status === 'running') return
+        const id = action.id ?? draft.tabs[draft.activeTab].activeCell
+        const cell = draft.tabs[draft.activeTab].cells[id]
+        if (!cell || !action.input) return
+
+        if (cell.status === 'running') {
+          kill(cell.id)
+          break
+        }
 
         // reset
         cell.status = null
@@ -137,6 +145,11 @@ const reducer = (state: State, action: Action) => {
         }
 
         ipc.send('message', message)
+        break
+      }
+      case 'kill-cell': {
+        const id = action.id ?? draft.tabs[draft.activeTab].activeCell
+        kill(id)
         break
       }
       case 'set-theme': {
@@ -157,6 +170,7 @@ type Action =
   | { type: 'remove-tab'; id?: string }
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
   | { type: 'run-cell'; id: string; input: string }
+  | { type: 'kill-cell'; id?: string }
   | { type: 'set-theme'; theme: ThemeMode }
   | { type: 'focus-cell'; id: string | 'next' | 'previous' }
   | { type: 'focus-tab'; id: string | 'next' | 'previous' }
@@ -189,4 +203,13 @@ const nextOrPrevious = (
     newIndex = index > 0 ? index - 1 : keys.length - 1
   }
   return keys[newIndex]
+}
+
+const kill = (id: string) => {
+  const message: Message = {
+    type: 'frontend-message',
+    id,
+    stdin: '\x03',
+  }
+  ipc.send('message', message)
 }

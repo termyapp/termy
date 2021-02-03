@@ -31,6 +31,13 @@ const Cell: React.FC<Pick<CellType, 'id' | 'active'> & { tabId: string }> = ({
       dispatch({ type: 'run-cell', id, input: cell.value })
   }, [])
 
+  // kill on onmount
+  useEffect(() => {
+    return () => {
+      dispatch({ type: 'kill-cell', id })
+    }
+  }, [])
+
   return (
     <Card onFocus={() => dispatch({ type: 'focus-cell', id })} active={active}>
       <Prompt {...cell} active={active} />
