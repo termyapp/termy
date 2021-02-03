@@ -27,7 +27,7 @@ export const loadMonaco = () => {
       suggestion: Suggestion | NativeSuggestion,
     ): Monaco.languages.CompletionItem => {
       let documentation = suggestion.documentation
-      let label: any = suggestion.label
+      let label: unknown = suggestion.label
 
       const tldr = ipc.sendSync('message', {
         type: 'tldr',
