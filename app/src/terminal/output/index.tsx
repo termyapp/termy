@@ -1,12 +1,12 @@
+import { Div } from '@components'
 import { useListener, useXterm } from '@hooks'
 import { styled } from '@src/stitches.config'
+import useStore from '@src/store'
+import type { ICellWithActive, ServerMessage, ThemeMode } from '@types'
 import React, { useState } from 'react'
-import type { CellType, ServerMessage, ThemeMode } from '../../../types'
-import { Div } from '../../components'
-import useStore from '../../store'
 import Mdx from './mdx'
 
-const Output: React.FC<CellType> = cell => {
+const Output: React.FC<ICellWithActive> = cell => {
   const dispatch = useStore(state => state.dispatch)
   const { id } = cell
 

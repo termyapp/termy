@@ -95,9 +95,9 @@ export const loadMonaco = () => {
         context: Monaco.languages.CompletionContext,
         token: Monaco.CancellationToken,
       ) => {
-        const input = model.getValue()
+        const value = model.getValue()
 
-        const suggestions = getTypedCliSuggestions(input).map(
+        const suggestions = getTypedCliSuggestions(value).map(
           suggestionToCompletionItem,
         )
 

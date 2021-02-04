@@ -1,18 +1,11 @@
-import {
-  CheckIcon,
-  Cross2Icon,
-  DotSolidIcon,
-  PlayIcon,
-  StopIcon,
-  UpdateIcon,
-} from '@modulz/radix-icons'
-import React from 'react'
-import type { CellType } from '@types'
-import { styled } from '@src/stitches.config'
-import Input from './input'
 import { Div, Flex, Path } from '@components'
+import { CheckIcon, Cross2Icon, PlayIcon } from '@modulz/radix-icons'
+import { styled } from '@src/stitches.config'
+import type { ICellWithActive } from '@types'
+import React from 'react'
+import Input from './input'
 
-const Prompt: React.FC<CellType> = cell => {
+const Prompt: React.FC<ICellWithActive> = cell => {
   const { active, currentDir } = cell
 
   return (

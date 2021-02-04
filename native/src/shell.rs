@@ -7,7 +7,7 @@ pub struct Cell {
   #[allow(dead_code)]
   id: String,
   current_dir: String,
-  input: String,
+  value: String,
 
   pub tsfn: ThreadsafeFunctionType,
   pub sender: Sender<CellChannel>,
@@ -24,13 +24,13 @@ impl Cell {
     let CellProps {
       id,
       current_dir,
-      input,
+      value,
     } = props;
 
     Self {
       id,
       current_dir,
-      input,
+      value,
 
       tsfn,
       sender,
@@ -46,7 +46,7 @@ impl Cell {
     self.send(ServerMessage::status(Status::Running));
 
     // once operators (|, &&, ||) are introduced, this could become Vec<Command>
-    let command = parse_input(&(self.input), &(self.current_dir));
+    let command = parse_value(&(self.value), &(self.current_dir));
 
     if let Err(err) = command.execute(self) {
       error!("Error while executing command: {}", err);
@@ -72,8 +72,8 @@ pub fn tsfn_send(tsfn: &ThreadsafeFunctionType, message: ServerMessage) {
 #[serde(rename_all = "camelCase")]
 pub struct CellProps {
   id: String,
+  value: String,
   current_dir: String,
-  input: String,
 }
 
 pub enum CellChannel {
@@ -123,18 +123,18 @@ pub enum Status {
   Error,
 }
 
-fn parse_input(input: &str, current_dir: &str) -> Command {
-  let mut tokens = tokenize_input(input);
+fn parse_value(value: &str, current_dir: &str) -> Command {
+  let mut tokens = tokenize_value(value);
 
   Command::new(tokens.remove(0), tokens, current_dir)
 }
 
-fn tokenize_input(input: &str) -> Vec<String> {
+fn tokenize_value(value: &str) -> Vec<String> {
   let mut inside_quotes = false;
   let mut tokens: Vec<String> = vec![];
   let mut token = String::new();
 
-  for c in input.chars() {
+  for c in value.chars() {
     if c == '"' {
       inside_quotes = !inside_quotes;
     } else if c.is_whitespace() && !inside_quotes {
@@ -154,9 +154,9 @@ mod tests {
   use super::*;
 
   #[test]
-  fn tokenizes_input() {
+  fn tokenizes_value() {
     assert_eq!(
-      tokenize_input("command arg1 arg2"),
+      tokenize_value("command arg1 arg2"),
       vec![
         "command".to_string(),
         "arg1".to_string(),
@@ -165,7 +165,7 @@ mod tests {
     );
 
     assert_eq!(
-      tokenize_input("create \"Whitespace inside quotes yay'\""),
+      tokenize_value("create \"Whitespace inside quotes yay'\""),
       vec![
         "create".to_string(),
         "Whitespace inside quotes yay'".to_string()
@@ -173,7 +173,7 @@ mod tests {
     );
 
     assert_eq!(
-      tokenize_input("diskutil \"\"WIN10\"\""),
+      tokenize_value("diskutil \"\"WIN10\"\""),
       vec!["diskutil".to_string(), "WIN10".to_string()]
     );
   }

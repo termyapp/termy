@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react'
 import shallow from 'zustand/shallow'
-import type { CellType } from '../../types'
 import { Flex } from '../components'
 import { styled } from '../stitches.config'
 import useStore from '../store'
@@ -14,29 +13,22 @@ export const focusCell = (id: string) => {
   }
 }
 
-const Cell: React.FC<Pick<CellType, 'id' | 'active'> & { tabId: string }> = ({
-  id,
-  tabId,
-  active,
-}) => {
+const Cell: React.FC<{ id: string; active: boolean }> = ({ id, active }) => {
   const cell = useStore(
-    useCallback(state => state.tabs[tabId].cells[id], [tabId, id]),
+    useCallback(state => state.cells[id], [id]),
     shallow,
   )
   const dispatch = useStore(state => state.dispatch)
 
   // run initial cell on mount
   useEffect(() => {
-    if (cell.value === 'shortcuts')
-      dispatch({ type: 'run-cell', id, input: cell.value })
-  }, [])
+    if (cell.value === 'shortcuts') dispatch({ type: 'run-cell', id })
 
-  // kill on onmount
-  useEffect(() => {
+    // kill on onmount
     return () => {
       dispatch({ type: 'kill-cell', id })
     }
-  }, [])
+  }, [id])
 
   return (
     <Card onFocus={() => dispatch({ type: 'focus-cell', id })} active={active}>

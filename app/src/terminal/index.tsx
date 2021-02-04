@@ -46,6 +46,13 @@ const App: React.FC = () => {
   useMousetrap('meta+n', () => {
     dispatch({ type: 'new-cell' })
   })
+  useMousetrap('meta+s', () => {
+    dispatch({ type: 'kill-cell' })
+  })
+  useMousetrap('meta+r', () => {
+    // note: something overrides this in dev
+    dispatch({ type: 'run-cell' })
+  })
   useMousetrap(
     'meta+j',
     () => {
@@ -74,10 +81,6 @@ const App: React.FC = () => {
     },
     { repeat: true },
   )
-  useMousetrap('meta+r', () => {
-    // prevent reload
-    // note: electron-debug overrides this in dev
-  })
 
   return (
     <>

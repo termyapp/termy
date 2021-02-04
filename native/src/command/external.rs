@@ -42,7 +42,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     .expect("Failed to clone threadsafe function");
   let sender_clone = cell.sender.clone();
 
-  let (flow_sender, flow_receiver) = unbounded::<FlowControl>();
+  let (action_sender, action_receiver) = unbounded::<Action>();
 
   thread::spawn(move || {
     // Stop-and-wait type flow control works fine here
@@ -54,7 +54,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
 
     loop {
       if paused {
-        if let Ok(FlowControl::Resume) = flow_receiver.recv() {
+        if let Ok(Action::Resume) = action_receiver.recv() {
           paused = false;
           continue;
         } else {
@@ -98,13 +98,20 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
         id,
         stdin,
         size,
-        flow_control,
+        action,
       })) => {
-        if let Some(flow_control) = flow_control {
-          if let Ok(()) = flow_sender.send(flow_control) {
-            info!("Sent flow control");
+        if let Some(action) = action {
+          if action == Action::Kill {
+            if let Err(err) = child.kill() {
+              error!("Error while killing child: {}", err);
+              return Ok(Status::Success);
+            }
           } else {
-            error!("Failed to send flow control");
+            if let Ok(()) = action_sender.send(action) {
+              info!("Sent action");
+            } else {
+              error!("Failed to send action");
+            }
           }
         } else if let Some(message) = stdin {
           // Send data to the pty by writing to the master
@@ -127,7 +134,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
         }
       }
       Ok(CellChannel::Exit) => {
-        return Ok(if child.wait()?.success() {
+        return Ok(if child.wait().expect("Failed to poll child").success() {
           Status::Success
         } else {
           Status::Error
@@ -140,9 +147,9 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
 
 #[derive(Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
-enum FlowControl {
+enum Action {
   Resume,
-  Pause, // currently not used
+  Kill,
 }
 
 #[derive(Deserialize, Debug)]
@@ -151,7 +158,7 @@ pub struct FrontendMessage {
   id: String,
   stdin: Option<String>,
   size: Option<Size>,
-  flow_control: Option<FlowControl>,
+  action: Option<Action>,
 }
 
 #[derive(Deserialize, Debug)]

@@ -2,13 +2,13 @@ import Editor from '@monaco-editor/react'
 // only import it as type, otherwise it overrides @monaco-editor/react instance
 import type * as Monaco from 'monaco-editor'
 import React, { useEffect, useRef } from 'react'
-import type { CellType } from '../../../types'
+import type { ICell } from '../../../types'
 import { Div } from '../../components'
 import useStore from '../../store'
 
 export const TERMY = 'shell'
 
-const Input: React.FC<CellType> = ({ id, currentDir, value, status }) => {
+const Input: React.FC<ICell> = ({ id, currentDir, value, status }) => {
   const dispatch = useStore(state => state.dispatch)
   const theme = useStore(state => state.theme)
 
@@ -73,14 +73,14 @@ const Input: React.FC<CellType> = ({ id, currentDir, value, status }) => {
                   KeyMod.CtrlCmd | KeyCode.Enter,
                   () => {
                     editor.trigger('', 'acceptSelectedSuggestion', {})
-                    dispatch({ type: 'run-cell', id, input: editor.getValue() })
+                    dispatch({ type: 'run-cell', id })
                   },
                   'suggestWidgetVisible',
                 )
 
                 editor.addCommand(KeyCode.Enter, () => {
                   editor.trigger('', 'hideSuggestWidget', {})
-                  dispatch({ type: 'run-cell', id, input: editor.getValue() })
+                  dispatch({ type: 'run-cell', id })
                 })
 
                 editor.addCommand(

@@ -11,7 +11,7 @@ const Tab: React.FC<{
   activeTab: string
 }> = ({ id, index, activeTab }) => {
   const cellIds = useStore(
-    useCallback(state => Object.keys(state.tabs[id].cells), [id]),
+    useCallback(state => state.tabs[id].cells, [id]),
     shallow,
   )
   const activeCell = useStore(
@@ -40,12 +40,7 @@ const Tab: React.FC<{
       }}
     >
       {cellIds.map(cellId => (
-        <Cell
-          key={cellId}
-          tabId={id}
-          id={cellId}
-          active={cellId === activeCell}
-        />
+        <Cell key={cellId} id={cellId} active={cellId === activeCell} />
       ))}
     </Grid>
   )
