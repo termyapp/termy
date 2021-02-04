@@ -120,19 +120,22 @@ export default function useXterm({
 
   // resize observer
   useEffect(() => {
-    const updateSize = () => {
-      if (terminalRef.current) {
-        setSize({
-          rows: terminalRef.current.rows,
-          cols: terminalRef.current.cols,
-        })
+    if (terminalContainerRef.current) {
+      const updateSize = () => {
+        if (terminalRef.current) {
+          setSize({
+            rows: terminalRef.current.rows,
+            cols: terminalRef.current.cols,
+          })
+        }
       }
+
+      updateSize()
+
+      const resizeObserver = new ResizeObserver(updateSize)
+      resizeObserver.observe(terminalContainerRef.current)
+      return () => resizeObserver.disconnect()
     }
-
-    updateSize()
-
-    if (terminalContainerRef.current)
-      new ResizeObserver(updateSize).observe(terminalContainerRef.current)
   }, [])
 
   return { terminalContainerRef, terminalRef }

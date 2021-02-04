@@ -16,65 +16,70 @@ const Output: React.FC<ICellWithActive> = cell => {
   // pty
   const { terminalContainerRef, terminalRef } = useXterm(cell)
 
-  useListener(`message-${id}`, (_, message: ServerMessage) => {
-    console.log('received', message)
-    for (const [key, value] of Object.entries(message)) {
-      switch (key) {
-        case 'error': {
-          console.error(message.error)
-          break
-        }
-        case 'status': {
-          dispatch({ type: 'set-cell', id, cell: { status: value } })
-          break
-        }
-        case 'text': {
-          dispatch({ type: 'set-cell', id, cell: { type: 'text' } })
-          const chunk = new Uint8Array(value)
-          terminalRef.current?.write(chunk, () => {
-            // we pause immediately in external.rs
-            dispatch({ type: 'resume-cell', id })
-          })
-          break
-        }
-        case 'mdx': {
-          dispatch({ type: 'set-cell', id, cell: { type: 'mdx' } })
-          setMdx(value)
-          break
-        }
-        case 'api': {
-          break
-        }
-        case 'action':
-          {
-            if (!message.action) return
-            // handle internal stuff
-
-            message.action.forEach(([actionKey, actionValue]) => {
-              switch (actionKey) {
-                case 'cd': {
-                  dispatch({
-                    type: 'set-cell',
-                    id,
-                    cell: { currentDir: actionValue },
-                  })
-                  break
-                }
-                case 'theme': {
-                  dispatch({
-                    type: 'set-theme',
-                    theme: actionValue as ThemeMode,
-                  })
-                  break
-                }
-              }
-            })
+  useListener(
+    `message-${id}`,
+    (_, message: ServerMessage) => {
+      console.log('received', message)
+      for (const [key, value] of Object.entries(message)) {
+        switch (key) {
+          case 'error': {
+            console.error(message.error)
+            break
           }
+          case 'status': {
+            dispatch({ type: 'set-cell', id, cell: { status: value } })
+            break
+          }
+          case 'text': {
+            if (cell.type !== 'text')
+              dispatch({ type: 'set-cell', id, cell: { type: 'text' } })
+            const chunk = new Uint8Array(value)
+            terminalRef.current?.write(chunk, () => {
+              // we pause immediately in external.rs
+              dispatch({ type: 'resume-cell', id })
+            })
+            break
+          }
+          case 'mdx': {
+            dispatch({ type: 'set-cell', id, cell: { type: 'mdx' } })
+            setMdx(value)
+            break
+          }
+          case 'api': {
+            break
+          }
+          case 'action':
+            {
+              if (!message.action) return
+              // handle internal stuff
 
-          break
+              message.action.forEach(([actionKey, actionValue]) => {
+                switch (actionKey) {
+                  case 'cd': {
+                    dispatch({
+                      type: 'set-cell',
+                      id,
+                      cell: { currentDir: actionValue },
+                    })
+                    break
+                  }
+                  case 'theme': {
+                    dispatch({
+                      type: 'set-theme',
+                      theme: actionValue as ThemeMode,
+                    })
+                    break
+                  }
+                }
+              })
+            }
+
+            break
+        }
       }
-    }
-  })
+    },
+    [cell.type],
+  )
 
   return (
     <Wrapper>
