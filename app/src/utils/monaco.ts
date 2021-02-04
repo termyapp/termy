@@ -70,6 +70,8 @@ export const loadMonaco = () => {
         const cell = document.getElementById(cellId) as HTMLDivElement
 
         if (!cell) return { incomplete: false, suggestions: [] }
+        // todo: get fresh state outside of component
+        // https://github.com/pmndrs/zustand#readingwriting-state-and-reacting-to-changes-outside-of-components
         const currentDir = cell.dataset.cd
 
         const rawSuggestions: NativeSuggestion[] = await ipc.invoke(
