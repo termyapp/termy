@@ -10,7 +10,7 @@
   "author": "Marton Langa martonlanga+termy@gmail.com (https://martonlanga.com/)",
   "description": "A new kind of terminal for web developers",
   "scripts": {
-    "dev": "wait-on http://localhost:8080 && cross-env NODE_ENV=development webpack --watch",
+    "dev": "wait-on http://localhost:4242 && cross-env NODE_ENV=development webpack --watch",
     "build-webpack": "rm ../app/public/*.node; cross-env NODE_ENV=production webpack",
     "build": "electron-builder",
     "release": "GH_TOKEN= electron-builder --publish=always",

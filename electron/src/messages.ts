@@ -11,8 +11,8 @@ export default () => {
     event.returnValue = handleMessage(event, message)
   })
 
-  ipcMain.handle('suggestions', async (event, input, currentDir) => {
-    const suggestions = await native.getSuggestions(input, currentDir)
+  ipcMain.handle('suggestions', async (event, value, currentDir) => {
+    const suggestions = await native.getSuggestions(value, currentDir)
     return suggestions
   })
 }
@@ -27,10 +27,10 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
       return result
     }
     case 'run-cell': {
-      const { id, input, currentDir } = message
+      const { id, value, currentDir } = message
 
       const serverMessage = (...args: [null, ServerMessage]) => {
-        console.log('received message', args)
+        // console.log('received message', args)
 
         const [error, receivedMessage] = args
 
@@ -51,7 +51,7 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
       }
 
       const sendMessage = native.runCell(
-        { id, input, currentDir },
+        { id, value, currentDir },
         serverMessage,
       )
 

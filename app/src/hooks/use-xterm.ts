@@ -2,13 +2,18 @@ import { useDebounce } from '@hooks'
 import useStore from '@src/store'
 import { focusCell } from '@src/terminal/cell'
 import { ipc } from '@src/utils'
-import type { CellType, Message, XtermSize } from '@types'
+import type { ICellWithActive, Message, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 
-export default function useXterm({ id, status, active, type }: CellType) {
+export default function useXterm({
+  id,
+  status,
+  active,
+  type,
+}: ICellWithActive) {
   const theme = useStore(state => state.theme)
 
   const [size, setSize] = useState<XtermSize>()
@@ -115,19 +120,22 @@ export default function useXterm({ id, status, active, type }: CellType) {
 
   // resize observer
   useEffect(() => {
-    const updateSize = () => {
-      if (terminalRef.current) {
-        setSize({
-          rows: terminalRef.current.rows,
-          cols: terminalRef.current.cols,
-        })
+    if (terminalContainerRef.current) {
+      const updateSize = () => {
+        if (terminalRef.current) {
+          setSize({
+            rows: terminalRef.current.rows,
+            cols: terminalRef.current.cols,
+          })
+        }
       }
+
+      updateSize()
+
+      const resizeObserver = new ResizeObserver(updateSize)
+      resizeObserver.observe(terminalContainerRef.current)
+      return () => resizeObserver.disconnect()
     }
-
-    updateSize()
-
-    if (terminalContainerRef.current)
-      new ResizeObserver(updateSize).observe(terminalContainerRef.current)
   }, [])
 
   return { terminalContainerRef, terminalRef }

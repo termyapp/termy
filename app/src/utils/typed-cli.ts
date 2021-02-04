@@ -57,8 +57,8 @@ const getSuggestionsFromCommands = (commands: Command[]): Suggestion[] => {
   })
 }
 
-export const getTypedCliSuggestions = (input: string): Suggestion[] => {
-  const tokens = input.split(' ')
+export const getTypedCliSuggestions = (value: string): Suggestion[] => {
+  const tokens = value.split(' ')
 
   if (tokens.length === 1) {
     return getSuggestionsFromCommands(Object.values(typedCli))

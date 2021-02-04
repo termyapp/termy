@@ -1,5 +1,5 @@
 use crate::{
-    cell::{tsfn_send, Cell, ServerMessage, Status},
+    shell::{tsfn_send, Cell, ServerMessage, Status},
     util::get_executables,
 };
 use anyhow::Result;

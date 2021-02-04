@@ -27,7 +27,7 @@ export const loadMonaco = () => {
       suggestion: Suggestion | NativeSuggestion,
     ): Monaco.languages.CompletionItem => {
       let documentation = suggestion.documentation
-      let label: any = suggestion.label
+      let label: unknown = suggestion.label
 
       const tldr = ipc.sendSync('message', {
         type: 'tldr',
@@ -70,6 +70,8 @@ export const loadMonaco = () => {
         const cell = document.getElementById(cellId) as HTMLDivElement
 
         if (!cell) return { incomplete: false, suggestions: [] }
+        // todo: get fresh state outside of component
+        // https://github.com/pmndrs/zustand#readingwriting-state-and-reacting-to-changes-outside-of-components
         const currentDir = cell.dataset.cd
 
         const rawSuggestions: NativeSuggestion[] = await ipc.invoke(
@@ -93,9 +95,9 @@ export const loadMonaco = () => {
         context: Monaco.languages.CompletionContext,
         token: Monaco.CancellationToken,
       ) => {
-        const input = model.getValue()
+        const value = model.getValue()
 
-        const suggestions = getTypedCliSuggestions(input).map(
+        const suggestions = getTypedCliSuggestions(value).map(
           suggestionToCompletionItem,
         )
 

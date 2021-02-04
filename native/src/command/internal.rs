@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::cell::{Cell, Data, ServerMessage, Status};
+use crate::shell::{Cell, Data, ServerMessage, Status};
 use anyhow::Result;
 
 mod home;

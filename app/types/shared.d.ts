@@ -3,7 +3,7 @@
 
 export interface RunCell {
   id: string
-  input: string
+  value: string
   currentDir: string
 }
 
@@ -16,6 +16,7 @@ export interface FrontendMessage {
   id: string
   stdin?: string
   size?: XtermSize
+  action?: 'resume' | 'kill'
 }
 
 export type Message =

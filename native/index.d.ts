@@ -1,8 +1,8 @@
 import { RunCell, FrontendMessage, Suggestion } from '../electron/shared'
 
-declare function api(command: string): any
+declare function api(command: string): unknown
 
-declare function getSuggestions(input: string, currentDir: string): Suggestion[]
+declare function getSuggestions(value: string, currentDir: string): Suggestion[]
 
 declare function runCell(
   props: RunCell,
