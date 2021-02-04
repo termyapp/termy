@@ -30,7 +30,7 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
       const { id, input, currentDir } = message
 
       const serverMessage = (...args: [null, ServerMessage]) => {
-        console.log('received message', args)
+        // console.log('received message', args)
 
         const [error, receivedMessage] = args
 

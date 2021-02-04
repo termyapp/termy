@@ -16,6 +16,7 @@ export interface FrontendMessage {
   id: string
   stdin?: string
   size?: XtermSize
+  flowControl?: 'resume' | 'pause'
 }
 
 export type Message =

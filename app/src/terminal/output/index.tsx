@@ -30,8 +30,11 @@ const Output: React.FC<CellType> = cell => {
         }
         case 'text': {
           dispatch({ type: 'set-cell', id, cell: { type: 'text' } })
-          terminalRef.current?.write(new Uint8Array(value))
-          // console.log('writing chunk', output.data)
+          const chunk = new Uint8Array(value)
+          terminalRef.current?.write(chunk, () => {
+            // we pause immediately in external.rs
+            dispatch({ type: 'resume-cell', id })
+          })
           break
         }
         case 'mdx': {

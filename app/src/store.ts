@@ -131,7 +131,6 @@ const reducer = (state: State, action: Action) => {
 
         if (cell.status === 'running') {
           kill(cell.id)
-          break
         }
 
         // reset
@@ -150,6 +149,27 @@ const reducer = (state: State, action: Action) => {
       case 'kill-cell': {
         const id = action.id ?? draft.tabs[draft.activeTab].activeCell
         kill(id)
+        break
+      }
+      case 'pause-cell': {
+        const id = action.id ?? draft.tabs[draft.activeTab].activeCell
+        const message: Message = {
+          type: 'frontend-message',
+          id,
+          flowControl: 'pause',
+        }
+        ipc.send('message', message)
+        break
+      }
+      case 'resume-cell': {
+        console.log('resume')
+        const id = action.id ?? draft.tabs[draft.activeTab].activeCell
+        const message: Message = {
+          type: 'frontend-message',
+          id,
+          flowControl: 'resume',
+        }
+        ipc.send('message', message)
         break
       }
       case 'set-theme': {
@@ -171,6 +191,8 @@ type Action =
   | { type: 'set-cell'; id: string; cell: Partial<CellType> }
   | { type: 'run-cell'; id: string; input: string }
   | { type: 'kill-cell'; id?: string }
+  | { type: 'pause-cell'; id?: string }
+  | { type: 'resume-cell'; id?: string }
   | { type: 'set-theme'; theme: ThemeMode }
   | { type: 'focus-cell'; id: string | 'next' | 'previous' }
   | { type: 'focus-tab'; id: string | 'next' | 'previous' }
