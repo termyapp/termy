@@ -20,11 +20,21 @@ const Input: React.FC<ICell> = ({ id, currentDir, value, status }) => {
     currentDirRef.current = currentDir
   }, [currentDir])
 
-  // update options
   useEffect(() => {
-    editorRef.current?.updateOptions({
-      readOnly: status === 'running',
-    })
+    if (editorRef.current !== null) {
+      // toggle readonly
+      editorRef.current.updateOptions({
+        readOnly: status === 'running',
+      })
+
+      // focus & select input on finish
+      if (status === 'success' || status === 'error') {
+        editorRef.current.focus()
+
+        const range = editorRef.current.getModel()?.getFullModelRange()
+        if (range) editorRef.current.setSelection(range)
+      }
+    }
   }, [status])
 
   return (
