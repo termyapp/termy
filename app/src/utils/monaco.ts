@@ -12,10 +12,12 @@ export const loadMonaco = () => {
       // info: https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
       const completionItemKind = monaco.languages.CompletionItemKind
       switch (kind) {
-        case 'executable':
-          return completionItemKind.Event
+        case 'file':
+          return completionItemKind.File
         case 'directory':
           return completionItemKind.Folder
+        case 'executable':
+          return completionItemKind.Event
         case 'externalHistory':
           return completionItemKind.Enum
         default:

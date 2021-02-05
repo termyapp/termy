@@ -35,7 +35,7 @@ impl Autocomplete {
     }
 
     // order matters since we're using a hashmap
-    self.directories().expect("Error in directories");
+    self.paths().expect("Error in paths");
     self.executables();
     self.zsh_history();
 
@@ -45,7 +45,7 @@ impl Autocomplete {
 
     suggestions = suggestions
       .into_iter()
-      .take(20)
+      .take(100)
       .collect::<Vec<Suggestion>>();
 
     suggestions
@@ -59,9 +59,8 @@ impl Autocomplete {
     }
   }
 
-  // directory suggestions
-  fn directories(&mut self) -> Result<()> {
-    let mut dir = String::new();
+  fn paths(&mut self) -> Result<()> {
+    let mut path = String::new();
     let mut value = self.value.clone();
     let mut chunks = value.split('/').peekable();
     while let Some(chunk) = chunks.next() {
@@ -69,45 +68,49 @@ impl Autocomplete {
         value = chunk.to_string();
         break;
       }
-      dir += &(format!("{}/", chunk));
+      path += &(format!("{}/", chunk));
     }
 
-    let dir = self.current_dir.clone() + &(format!("/{}", dir.clone()));
-    info!("Suggestions from directory: {}", dir);
+    let path = self.current_dir.clone() + &(format!("/{}", path.clone()));
+    info!("Suggestions from path: {}", path);
 
-    if let Ok(read_dir) = fs::read_dir(&dir) {
+    if let Ok(read_dir) = fs::read_dir(&path) {
       for entry in read_dir {
         let entry = entry.unwrap();
-        if !entry.metadata().unwrap().is_dir() {
-          continue;
-        }
+        let is_dir = entry.metadata().unwrap().is_dir();
         let name = entry.file_name().to_string_lossy().to_string();
-        if let Some((score, _)) = self.matcher.fuzzy_indices(name.as_str(), value.as_ref()) {
-          self.insert(
-            name.clone(),
-            Suggestion {
-              label: name.clone(),
-              insert_text: Some(format!("{}/", name)),
-              score: score + Priority::Medium as i64,
-              kind: SuggestionType::Directory,
-              documentation: None,
-              date: Some(
-                entry
-                  .metadata()
-                  .unwrap()
-                  .modified()
-                  .unwrap()
-                  .duration_since(UNIX_EPOCH)
-                  .unwrap()
-                  .as_millis()
-                  .to_string(),
-              ),
+        self.insert(
+          name.clone(),
+          Suggestion {
+            label: name.clone(),
+            insert_text: if is_dir {
+              Some(format!("{}/", name))
+            } else {
+              None
             },
-          );
-        }
+            score: 100,
+            kind: if is_dir {
+              SuggestionType::Directory
+            } else {
+              SuggestionType::File
+            },
+            documentation: None,
+            date: Some(
+              entry
+                .metadata()
+                .unwrap()
+                .modified()
+                .unwrap()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis()
+                .to_string(),
+            ),
+          },
+        );
       }
     } else {
-      error!("Invalid directory: {}", dir);
+      error!("Invalid path: {}", path);
     }
 
     Ok(())
@@ -193,6 +196,7 @@ pub struct Suggestion {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "camelCase")]
 enum SuggestionType {
+  File,
   Directory,
   Executable,
   ExternalHistory,

@@ -49,4 +49,8 @@ export interface NativeSuggestion extends Suggestion {
   date?: string
 }
 
-export type SuggestionKind = 'executable' | 'directory' | 'externalHistory'
+export type SuggestionKind =
+  | 'file'
+  | 'directory'
+  | 'executable'
+  | 'externalHistory'
