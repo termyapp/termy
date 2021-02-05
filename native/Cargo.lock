@@ -508,7 +508,7 @@ source = "git+https://github.com/napi-rs/napi-rs#6b0aa231721ec8316c6ed5de4da5aef
 
 [[package]]
 name = "native"
-version = "0.1.5"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "crossbeam-channel",

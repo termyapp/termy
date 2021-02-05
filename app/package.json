@@ -1,7 +1,6 @@
 {
   "name": "termy",
   "private": true,
-  "version": "0.1.5",
   "homepage": "./",
   "scripts": {
     "dev": "snowpack dev",
