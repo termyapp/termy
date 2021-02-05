@@ -35,6 +35,7 @@ module.exports = {
     open: 'none',
   },
   buildOptions: {
+    baseUrl: './',
     out: '../electron/build',
   },
 }
