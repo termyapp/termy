@@ -111,9 +111,9 @@ export default {
   },
   fonts: {
     $sans:
-      'Inter, "Helvetica", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+      '"Inter var", Inter, Helvetica, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
     $mono:
-      '"Source Code Pro", Menlo, Courier New, Courier, Monaco, Consolas, "Liberation Mono", monospace',
+      '"Roboto Mono", Menlo, Courier, Courier New, Monaco, Consolas, "Liberation Mono", monospace',
     $serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
   },
   space: {
