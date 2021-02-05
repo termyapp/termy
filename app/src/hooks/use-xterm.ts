@@ -34,7 +34,6 @@ export default function useXterm({
     if (terminalContainerRef.current)
       terminal.open(terminalContainerRef.current)
 
-    // todo: https://xtermjs.org/docs/guides/flowcontrol/
     terminal.onKey(({ key, domEvent }) => {
       if (domEvent.shiftKey && domEvent.key === 'Tab') {
         focusCell(id)
@@ -61,18 +60,10 @@ export default function useXterm({
   }, [])
 
   useEffect(() => {
-    if (status === null) {
-      // remove previous content
-      // terminalRef.current?.reset()
-      // terminalRef.current?.setOption('disableStdin', false)
-    } else if (status === 'running') {
+    if (status === 'running') {
       // remove previous content
       terminalRef.current?.reset()
       terminalRef.current?.setOption('disableStdin', false)
-
-      // todo: this doesn't work here because it's too early to focus
-      // currently focusing on each `pty` write (not ideal)
-      terminalRef.current?.focus()
     } else if (over) {
       // disable stdin
       terminalRef.current?.setOption('disableStdin', true)

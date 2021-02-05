@@ -31,8 +31,11 @@ const Output: React.FC<ICellWithActive> = cell => {
             break
           }
           case 'text': {
-            if (cell.type !== 'text')
+            if (cell.type !== 'text') {
               dispatch({ type: 'set-cell', id, cell: { type: 'text' } })
+              terminalRef.current?.focus()
+            }
+
             const chunk = new Uint8Array(value)
             terminalRef.current?.write(chunk, () => {
               // we pause immediately in external.rs
