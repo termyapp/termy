@@ -20,7 +20,7 @@ const Tab: React.FC<{
   )
   const dispatch = useStore(state => state.dispatch)
 
-  useMousetrap(`meta+${index + 1}`, () => {
+  useMousetrap(`mod+${index + 1}`, () => {
     dispatch({ type: 'focus-tab', id })
   })
 

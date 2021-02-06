@@ -2,10 +2,11 @@ import mousetrap from 'mousetrap'
 import { useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
 
-type Callback = (e: mousetrap.ExtendedKeyboardEvent, combo: string) => any // return false to prevent default behaviour
+type Callback = (e: mousetrap.ExtendedKeyboardEvent, combo: string) => any
 
 interface Options {
-  repeat?: boolean
+  preventDefault?: boolean
+  repeat?: boolean // todo: debouce repeats
   action?: 'keypress' | 'keydown' | 'keyup' | undefined
 }
 
@@ -19,10 +20,14 @@ mousetrap.prototype.stopCallback = function () {
 export default function useMousetrap(
   handlerKey: string | string[],
   callback: Callback,
-  options = { repeat: false, action: undefined } as Options,
+  options = {
+    preventDefault: true,
+    repeat: false,
+    action: undefined,
+  } as Options,
 ) {
   let callbackRef = useRef<Callback>(callback)
-  const { action, repeat } = options
+  const { action, repeat, preventDefault } = options
 
   useEffect(() => {
     mousetrap.bind(
@@ -34,6 +39,8 @@ export default function useMousetrap(
         ReactDOM.unstable_batchedUpdates(() => {
           callbackRef.current(...args)
         })
+
+        return !preventDefault // return false to prevent default behaviour
       },
       action,
     )
