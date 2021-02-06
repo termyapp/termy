@@ -43,11 +43,6 @@ fn is_executable(path: &Path) -> bool {
   }
 }
 
-#[cfg(target_arch = "wasm32")]
-fn is_executable(_path: &Path) -> bool {
-  false
-}
-
 #[cfg(unix)]
 fn is_executable(path: &Path) -> bool {
   use std::os::unix::fs::PermissionsExt;
