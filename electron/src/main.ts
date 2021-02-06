@@ -4,7 +4,7 @@ import fixPath from 'fix-path'
 import setupMessages from './messages'
 import { createWindow } from './window'
 
-// // fixes: https://github.com/termyapp/termy/issues/8
+// fixes: https://github.com/termyapp/termy/issues/8
 fixPath()
 
 // https://www.npmjs.com/package/electron-context-menu
