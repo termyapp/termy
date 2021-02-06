@@ -1,12 +1,14 @@
 import { useDebounce } from '@hooks'
 import useStore from '@src/store'
 import { focusCell } from '@src/terminal/cell'
-import { ipc } from '@src/utils'
+import { ipc, isMac } from '@src/utils'
 import type { ICellWithActive, Message, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
+
+const SHORTCUTS = ['r', 't', 's', 'n', 'w', 'j', 'k']
 
 export default function useXterm({
   id,
@@ -33,6 +35,11 @@ export default function useXterm({
 
     if (terminalContainerRef.current)
       terminal.open(terminalContainerRef.current)
+
+    terminal.attachCustomKeyEventHandler(e => {
+      if (!isMac && e.ctrlKey && SHORTCUTS.includes(e.key)) return false
+      return true
+    })
 
     terminal.onKey(({ key, domEvent }) => {
       if (domEvent.shiftKey && domEvent.key === 'Tab') {
