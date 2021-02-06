@@ -7,6 +7,8 @@ import installExtension, {
 import isDev from 'electron-is-dev'
 import path from 'path'
 
+const isMac = process.platform === 'darwin'
+
 // todo: menu — include shift in zoom accelerators
 export const createWindow = async (): Promise<BrowserWindow> => {
   const window = new BrowserWindow({
@@ -14,7 +16,8 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     minHeight: 190,
     title: 'Termy',
     titleBarStyle: 'hiddenInset',
-    frame: false,
+    frame: isMac,
+    transparent: isMac,
     acceptFirstMouse: true,
     webPreferences: {
       preload: path.resolve(
@@ -22,7 +25,6 @@ export const createWindow = async (): Promise<BrowserWindow> => {
         isDev ? './preload.js' : 'build/preload.js',
       ),
       nodeIntegration: false,
-
       // todo: https://www.electronjs.org/docs/tutorial/context-isolation
       // currently this would break the ipc communcication
       // contextIsolation: true,

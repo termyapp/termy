@@ -1,5 +1,6 @@
 import { Div, Flex } from '@components'
 import useStore from '@src/store'
+import { Close } from '@src/svg'
 import { isMac } from '@src/utils'
 import React from 'react'
 
@@ -17,11 +18,10 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
       css={{
         height: navHeight,
         width: '100%',
-        flexDirection: isMac ? 'row' : 'row-reverse',
       }}
     >
       {/* spacing */}
-      <Div css={{ width: '69px' }} />
+      {isMac && <Div css={{ width: '69px' }} />}
 
       <Flex css={{ width: '100%', mb: '$1' }}>
         {tabs.length > 1 &&
@@ -48,6 +48,38 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
             </Flex>
           ))}
       </Flex>
+
+      {!isMac && (
+        <Div css={{ display: 'flex', alignItems: 'center' }}>
+        {['minimize-window',
+        
+        'maximize-window','close-window' ].map()}
+                <Div className={`${left ? 'header_minimizeWindowLeft' : ''}`} onClick={}>
+                  <Span as="svg" css={{        width: 40px;
+            height: 34px;
+            padding: 12px 15px 12px 15px;
+            -webkit-app-region: no-drag;
+            color: #fff;
+            opacity: 0.5;
+            shape-rendering: crispEdges;}}>
+                    <use xlinkHref="/control-icons.svg#" />
+                  </svg>
+                </Div>
+                <Div className={`${left ? 'header_maximizeWindowLeft' : ''}`} onClick={}>
+                  <svg className="header_shape">
+                    <use xlinkHref={maxButtonHref} />
+                  </svg>
+                </Div>
+                <Div
+                  className={`header_closeWindow ${left ? 'header_closeWindowLeft' : ''}`}
+                  onClick={this.handleCloseClick}
+                >
+                  <svg className="header_shape">
+                    <use xlinkHref="./renderer/assets/icons.svg#" />
+                  </svg>
+                </Div>
+        </Div>
+      )}
     </Flex>
   )
 }
