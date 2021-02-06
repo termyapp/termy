@@ -65,7 +65,7 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
             },
             { icon: 'close-window', onClick: sendWindowsMessage('close') },
           ].map(item => (
-            <Div onClick={item.onClick}>
+            <Div key={item.icon} onClick={item.onClick}>
               <Span
                 as="svg"
                 className="no-drag"
