@@ -67,10 +67,17 @@ fn get_executables() -> Vec<String> {
   for path in paths {
     if let Ok(mut contents) = std::fs::read_dir(path) {
       while let Some(Ok(item)) = contents.next() {
-        if is_executable(&item.path()) {
-          if let Ok(name) = item.file_name().into_string() {
-            executables.push(name);
-          }
+        let mut path = item.path();
+        if is_executable(&path) {
+          // Removes PATHEXT (.exe, .cmd, ...) extensions on Windows
+          path.set_extension("");
+
+          let name = path
+            .file_name()
+            .unwrap_or_default()
+            .to_str()
+            .expect("File name should be UTF-8");
+          executables.push(name.to_owned());
         }
       }
     }
