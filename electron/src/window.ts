@@ -40,11 +40,11 @@ export const createWindow = async (): Promise<BrowserWindow> => {
         window.minimize()
         break
       case 'maximize':
-        window.maximize()
+        window.isMaximized() ? window.unmaximize() : window.maximize()
         break
-      case 'unmaximize':
-        window.unmaximize()
-        break
+      // case 'unmaximize':
+      //   window.unmaximize()
+      //   break
       case 'close':
         window.close()
         break
