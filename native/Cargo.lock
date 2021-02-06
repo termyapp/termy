@@ -516,6 +516,7 @@ dependencies = [
  "fuzzy-matcher",
  "indoc",
  "is_executable",
+ "lazy_static",
  "log",
  "log4rs",
  "napi",

@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate napi_derive;
+#[macro_use]
+extern crate lazy_static;
 
 use autocomplete::Autocomplete;
 use command::{external::FrontendMessage, internal::Internal};
