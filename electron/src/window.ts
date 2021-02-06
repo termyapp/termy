@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import debug from 'electron-debug'
 import installExtension, {
   REACT_DEVELOPER_TOOLS,
@@ -6,6 +6,7 @@ import installExtension, {
 } from 'electron-devtools-installer'
 import isDev from 'electron-is-dev'
 import path from 'path'
+import type { WindowMessage } from '../shared'
 
 const isMac = process.platform === 'darwin'
 
@@ -32,6 +33,27 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     },
   })
 
+  ipcMain.on('window', (event, message: WindowMessage) => {
+    console.log('window message', message)
+    switch (message) {
+      case 'minimize':
+        window.minimize()
+        break
+      case 'maximize':
+        window.maximize()
+        break
+      case 'unmaximize':
+        window.unmaximize()
+        break
+      case 'close':
+        window.close()
+        break
+      default:
+        console.log(`Invalid window message: ${message}`)
+        break
+    }
+  })
+
   await window.loadURL(
     isDev
       ? 'http://localhost:4242'
@@ -50,7 +72,7 @@ export const createWindow = async (): Promise<BrowserWindow> => {
 
       window.webContents.openDevTools()
       try {
-        // doesn't on >=9 work: https://github.com/electron/electron/issues/23662
+        // doesn't work on >=9: https://github.com/electron/electron/issues/23662
         // this is the only reason for using electron 8
         await installExtension(REACT_DEVELOPER_TOOLS)
         await installExtension(REDUX_DEVTOOLS)

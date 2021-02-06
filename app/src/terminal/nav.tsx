@@ -1,7 +1,7 @@
-import { Div, Flex } from '@components'
+import { Div, Flex, Span } from '@components'
 import useStore from '@src/store'
-import { Close } from '@src/svg'
-import { isMac } from '@src/utils'
+import { ipc, isMac } from '@src/utils'
+import type { WindowMessage } from '@types'
 import React from 'react'
 
 export const navHeight = '28px'
@@ -11,6 +11,9 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
   activeTab,
 }) => {
   const dispatch = useStore(state => state.dispatch)
+
+  const sendWindowsMessage = (message: WindowMessage) => () =>
+    ipc.send('window', message)
 
   return (
     <Flex
@@ -51,33 +54,38 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
 
       {!isMac && (
         <Div css={{ display: 'flex', alignItems: 'center' }}>
-        {['minimize-window',
-        
-        'maximize-window','close-window' ].map()}
-                <Div className={`${left ? 'header_minimizeWindowLeft' : ''}`} onClick={}>
-                  <Span as="svg" css={{        width: 40px;
-            height: 34px;
-            padding: 12px 15px 12px 15px;
-            -webkit-app-region: no-drag;
-            color: #fff;
-            opacity: 0.5;
-            shape-rendering: crispEdges;}}>
-                    <use xlinkHref="/control-icons.svg#" />
-                  </svg>
-                </Div>
-                <Div className={`${left ? 'header_maximizeWindowLeft' : ''}`} onClick={}>
-                  <svg className="header_shape">
-                    <use xlinkHref={maxButtonHref} />
-                  </svg>
-                </Div>
-                <Div
-                  className={`header_closeWindow ${left ? 'header_closeWindowLeft' : ''}`}
-                  onClick={this.handleCloseClick}
-                >
-                  <svg className="header_shape">
-                    <use xlinkHref="./renderer/assets/icons.svg#" />
-                  </svg>
-                </Div>
+          {[
+            {
+              icon: 'minimize-window',
+              onClick: sendWindowsMessage('minimize'),
+            },
+            {
+              icon: 'maximize-window',
+              onClick: sendWindowsMessage('maximize'),
+            },
+            { icon: 'close-window', onClick: sendWindowsMessage('close') },
+          ].map(item => (
+            <Div onClick={item.onClick}>
+              <Span
+                as="svg"
+                className="no-drag"
+                css={{
+                  width: 40,
+                  height: 34,
+                  padding: '12px 15px 12px 15px',
+                  opacity: 0.6,
+                  shapeRendering: 'crispEdges',
+                  cursor: 'pointer', // not working
+
+                  ':hover': {
+                    opacity: 1,
+                  },
+                }}
+              >
+                <use xlinkHref={`/control-icons.svg#${item.icon}`} />
+              </Span>
+            </Div>
+          ))}
         </Div>
       )}
     </Flex>

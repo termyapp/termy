@@ -54,3 +54,5 @@ export type SuggestionKind =
   | 'directory'
   | 'executable'
   | 'externalHistory'
+
+export type WindowMessage = 'minimize' | 'maximize' | 'unmaximize' | 'close'

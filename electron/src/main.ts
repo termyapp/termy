@@ -1,8 +1,8 @@
 import { app, BrowserWindow, Menu } from 'electron'
+import contextMenu from 'electron-context-menu'
+import fixPath from 'fix-path'
 import setupMessages from './messages'
 import { createWindow } from './window'
-import fixPath from 'fix-path'
-import contextMenu from 'electron-context-menu'
 
 // // fixes: https://github.com/termyapp/termy/issues/8
 fixPath()
@@ -37,9 +37,10 @@ app.on('ready', () => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  // always quit until we don't have multiple windows
+  // if (process.platform !== 'darwin') {
+  // }
+  app.quit()
 })
 
 const createMainWindow = async () => {
