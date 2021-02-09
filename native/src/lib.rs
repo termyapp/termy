@@ -33,8 +33,6 @@ fn init(mut exports: JsObject) -> Result<()> {
   // todo: this fails in prod
   // db::init().expect("Failed to initialize database");
 
-  // https://docs.rs/lazy_static/1.4.0/lazy_static/
-
   logger::init().unwrap();
 
   Ok(())
