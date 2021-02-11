@@ -42,6 +42,6 @@ mod tests {
 
     println!("Time elapsed in expensive_function() is: {:?}", duration);
     assert!(executables.len() > 1);
-    assert!(executables.contains(&("PING.EXE".to_string())));
+    assert!(executables.contains(&("cargo".to_string())));
   }
 }
