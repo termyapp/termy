@@ -24,6 +24,7 @@ log = "0.4"
 log4rs = "0.13.0"
 indoc = "1.0.3"
 lazy_static = "1.4.0"
+is_executable = "1.0.1"
 
 [build-dependencies]
 napi-build = { git = "https://github.com/napi-rs/napi-rs" }

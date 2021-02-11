@@ -1,62 +1,7 @@
-use std::path::Path;
+use is_executable::IsExecutable;
 
 lazy_static! {
   pub static ref EXECUTABLES: Vec<String> = get_executables();
-}
-
-#[cfg(windows)]
-fn pathext() -> Option<Vec<String>> {
-  std::env::var_os("PATHEXT").map(|v| {
-    v.to_string_lossy()
-      .split(';')
-      // Filter out empty tokens and ';' at the end
-      .filter(|f| f.len() > 1)
-      // Cut off the leading '.' character
-      .map(|ext| ext[1..].to_string())
-      .collect::<Vec<_>>()
-  })
-}
-
-#[cfg(windows)]
-fn is_executable(path: &Path) -> bool {
-  if let Ok(metadata) = path.metadata() {
-    let file_type = metadata.file_type();
-
-    // If the entry isn't a file, it cannot be executable
-    if !(file_type.is_file() || file_type.is_symlink()) {
-      return false;
-    }
-
-    if let Some(extension) = path.extension() {
-      if let Some(exts) = pathext() {
-        exts
-          .iter()
-          .any(|ext| extension.to_string_lossy().eq_ignore_ascii_case(ext))
-      } else {
-        false
-      }
-    } else {
-      false
-    }
-  } else {
-    false
-  }
-}
-
-#[cfg(unix)]
-fn is_executable(path: &Path) -> bool {
-  use std::os::unix::fs::PermissionsExt;
-
-  if let Ok(metadata) = path.metadata() {
-    let filetype = metadata.file_type();
-    let permissions = metadata.permissions();
-
-    // The file is executable if it is a directory or a symlink and the permissions are set for
-    // owner, group, or other
-    (filetype.is_file() || filetype.is_symlink()) && (permissions.mode() & 0o111 != 0)
-  } else {
-    false
-  }
 }
 
 fn get_executables() -> Vec<String> {
@@ -68,10 +13,8 @@ fn get_executables() -> Vec<String> {
     if let Ok(mut contents) = std::fs::read_dir(path) {
       while let Some(Ok(item)) = contents.next() {
         let mut path = item.path();
-        if is_executable(&path) {
-          // Removes PATHEXT (.exe, .cmd, ...) extensions on Windows
+        if path.is_executable() {
           path.set_extension("");
-
           let name = path
             .file_name()
             .unwrap_or_default()
