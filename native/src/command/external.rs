@@ -67,11 +67,10 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
 
         if let Ok(len) = read {
           if len == 0 {
-            // todo: doesn't get here on windows
             break;
           }
           let chunk = &chunk[..len];
-
+        }
           info!("Sending chunk with length: {}", chunk.len());
           // let data = ServerData::PtyData(chunk.to_vec());
           tsfn_send(
