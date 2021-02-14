@@ -14,9 +14,7 @@ export interface XtermSize {
 
 export interface FrontendMessage {
   id: string
-  stdin?: string
-  size?: XtermSize
-  action?: 'resume' | 'kill'
+  action?: 'resume' | 'kill' | { resize: XtermSize } | { write: string }
 }
 
 export type Message =

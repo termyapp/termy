@@ -5,9 +5,12 @@ use io::Read;
 use log::{error, info, warn};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
-use std::io;
 use std::io::Write;
 use std::thread;
+use std::{
+  io,
+  sync::{Arc, Mutex},
+};
 
 pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Status> {
   info!("Running pty command: {:#?}", command);
@@ -32,9 +35,11 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
   cmd.args(args);
 
   let mut child = pair.slave.spawn_command(cmd)?;
-
-  // Read an from the pty with reader
-  let mut reader = pair.master.try_clone_reader()?;
+  // let child = Arc::new(Mutex::new(child));
+  let mut master = pair.master;
+  let mut writer = pair.master.try_clone_writer()?;
+  let mut reader = master.try_clone_reader()?;
+  drop(pair.slave);
 
   let tsfn_clone = cell
     .tsfn
@@ -52,7 +57,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     let mut paused = false;
     let mut chunk = [0u8; 1024];
 
-    loop {
+    while !child.try_wait().unwrap().is_some() {
       if paused {
         if let Ok(Action::Resume) = action_receiver.recv() {
           paused = false;
@@ -70,7 +75,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
             break;
           }
           let chunk = &chunk[..len];
-        }
+
           info!("Sending chunk with length: {}", chunk.len());
           // let data = ServerData::PtyData(chunk.to_vec());
           tsfn_send(
@@ -83,6 +88,12 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
       }
     }
 
+    // drop(master);
+    // let mut vec = vec![];
+    // let len = reader.read_to_end(&mut vec);
+    // info!("Sending last chunk");
+    // break;
+
     if let Err(err) = sender_clone.send(CellChannel::Exit) {
       error!("Error while sending exit code: {}", err);
     };
@@ -93,44 +104,33 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     let received = cell.receiver.recv(); // hangs
 
     match received {
-      Ok(CellChannel::FrontendMessage(FrontendMessage {
-        id,
-        stdin,
-        size,
-        action,
-      })) => {
-        if let Some(action) = action {
-          if action == Action::Kill {
+      Ok(CellChannel::FrontendMessage(FrontendMessage { id, action })) => {
+        match action {
+          Action::Kill => {
             if let Err(err) = child.kill() {
               error!("Error while killing child: {}", err);
               return Ok(Status::Success);
             }
-          } else {
-            if let Ok(()) = action_sender.send(action) {
-              info!("Sent action");
-            } else {
-              error!("Failed to send action");
-            }
           }
-        } else if let Some(message) = stdin {
-          // Send data to the pty by writing to the master
-          write!(pair.master, "{}", message).expect("Failed to write to master");
-          info!("Stdin written: {:?}", message);
-        } else if let Some(Size { rows, cols }) = size {
-          pair
-            .master
-            .resize(PtySize {
+          Action::Resume => {
+            // action_sender.send(action)
+            // todo: mutex paused = false
+          }
+          Action::Resize(Size { rows, cols }) => {
+            master.resize(PtySize {
               rows,
               cols,
               pixel_width: 0,
               pixel_height: 0,
-            })
-            .expect("Failed to resize pty");
-
-          info!("Resized pty: {} {}", rows, cols);
-        } else {
-          warn!("Invalid frontend message")
-        }
+            });
+          }
+          Action::Write(text) => {
+            master.write(text.as_bytes());
+          }
+          _ => {
+            error!("Invalid action: {:?}", action);
+          }
+        };
       }
       Ok(CellChannel::Exit) => {
         return Ok(if child.wait().expect("Failed to poll child").success() {
@@ -149,18 +149,18 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
 enum Action {
   Resume,
   Kill,
+  Write(String),
+  Resize(Size),
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct FrontendMessage {
   id: String,
-  stdin: Option<String>,
-  size: Option<Size>,
-  action: Option<Action>,
+  action: Action,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Size {
   rows: u16,

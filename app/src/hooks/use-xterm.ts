@@ -40,11 +40,13 @@ export default function useXterm({
       if (!isMac && e.ctrlKey && SHORTCUTS.includes(e.key)) return false
       else if (e.metaKey && e.key === 'v') {
         // paste
-        navigator.clipboard
-          .readText()
-          .then(text =>
-            ipc.send('message', { type: 'frontend-message', id, stdin: text }),
-          )
+        navigator.clipboard.readText().then(text =>
+          ipc.send('message', {
+            type: 'frontend-message',
+            id,
+            action: { write: text },
+          }),
+        )
       }
       return true
     })
@@ -58,7 +60,7 @@ export default function useXterm({
         const message: Message = {
           type: 'frontend-message',
           id,
-          stdin: key,
+          action: { write: key },
         }
         ipc.send('message', message)
       }
@@ -97,11 +99,11 @@ export default function useXterm({
       fitAddon.fit()
 
       // pty only lives as long as it's not over
-      if (over) return
+      if (over || !size) return
       const message: Message = {
         type: 'frontend-message',
         id,
-        size,
+        action: { resize: size },
       }
       ipc.send('message', message)
     },
