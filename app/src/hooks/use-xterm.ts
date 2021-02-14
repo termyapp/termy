@@ -38,6 +38,14 @@ export default function useXterm({
 
     terminal.attachCustomKeyEventHandler(e => {
       if (!isMac && e.ctrlKey && SHORTCUTS.includes(e.key)) return false
+      else if (e.metaKey && e.key === 'v') {
+        // paste
+        navigator.clipboard
+          .readText()
+          .then(text =>
+            ipc.send('message', { type: 'frontend-message', id, stdin: text }),
+          )
+      }
       return true
     })
 
