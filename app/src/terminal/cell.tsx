@@ -44,14 +44,14 @@ const Card = styled(Flex, {
   position: 'relative',
   borderRadius: '$sm',
   flexDirection: 'column',
-  // border: '1px solid transparent',
+  border: '1px solid transparent',
 
   variants: {
     active: {
       true: {
-        backgroundColor: '$focusedBackground',
         color: '$focusedForeground',
-        // border: '1px solid $accent',
+        border: '1px solid $accent',
+        borderRadius: '$md',
       },
     },
   },
