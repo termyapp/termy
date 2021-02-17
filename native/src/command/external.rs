@@ -1,7 +1,8 @@
 use crate::shell::{tsfn_send, Cell, CellChannel, Data, ServerMessage, Status};
 use anyhow::Result;
+use core::time;
 use io::Read;
-use log::{error, info, warn};
+use log::{error, info};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
 use std::io::Write;
@@ -35,24 +36,25 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
 
   let mut master = pair.master;
   let mut reader = master.try_clone_reader()?;
-  let mut reader_clone = master.try_clone_reader()?;
+  let mut reader_inner = master.try_clone_reader()?;
   let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
-  let child_clone = Arc::clone(&child);
+  let child_inner = Arc::clone(&child);
 
-  drop(pair.slave);
-
-  let tsfn_clone = cell
+  let tsfn = cell
     .tsfn
     .try_clone()
     .expect("Failed to clone threadsafe function");
-  let tsfn_clone2 = cell
+  let tsfn_inner = cell
     .tsfn
     .try_clone()
     .expect("Failed to clone threadsafe function");
+
   let sender_clone = cell.sender.clone();
 
   let paused = Arc::new(Mutex::new(false));
   let paused_clone = Arc::clone(&paused);
+
+  drop(pair.slave);
 
   thread::spawn(move || {
     // Stop-and-wait type flow control works fine here
@@ -62,33 +64,35 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     let mut chunk = [0u8; 1024];
 
     loop {
-      if (*child_clone.lock().expect("Failed to lock child"))
+      if (*child_inner.lock().expect("Failed to lock child"))
         .try_wait()
-        .unwrap()
+        .expect("Failed to poll child")
         .is_some()
       {
-        info!("Breaking out");
+        info!("Breaking out 1");
         break;
       }
 
       let mut paused = paused.lock().expect("Failed to lock paused");
-      // todo: maybe wait ~10ms here so it's not checking that much?
-      // or: https://doc.rust-lang.org/std/sync/struct.Condvar.html
-      // or: go back to message based communication
-      if !(*paused) {
+      if *paused {
+        // todo: find a better way to block thread until we can resume
+        // maybe go back to channels and block on .recv()
+        // or https://doc.rust-lang.org/std/sync/struct.Condvar.html
+        thread::sleep(time::Duration::from_millis(10));
+      } else {
         *paused = true;
 
-        let read = reader.read(&mut chunk);
+        let read = reader_inner.read(&mut chunk);
         if let Ok(len) = read {
           if len == 0 {
-            info!("Breaking out");
+            info!("Breaking out 2");
             break;
           }
           let chunk = &chunk[..len];
 
           info!("Sending chunk with length: {}", chunk.len());
           tsfn_send(
-            &tsfn_clone,
+            &tsfn_inner,
             ServerMessage::new(Data::Text(chunk.to_vec()), None),
           );
         } else {
@@ -109,14 +113,13 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     match received {
       Ok(CellChannel::FrontendMessage(FrontendMessage { id, action })) => match action {
         Action::Resume => {
-          info!("Action Resuming");
+          info!("Resuming");
           let mut paused = paused_clone.lock().expect("Failed to lock paused clone");
           *paused = false;
-          info!("Action Resumed");
         }
         Action::Kill => {
-          let mut child = child.lock().unwrap();
           info!("Killing child");
+          let mut child = child.lock().unwrap();
           child.kill().expect("Failed to kill child");
         }
         Action::Write(data) => {
@@ -139,18 +142,17 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
         }
       },
       Ok(CellChannel::Exit) => {
+        // this is why we need to read the last chunk in a
+        // different thread: https://github.com/wez/wezterm/issues/463
         drop(master);
 
         let mut remaining_chunk = vec![];
-        reader_clone
+        reader
           .read_to_end(&mut remaining_chunk)
-          .expect("failed to read remian chunk");
+          .expect("Failed to read remaining chunk");
 
         info!("Sending last chunk");
-        tsfn_send(
-          &tsfn_clone2,
-          ServerMessage::new(Data::Text(remaining_chunk), None),
-        );
+        tsfn_send(&tsfn, ServerMessage::new(Data::Text(remaining_chunk), None));
 
         let mut child = child.lock().unwrap();
         let successful = child.wait().expect("Failed to unwrap child").success();
