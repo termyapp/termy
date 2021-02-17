@@ -1,6 +1,5 @@
 use crate::shell::{tsfn_send, Cell, CellChannel, Data, ServerMessage, Status};
 use anyhow::Result;
-use crossbeam_channel::unbounded;
 use io::Read;
 use log::{error, info, warn};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
@@ -34,9 +33,12 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
   cmd.cwd(&cell.current_dir());
   cmd.args(args);
 
-  let mut child = pair.slave.spawn_command(cmd)?;
-  let mut master = pair.master;
-  let mut reader = master.try_clone_reader()?;
+  let mut reader = pair.master.try_clone_reader()?;
+  let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
+  let master = Arc::new(Mutex::new(pair.master));
+  let child_clone = Arc::clone(&child);
+  let master_clone = Arc::clone(&master);
+
   drop(pair.slave);
 
   let tsfn_clone = cell
@@ -44,41 +46,43 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     .try_clone()
     .expect("Failed to clone threadsafe function");
   let sender_clone = cell.sender.clone();
-  let (action_sender, action_receiver) = unbounded::<Action>();
+
+  let paused = Arc::new(Mutex::new(false));
+  let paused_clone = Arc::clone(&paused);
 
   thread::spawn(move || {
     // Stop-and-wait type flow control works fine here
     // since message passing time is negligible
     // https://en.wikipedia.org/wiki/Flow_control_(data)
     // https://xtermjs.org/docs/guides/flowcontrol/
-    let mut paused = false;
     let mut chunk = [0u8; 1024];
 
-    while !child.try_wait().unwrap().is_some() {
-      if paused {
-        match action_receiver.recv() {
-          Ok(Action::Resume) => {
-            paused = false;
-            continue;
-          }
-          _ => {
-            error!("Error receiving in flow channel");
-          }
-        }
-      } else {
-        paused = true;
-        info!("LESGOOO");
+    loop {
+      if (*child_clone.lock().expect("Failed to lock child"))
+        .try_wait()
+        .unwrap()
+        .is_some()
+      {
+        info!("Breaking out");
+        break;
+      }
 
-        // match action_receiver.try_recv() {
+      let mut paused = paused.lock().expect("Failed to lock paused");
+      // todo: maybe wait ~10ms here so it's not checking that much?
+      // or: https://doc.rust-lang.org/std/sync/struct.Condvar.html
+      // or: go back to message based communication
+      if !(*paused) {
+        *paused = true;
 
+        let read = reader.read(&mut chunk);
         if let Ok(len) = read {
           if len == 0 {
+            info!("Breaking out");
             break;
           }
           let chunk = &chunk[..len];
 
           info!("Sending chunk with length: {}", chunk.len());
-          // let data = ServerData::PtyData(chunk.to_vec());
           tsfn_send(
             &tsfn_clone,
             ServerMessage::new(Data::Text(chunk.to_vec()), None),
@@ -89,11 +93,19 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
       }
     }
 
-    // drop(master);
-    // let mut vec = vec![];
-    // let len = reader.read_to_end(&mut vec);
-    // info!("Sending last chunk");
-    // break;
+    let master_clone = master_clone.lock().unwrap();
+    drop(master_clone);
+
+    let mut remaining_chunk = vec![];
+    reader
+      .read_to_end(&mut remaining_chunk)
+      .expect("failed to read remian chunk");
+
+    info!("Sending last chunk");
+    tsfn_send(
+      &tsfn_clone,
+      ServerMessage::new(Data::Text(remaining_chunk), None),
+    );
 
     if let Err(err) = sender_clone.send(CellChannel::Exit) {
       error!("Error while sending exit code: {}", err);
@@ -105,53 +117,47 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     let received = cell.receiver.recv(); // hangs
 
     match received {
-      Ok(CellChannel::FrontendMessage(message)) => {
-        if let Some(action) = message.action {
-          //   if let Ok(()) = action_sender.send(action) {
-          //     info!("Sent action");
-          //   } else {
-          //     error!("Failed to send action");
-          //   }
-          // } else {
-          //   warn!("Invalid frontend message")
-          // }
-          match action {
-            Action::Resume => {
-              // paused = false;
-            }
-            Action::Kill => {
-              // child.kill().expect("Failed to kill child"); // sounds pretty bad
-            }
-            Action::Write(data) => {
-              info!("Writing data: {:?}", data);
-              write!(master, "{}", data).expect("Failed to write to master");
-            }
-            Action::Resize(Size { rows, cols }) => {
-              info!("Resizing Pty: {} {}", rows, cols);
-              master
-                .resize(PtySize {
-                  rows,
-                  cols,
-                  pixel_width: 0,
-                  pixel_height: 0,
-                })
-                .expect("Failed to resize pty");
-            }
-            _ => {
-              error!("Error receiving in flow channel");
-            }
-          }
+      Ok(CellChannel::FrontendMessage(FrontendMessage { id, action })) => match action {
+        Action::Resume => {
+          info!("Action Resuming");
+          let mut paused = paused_clone.lock().expect("Failed to lock paused clone");
+          *paused = false;
+          info!("Action Resumed");
         }
-      }
-      Ok(CellChannel::Success) => return Ok(Status::Success),
-      Ok(CellChannel::Error) => return Ok(Status::Error),
-      Ok(CellChannel::Reader(reader)) => {
-        drop(master);
-
-        let mut vec = vec![];
-        let len = reader.read_to_end(&mut vec).expect("AHAHAHAHA");
-        info!("Sending data with length3213213213211: {}", len);
-        tsfn_send(&tsfn_clone, ServerMessage::new(Data::Text(vec), None));
+        Action::Kill => {
+          let mut child = child.lock().unwrap();
+          info!("Killing child");
+          child.kill().expect("Failed to kill child");
+        }
+        Action::Write(data) => {
+          info!("Writing data: {:?}", data);
+          let mut master = master.lock().unwrap();
+          write!(*master, "{}", data).expect("Failed to write to master");
+        }
+        Action::Resize(Size { rows, cols }) => {
+          info!("Resizing Pty: {} {}", rows, cols);
+          let master = master.lock().unwrap();
+          master
+            .resize(PtySize {
+              rows,
+              cols,
+              pixel_width: 0,
+              pixel_height: 0,
+            })
+            .expect("Failed to resize pty");
+        }
+        _ => {
+          error!("Error receiving in flow channel");
+        }
+      },
+      Ok(CellChannel::Exit) => {
+        let mut child = child.lock().unwrap();
+        let successful = child.wait().expect("Failed to unwrap child").success();
+        return Ok(if successful {
+          Status::Success
+        } else {
+          Status::Error
+        });
       }
       Err(err) => error!("Error while receiving message: {}", err),
     }
