@@ -33,15 +33,19 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
   cmd.cwd(&cell.current_dir());
   cmd.args(args);
 
-  let mut reader = pair.master.try_clone_reader()?;
+  let mut master = pair.master;
+  let mut reader = master.try_clone_reader()?;
+  let mut reader_clone = master.try_clone_reader()?;
   let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
-  let master = Arc::new(Mutex::new(pair.master));
   let child_clone = Arc::clone(&child);
-  let master_clone = Arc::clone(&master);
 
   drop(pair.slave);
 
   let tsfn_clone = cell
+    .tsfn
+    .try_clone()
+    .expect("Failed to clone threadsafe function");
+  let tsfn_clone2 = cell
     .tsfn
     .try_clone()
     .expect("Failed to clone threadsafe function");
@@ -93,20 +97,6 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
       }
     }
 
-    let master_clone = master_clone.lock().unwrap();
-    drop(master_clone);
-
-    let mut remaining_chunk = vec![];
-    reader
-      .read_to_end(&mut remaining_chunk)
-      .expect("failed to read remian chunk");
-
-    info!("Sending last chunk");
-    tsfn_send(
-      &tsfn_clone,
-      ServerMessage::new(Data::Text(remaining_chunk), None),
-    );
-
     if let Err(err) = sender_clone.send(CellChannel::Exit) {
       error!("Error while sending exit code: {}", err);
     };
@@ -131,12 +121,10 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
         }
         Action::Write(data) => {
           info!("Writing data: {:?}", data);
-          let mut master = master.lock().unwrap();
-          write!(*master, "{}", data).expect("Failed to write to master");
+          write!(master, "{}", data).expect("Failed to write to master");
         }
         Action::Resize(Size { rows, cols }) => {
           info!("Resizing Pty: {} {}", rows, cols);
-          let master = master.lock().unwrap();
           master
             .resize(PtySize {
               rows,
@@ -151,6 +139,19 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
         }
       },
       Ok(CellChannel::Exit) => {
+        drop(master);
+
+        let mut remaining_chunk = vec![];
+        reader_clone
+          .read_to_end(&mut remaining_chunk)
+          .expect("failed to read remian chunk");
+
+        info!("Sending last chunk");
+        tsfn_send(
+          &tsfn_clone2,
+          ServerMessage::new(Data::Text(remaining_chunk), None),
+        );
+
         let mut child = child.lock().unwrap();
         let successful = child.wait().expect("Failed to unwrap child").success();
         return Ok(if successful {
@@ -164,6 +165,13 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
   }
 }
 
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct FrontendMessage {
+  id: String,
+  action: Action,
+}
+
 #[derive(Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 enum Action {
@@ -171,13 +179,6 @@ enum Action {
   Kill,
   Write(String),
   Resize(Size),
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct FrontendMessage {
-  id: String,
-  action: Action,
 }
 
 #[derive(Deserialize, Debug, PartialEq)]
