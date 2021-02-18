@@ -1,4 +1,4 @@
-use crate::util::get_executables;
+use crate::util::executables::EXECUTABLES;
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use log::{error, info};
@@ -117,7 +117,8 @@ impl Autocomplete {
   }
 
   fn executables(&mut self) {
-    for executable in get_executables() {
+    let executables = EXECUTABLES.iter();
+    for executable in executables {
       // if let Ok(suggestion) = get_docs(&executable) {
       if let Some((score, _)) = self.matcher.fuzzy_indices(&executable, self.value.as_ref()) {
         self.suggestions.insert(
@@ -125,7 +126,7 @@ impl Autocomplete {
           Suggestion {
             label: executable.clone(),
             insert_text: None,
-            score: if self.value == executable {
+            score: if &(self.value) == executable {
               // boosting so for something like `bash`, the
               // `bash` executable shows up as the 1st suggestion
               score + Priority::High as i64
@@ -205,7 +206,7 @@ enum SuggestionType {
 // to boost suggestions' score
 enum Priority {
   Low = 1,
-  Medium = 25,
+  // Medium = 25,
   High = 100,
 }
 

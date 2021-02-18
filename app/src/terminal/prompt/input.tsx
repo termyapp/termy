@@ -2,13 +2,19 @@ import Editor from '@monaco-editor/react'
 // only import it as type, otherwise it overrides @monaco-editor/react instance
 import type * as Monaco from 'monaco-editor'
 import React, { useEffect, useRef } from 'react'
-import type { ICell } from '../../../types'
+import type { ICellWithActive } from '../../../types'
 import { Div } from '../../components'
 import useStore from '../../store'
 
 export const TERMY = 'shell'
 
-const Input: React.FC<ICell> = ({ id, currentDir, value, status }) => {
+const Input: React.FC<ICellWithActive> = ({
+  id,
+  currentDir,
+  value,
+  status,
+  active,
+}) => {
   const dispatch = useStore(state => state.dispatch)
   const theme = useStore(state => state.theme)
 
@@ -29,13 +35,14 @@ const Input: React.FC<ICell> = ({ id, currentDir, value, status }) => {
 
       // focus & select input on finish
       if (status === 'success' || status === 'error') {
-        editorRef.current.focus()
+        // only focus if the cell is active
+        if (active) editorRef.current.focus()
 
         const range = editorRef.current.getModel()?.getFullModelRange()
         if (range) editorRef.current.setSelection(range)
       }
     }
-  }, [status])
+  }, [status, active])
 
   return (
     <>

@@ -1,5 +1,7 @@
 #[macro_use]
 extern crate napi_derive;
+#[macro_use]
+extern crate lazy_static;
 
 use autocomplete::Autocomplete;
 use command::{external::FrontendMessage, internal::Internal};
@@ -15,6 +17,7 @@ mod autocomplete;
 mod command;
 mod db;
 mod logger;
+mod paths;
 mod shell;
 mod util;
 
@@ -30,8 +33,6 @@ fn init(mut exports: JsObject) -> Result<()> {
 
   // todo: this fails in prod
   // db::init().expect("Failed to initialize database");
-
-  // https://docs.rs/lazy_static/1.4.0/lazy_static/
 
   logger::init().unwrap();
 

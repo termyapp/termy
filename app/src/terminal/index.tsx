@@ -34,34 +34,34 @@ const App: React.FC = () => {
     monaco?.editor.setTheme(TERMY) // force re-render
   }, [theme, monaco])
 
-  useMousetrap('meta+t', () => {
+  useMousetrap('mod+t', () => {
     dispatch({ type: 'new-tab' })
   })
-  useMousetrap('meta+w', () => {
+  useMousetrap('mod+w', () => {
     dispatch({ type: 'remove-cell' })
   })
-  useMousetrap('meta+shift+w', () => {
+  useMousetrap('mod+shift+w', () => {
     dispatch({ type: 'remove-tab' })
   })
-  useMousetrap('meta+n', () => {
+  useMousetrap('mod+n', () => {
     dispatch({ type: 'new-cell' })
   })
-  useMousetrap('meta+s', () => {
+  useMousetrap('mod+s', () => {
     dispatch({ type: 'kill-cell' })
   })
-  useMousetrap('meta+r', () => {
+  useMousetrap('mod+r', () => {
     // note: something overrides this in dev
     dispatch({ type: 'run-cell' })
   })
   useMousetrap(
-    'meta+j',
+    'mod+j',
     () => {
       dispatch({ type: 'focus-cell', id: 'next' })
     },
     { repeat: true },
   )
   useMousetrap(
-    'meta+k',
+    'mod+k',
     () => {
       dispatch({ type: 'focus-cell', id: 'previous' })
     },

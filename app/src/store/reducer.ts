@@ -130,11 +130,8 @@ export default function reducer(state: IState, action: TAction) {
       case 'run-cell': {
         const id = action.id ?? draft.tabs[draft.activeTab].activeCell
         const cell = draft.cells[id]
-        if (!cell || !cell.value) return
+        if (!cell || !cell.value || cell.status === 'running') return
 
-        if (cell.status === 'running') {
-          killCell(cell.id)
-        }
         cell.status = null
 
         const message: Message = {

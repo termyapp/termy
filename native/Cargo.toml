@@ -1,6 +1,6 @@
 [package]
 name = "native"
-version = "0.1.5"
+version = "0.2.0"
 authors = ["martonlanga <martonlanga@gmail.com>"]
 license = "MIT"
 edition = "2018"
@@ -16,14 +16,15 @@ fuzzy-matcher = "*"
 crossbeam-channel = "0.4.4"
 napi = { git = "https://github.com/napi-rs/napi-rs", features = ["serde-json", "napi4"] }
 napi-derive = { git = "https://github.com/napi-rs/napi-rs" }
-portable-pty = "0.3.1"
-rusqlite = { version = "0.24.1", features = ["bundled"] }
+portable-pty = { git = "https://github.com/wez/wezterm", branch = "main" }
 dirs = "3.0.1"
-relative-path = "1.3.2"
 log = "0.4"
 log4rs = "0.13.0"
-is_executable = "0.1.2"
 indoc = "1.0.3"
+lazy_static = "1.4.0"
+is_executable = "1.0.1"
+path-slash = "0.1.4"
+dunce = "1.0.1"
 
 [build-dependencies]
 napi-build = { git = "https://github.com/napi-rs/napi-rs" }

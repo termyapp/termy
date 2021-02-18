@@ -1,17 +1,15 @@
+use crate::paths::CrossPath;
+
 pub fn home() -> String {
-    dirs::home_dir()
-        .unwrap()
-        .into_os_string()
-        .into_string()
-        .unwrap()
+  CrossPath::home().to_string()
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+  use super::*;
 
-    #[test]
-    fn returns_something() {
-        assert!(!home().is_empty());
-    }
+  #[test]
+  fn returns_something() {
+    assert!(!home().is_empty());
+  }
 }

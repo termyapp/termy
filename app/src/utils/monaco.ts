@@ -31,6 +31,7 @@ export const loadMonaco = () => {
       let documentation = suggestion.documentation
       let label: unknown = suggestion.label
 
+      // todo: move this into resolveCompletionItem
       const tldr = ipc.sendSync('message', {
         type: 'tldr',
         command: suggestion.label,

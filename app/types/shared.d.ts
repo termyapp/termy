@@ -14,9 +14,7 @@ export interface XtermSize {
 
 export interface FrontendMessage {
   id: string
-  stdin?: string
-  size?: XtermSize
-  action?: 'resume' | 'kill'
+  action: 'resume' | 'kill' | { write: string } | { resize: XtermSize }
 }
 
 export type Message =
@@ -54,3 +52,5 @@ export type SuggestionKind =
   | 'directory'
   | 'executable'
   | 'externalHistory'
+
+export type WindowMessage = 'minimize' | 'maximize' | 'unmaximize' | 'close'
