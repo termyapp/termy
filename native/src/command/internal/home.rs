@@ -1,7 +1,7 @@
 use crate::paths::CrossPath;
 
 pub fn home() -> String {
-  CrossPath::home().display()
+  CrossPath::home().to_string()
 }
 
 #[cfg(test)]

@@ -7,16 +7,19 @@ use indoc::formatdoc;
 use log::info;
 
 pub fn path(mut path: CrossPath, cell: Cell) -> Result<Status> {
+  info!("Running path: {}", path);
   path.canonicalize();
-  info!("Running path: {}", path.display());
+  info!("Running path2: {}", path);
 
   if path.buf.is_dir() {
+    let a = path.to_string();
+    info!("asdfdfsdfs: {} {}", path, a);
     // change current dir to path
     cell.send(ServerMessage::new(
       Data::Mdx(formatdoc! {"
                 <Card type='success'>New directory: <Path>{path}</Path></Card>
-            ", path = path.display()}),
-      Some(vec![(String::from("cd"), path.display())]),
+            ", path = path}),
+      Some(vec![(String::from("cd"), a)]),
     ));
 
     return Ok(Status::Success);

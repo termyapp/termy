@@ -19,9 +19,7 @@ impl CrossPath {
   }
 
   pub fn home() -> CrossPath {
-    CrossPath {
-      buf: dirs::home_dir().unwrap(),
-    }
+    CrossPath::new(dirs::home_dir().unwrap().to_str().unwrap())
   }
 
   pub fn join<P: AsRef<Path>>(&self, path: P) -> CrossPath {
@@ -40,10 +38,6 @@ impl CrossPath {
     } else {
       warn!("Failed to canonicalize path");
     }
-  }
-
-  pub fn display(&self) -> String {
-    format!("{}", self)
   }
 }
 
@@ -90,13 +84,13 @@ mod tests {
   #[test]
   #[cfg(target_os = "windows")]
   fn converts_backslash_to_forward_slash() {
-    let cross_path = Crossbuf::new(r"C:\foo\bar.txt");
-    assert_eq!("C:/foo/bar.txt", &(cross_path.display()));
+    let cross_path = CrossPath::new(r"C:\foo\bar.txt");
+    assert_eq!("C:/foo/bar.txt", &(cross_path.to_string()));
   }
 
   #[test]
   fn home_directory() {
-    let home = CrossPath::home().display();
+    let home = CrossPath::home().to_string();
     assert!(!home.contains(r"\"));
 
     #[cfg(target_os = "linux")]
