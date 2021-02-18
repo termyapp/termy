@@ -24,11 +24,9 @@ mod tests {
   use super::*;
 
   #[test]
-  fn reads_markdown_file() {
-    let readme_file = test_dir().unwrap().join("readme.md");
-    assert_eq!(
-            view(Some(readme_file)).unwrap(),
-            "```md\nFiles and folders to test the internal commands.\n\nMake sure that the tests pass after modifying these files.\n\n```".to_string()
-        );
+  fn reads_file() {
+    let file = test_dir().unwrap().join("test.txt");
+
+    assert_eq!(view(Some(file)).unwrap(), "```txt\nTest\n```".to_string());
   }
 }
