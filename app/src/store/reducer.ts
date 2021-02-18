@@ -1,5 +1,5 @@
 import { getTheme, ipc } from '@src/utils'
-import type { ICell, Message, ThemeMode } from '@types'
+import type { Cell, Message, ThemeMode } from '@types'
 import produce from 'immer'
 import { v4 } from 'uuid'
 import { getDefaultCell, killCell, nextOrLast, nextOrPrevious } from './helpers'
@@ -11,7 +11,7 @@ export type TAction =
   | { type: 'new-tab' }
   | { type: 'remove-cell'; id?: string }
   | { type: 'remove-tab'; id?: string }
-  | { type: 'set-cell'; id?: string; cell: Partial<ICell> }
+  | { type: 'set-cell'; id?: string; cell: Partial<Cell> }
   | { type: 'run-cell'; id?: string }
   | { type: 'kill-cell'; id?: string }
   | { type: 'resume-cell'; id?: string }

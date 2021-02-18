@@ -1,7 +1,6 @@
-import React from 'react'
-import { styled } from './stitches.config'
+import { styled } from '../stitches.config'
 
-const Svg = styled.svg({
+export const Svg = styled.svg({
   width: '$5',
   height: '$5',
 
@@ -11,7 +10,7 @@ const Svg = styled.svg({
 
 type SvgProps = React.ComponentProps<typeof Svg>
 
-export const Folder: React.FC<SvgProps> = ({ css = {} }) => (
+export const Folder = ({ css = {} }: SvgProps) => (
   <Svg
     css={{
       // @ts-ignore

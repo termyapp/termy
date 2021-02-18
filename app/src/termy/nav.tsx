@@ -4,12 +4,12 @@ import { ipc, isMac } from '@src/utils'
 import type { WindowMessage } from '@types'
 import React from 'react'
 
-export const navHeight = '28px'
+interface Props {
+  tabs: string[]
+  activeTab: string
+}
 
-const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
-  tabs,
-  activeTab,
-}) => {
+export default function Nav({ tabs, activeTab }: Props) {
   const dispatch = useStore(state => state.dispatch)
 
   const sendWindowsMessage = (message: WindowMessage) => () =>
@@ -92,4 +92,4 @@ const Nav: React.FC<{ tabs: string[]; activeTab: string }> = ({
   )
 }
 
-export default Nav
+export const navHeight = '28px'

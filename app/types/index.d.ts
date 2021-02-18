@@ -4,7 +4,7 @@ export type OutputType = 'text' | 'mdx' | null
 
 export type ThemeMode = '#fff' | '#000'
 
-export interface ICell {
+export interface Cell {
   id: string
   value: string
   currentDir: string
@@ -12,7 +12,7 @@ export interface ICell {
   status: Status
 }
 
-export interface ICellWithActive extends ICell {
+export interface CellWithActive extends Cell {
   active: boolean
 }
 

@@ -1,8 +1,8 @@
 import { api, ipc } from '@src/utils'
-import type { ICell, Message } from '@types'
+import type { Cell, Message } from '@types'
 import { v4 } from 'uuid'
 
-export const getDefaultCell = (): ICell => {
+export const getDefaultCell = (): Cell => {
   const id = v4()
   return {
     id,

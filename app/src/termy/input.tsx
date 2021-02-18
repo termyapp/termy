@@ -2,19 +2,19 @@ import Editor from '@monaco-editor/react'
 // only import it as type, otherwise it overrides @monaco-editor/react instance
 import type * as Monaco from 'monaco-editor'
 import React, { useEffect, useRef } from 'react'
-import type { ICellWithActive } from '../../../types'
-import { Div } from '../../components'
-import useStore from '../../store'
+import type { CellWithActive } from '../../types'
+import { Div } from '../components'
+import useStore from '../store'
 
 export const TERMY = 'shell'
 
-const Input: React.FC<ICellWithActive> = ({
+export default function Input({
   id,
   currentDir,
   value,
   status,
   active,
-}) => {
+}: CellWithActive) {
   const dispatch = useStore(state => state.dispatch)
   const theme = useStore(state => state.theme)
 
@@ -198,5 +198,3 @@ const Input: React.FC<ICellWithActive> = ({
     </>
   )
 }
-
-export default Input

@@ -7,12 +7,12 @@ import { css, globalStyles } from '../stitches.config'
 import useStore from '../store'
 import { getThemeData, loadMonaco } from '../utils'
 import Nav, { navHeight } from './nav'
-import { TERMY } from './prompt/input'
+import { TERMY } from './input'
 import Tab from './tab'
 
 loadMonaco()
 
-const App: React.FC = () => {
+export default function Terminal() {
   const dispatch = useStore(state => state.dispatch)
   const tabs = useStore(state => Object.keys(state.tabs), shallow)
   const activeTab = useStore(state => state.activeTab)
@@ -103,5 +103,3 @@ const App: React.FC = () => {
     </>
   )
 }
-
-export default App

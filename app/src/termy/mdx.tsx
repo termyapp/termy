@@ -12,7 +12,7 @@ interface Props {
   children: string
 }
 
-const Mdx: React.FC<Props> = ({ children }) => {
+export default function Mdx({ children }: Props) {
   return (
     <Markdown
       options={{
@@ -23,5 +23,3 @@ const Mdx: React.FC<Props> = ({ children }) => {
     </Markdown>
   )
 }
-
-export default Mdx

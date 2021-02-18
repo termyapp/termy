@@ -1,15 +1,18 @@
 import { Grid } from '@components'
 import { useMousetrap } from '@src/hooks'
+import { focusCell } from '@src/utils'
 import React, { useCallback, useEffect } from 'react'
 import shallow from 'zustand/shallow'
 import useStore from '../store'
-import Cell, { focusCell } from './cell'
+import Cell from './cell'
 
-const Tab: React.FC<{
+interface Props {
   id: string
   index: number
   activeTab: string
-}> = ({ id, index, activeTab }) => {
+}
+
+export default function Tab({ id, index, activeTab }: Props) {
   const cellIds = useStore(
     useCallback(state => state.tabs[id].cells, [id]),
     shallow,
@@ -50,5 +53,3 @@ const Tab: React.FC<{
     </Grid>
   )
 }
-
-export default Tab
