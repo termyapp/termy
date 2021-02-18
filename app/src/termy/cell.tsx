@@ -6,18 +6,13 @@ import useStore from '../store'
 import Output from './output'
 import Prompt from './prompt'
 
-export const focusCell = (id: string) => {
-  const cell = document.getElementById(id)
-  if (cell) {
-    cell.focus()
-  }
+interface Props {
+  id: string
+  active: boolean
+  showBorder: boolean
 }
 
-const Cell: React.FC<{ id: string; active: boolean; showBorder: boolean }> = ({
-  id,
-  active,
-  showBorder,
-}) => {
+export default function Cell({ id, active, showBorder }: Props) {
   const cell = useStore(
     useCallback(state => state.cells[id], [id]),
     shallow,
@@ -45,8 +40,6 @@ const Cell: React.FC<{ id: string; active: boolean; showBorder: boolean }> = ({
     </Container>
   )
 }
-
-export default Cell
 
 const Container = styled(Flex, {
   position: 'relative',

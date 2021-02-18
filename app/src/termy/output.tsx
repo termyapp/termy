@@ -2,11 +2,11 @@ import { Div } from '@components'
 import { useListener, useXterm } from '@hooks'
 import { styled } from '@src/stitches.config'
 import useStore from '@src/store'
-import type { ICellWithActive, ServerMessage, ThemeMode } from '@types'
+import type { CellWithActive, ServerMessage, ThemeMode } from '@types'
 import React, { useState } from 'react'
 import Mdx from './mdx'
 
-const Output: React.FC<ICellWithActive> = cell => {
+export default function Output(cell: CellWithActive) {
   const dispatch = useStore(state => state.dispatch)
   const { id } = cell
 
@@ -110,8 +110,6 @@ const Output: React.FC<ICellWithActive> = cell => {
     </Wrapper>
   )
 }
-
-export default Output
 
 const Wrapper = styled(Div, {
   px: '$4',

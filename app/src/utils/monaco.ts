@@ -2,7 +2,7 @@ import { loader } from '@monaco-editor/react'
 import type { NativeSuggestion, Suggestion, SuggestionKind } from '@types'
 import { formatDistanceToNow } from 'date-fns'
 import type * as Monaco from 'monaco-editor'
-import { TERMY } from '../terminal/prompt/input'
+import { TERMY } from '../termy/input'
 import { getTypedCliSuggestions, ipc } from './'
 
 export const loadMonaco = () => {

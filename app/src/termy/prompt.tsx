@@ -1,11 +1,12 @@
 import { Div, Flex, Path } from '@components'
 import { CheckIcon, Cross2Icon, PlayIcon } from '@modulz/radix-icons'
 import { styled } from '@src/stitches.config'
-import type { ICellWithActive } from '@types'
+import { formatCurrentDir } from '@src/utils'
+import type { CellWithActive } from '@types'
 import React from 'react'
 import Input from './input'
 
-const Prompt: React.FC<ICellWithActive> = cell => {
+export default function Prompt(cell: CellWithActive) {
   const { active, currentDir } = cell
 
   return (
@@ -25,8 +26,6 @@ const Prompt: React.FC<ICellWithActive> = cell => {
     </Wrapper>
   )
 }
-
-export default Prompt
 
 const Wrapper = styled(Div, {
   px: '$4',
@@ -77,12 +76,3 @@ const Status = styled(Flex, {
     },
   },
 })
-
-const formatCurrentDir = (currentDir: string) => {
-  const path = currentDir.split('/')
-  if (path.length < 3) {
-    return currentDir
-  }
-  const relativePath = currentDir.split('/').slice(3).join('/')
-  return (relativePath.length > 0 ? '~/' : '~') + relativePath
-}

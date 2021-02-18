@@ -1,6 +1,6 @@
 import type { darkTheme } from '@src/themes'
 import { v4 } from 'uuid'
-import type { ICell } from '../../types'
+import type { Cell } from '../../types'
 import { getTheme, isDev } from '../utils'
 import { getDefaultCell } from './helpers'
 
@@ -15,7 +15,7 @@ export interface IState {
   }
   activeTab: string
   cells: {
-    [id: string]: ICell
+    [id: string]: Cell
   }
   theme: typeof darkTheme
 }

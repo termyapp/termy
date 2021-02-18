@@ -1,12 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import Terminal from './terminal'
+import Termy from './termy'
 import './css/index.css'
 import './css/xterm.css'
 
 ReactDOM.render(
   <React.StrictMode>
-    <Terminal />
+    <Termy />
   </React.StrictMode>,
   document.getElementById('root'),
 )
