@@ -43,14 +43,13 @@ export default function Cell({ id, active, showBorder }: Props) {
 
 const Container = styled(Flex, {
   position: 'relative',
-  borderRadius: '$sm',
+  borderRadius: '$md',
   flexDirection: 'column',
 
   variants: {
     active: {
       true: {
         color: '$focusedForeground',
-        borderRadius: '$md',
       },
     },
     showBorder: {

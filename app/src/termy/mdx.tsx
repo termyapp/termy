@@ -1,4 +1,4 @@
-import { Card, Path } from '@components'
+import { Card, Path, Table } from '@components'
 import Markdown from 'markdown-to-jsx'
 import React from 'react'
 
@@ -6,6 +6,7 @@ import React from 'react'
 const overrides = {
   Card: { component: Card },
   Path: { component: Path },
+  Table: { component: Table },
 }
 
 interface Props {

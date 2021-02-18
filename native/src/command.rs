@@ -29,8 +29,8 @@ impl Command {
     let cross_path = CrossPath::new(current_dir);
     Self {
       kind: match command.as_str() {
-        path if cross_path.join(path).exists() => Kind::Path(cross_path.join(path)),
-        path if CrossPath::new(path).exists() => Kind::Path(cross_path),
+        path if cross_path.join(path).buf.exists() => Kind::Path(cross_path.join(path)),
+        path if CrossPath::new(path).buf.exists() => Kind::Path(cross_path),
         "~" => Kind::Path(CrossPath::home()),
         // "cd" => {
         //   // get new directory from args

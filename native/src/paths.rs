@@ -29,10 +29,6 @@ impl CrossPath {
     }
   }
 
-  pub fn exists(&self) -> bool {
-    self.buf.exists()
-  }
-
   pub fn canonicalize(&mut self) {
     if let Ok(b) = canonicalize(self.buf.as_path()) {
       self.buf = b;
