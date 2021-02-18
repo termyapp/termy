@@ -11,6 +11,7 @@ git submodule update --recursive
 
 # Building
 echo Building native module...
+rm app/public/*.node
 cd native || echo Failed to visit native. Current working directory: "$(pwd)". Are you in the root?
 yarn || echo Failed to install yarn dependencies. Is yarn installed? && yarn build-release
 
