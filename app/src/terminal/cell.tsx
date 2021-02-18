@@ -13,7 +13,11 @@ export const focusCell = (id: string) => {
   }
 }
 
-const Cell: React.FC<{ id: string; active: boolean }> = ({ id, active }) => {
+const Cell: React.FC<{ id: string; active: boolean; showBorder: boolean }> = ({
+  id,
+  active,
+  showBorder,
+}) => {
   const cell = useStore(
     useCallback(state => state.cells[id], [id]),
     shallow,
@@ -31,27 +35,37 @@ const Cell: React.FC<{ id: string; active: boolean }> = ({ id, active }) => {
   }, [id])
 
   return (
-    <Card onFocus={() => dispatch({ type: 'focus-cell', id })} active={active}>
+    <Container
+      onFocus={() => dispatch({ type: 'focus-cell', id })}
+      active={active}
+      showBorder={showBorder}
+    >
       <Prompt {...cell} active={active} />
       <Output {...cell} active={active} />
-    </Card>
+    </Container>
   )
 }
 
 export default Cell
 
-const Card = styled(Flex, {
+const Container = styled(Flex, {
   position: 'relative',
   borderRadius: '$sm',
   flexDirection: 'column',
-  border: '1px solid transparent',
 
   variants: {
     active: {
       true: {
         color: '$focusedForeground',
-        border: '1px solid $accent',
         borderRadius: '$md',
+      },
+    },
+    showBorder: {
+      true: {
+        border: '1px solid $accent',
+      },
+      false: {
+        border: '1px solid transparent',
       },
     },
   },

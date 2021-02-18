@@ -40,7 +40,12 @@ const Tab: React.FC<{
       }}
     >
       {cellIds.map(cellId => (
-        <Cell key={cellId} id={cellId} active={cellId === activeCell} />
+        <Cell
+          key={cellId}
+          id={cellId}
+          active={cellId === activeCell}
+          showBorder={cellId === activeCell && cellIds.length > 1}
+        />
       ))}
     </Grid>
   )
