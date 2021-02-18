@@ -186,6 +186,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "88d7ed2934d741c6b37e33e3832298e8850b53fd2d2bea03873375596c7cea4e"
 
 [[package]]
+name = "dunce"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2641c4a7c0c4101df53ea572bffdc561c146f6c2eb09e4df02bc4811e3feeb4"
+
+[[package]]
 name = "filedescriptor"
 version = "0.7.3"
 source = "git+https://github.com/wez/wezterm?branch=main#4e41bbd4e9275cc4c17fb49a84495bf2cf9bba75"
@@ -464,6 +470,7 @@ dependencies = [
  "anyhow",
  "crossbeam-channel",
  "dirs",
+ "dunce",
  "fuzzy-matcher",
  "indoc",
  "is_executable",

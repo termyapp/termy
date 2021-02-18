@@ -1,4 +1,5 @@
 use anyhow::Result;
+use dunce::canonicalize;
 use log::warn;
 use path_slash::PathBufExt;
 use std::{
@@ -33,7 +34,7 @@ impl CrossPath {
   }
 
   pub fn canonicalize(&mut self) {
-    if let Ok(b) = self.buf.canonicalize() {
+    if let Ok(b) = canonicalize(self.buf.as_path()) {
       self.buf = b;
     } else {
       warn!("Failed to canonicalize path");
