@@ -17,6 +17,7 @@ mod autocomplete;
 mod command;
 mod db;
 mod logger;
+mod paths;
 mod shell;
 mod util;
 

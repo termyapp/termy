@@ -111,7 +111,7 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     let received = cell.receiver.recv(); // hangs
 
     match received {
-      Ok(CellChannel::FrontendMessage(FrontendMessage { id, action })) => match action {
+      Ok(CellChannel::FrontendMessage(FrontendMessage { id: _, action })) => match action {
         Action::Resume => {
           info!("Resuming");
           let mut paused = paused_clone.lock().expect("Failed to lock paused clone");
@@ -136,9 +136,6 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
               pixel_height: 0,
             })
             .expect("Failed to resize pty");
-        }
-        _ => {
-          error!("Error receiving in flow channel");
         }
       },
       Ok(CellChannel::Exit) => {

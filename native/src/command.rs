@@ -1,11 +1,10 @@
 use crate::{
+  paths::CrossPath,
   shell::{tsfn_send, Cell, ServerMessage, Status},
   util::executables::EXECUTABLES,
 };
 use anyhow::Result;
 use internal::Internal;
-use log::info;
-use std::path::{Path, PathBuf};
 
 pub mod external;
 pub mod internal;
@@ -19,7 +18,7 @@ pub struct Command {
 
 #[derive(Debug)]
 enum Kind {
-  Path(PathBuf),
+  Path(CrossPath),
   Internal(Internal),
   External(String),
   NotFound,
@@ -27,28 +26,28 @@ enum Kind {
 
 impl Command {
   pub fn new(command: String, args: Vec<String>, current_dir: &str) -> Self {
+    let cross_path = CrossPath::new(current_dir);
     Self {
       kind: match command.as_str() {
-        path if Path::new(current_dir).join(path).exists() => {
-          Kind::Path(Path::new(current_dir).join(path))
-        }
-        path if Path::new(path).exists() => Kind::Path(PathBuf::from(path)),
-        "cd" => {
-          // get new directory from args
-          // if it fails, set home dir as the default
-          let path = if let Some(path) = args.iter().next() {
-            if Path::new(current_dir).join(path).exists() {
-              Path::new(current_dir).join(path)
-            } else {
-              PathBuf::from(path)
-            }
-          } else {
-            dirs::home_dir().unwrap()
-          };
+        path if cross_path.join(path).exists() => Kind::Path(cross_path.join(path)),
+        path if CrossPath::new(path).exists() => Kind::Path(cross_path),
+        "~" => Kind::Path(CrossPath::home()),
+        // "cd" => {
+        //   // get new directory from args
+        //   // if it fails, set home dir as the default
+        //   let path = if let Some(path) = args.iter().next() {
+        //     if cross_path.buf.join(path).exists() {
+        //       cross_path.buf.join(path)
+        //     } else {
+        //       PathBuf::from(path)
+        //     }
+        //   } else {
+        //     dirs::home_dir().unwrap()
+        //   };
 
-          info!("set path to {:?}", path);
-          Kind::Path(path)
-        }
+        //   info!("set path to {:?}", path);
+        //   Kind::Path(path)
+        // }
         internal if Internal::parse(internal).is_some() => {
           Kind::Internal(Internal::parse(internal).unwrap())
         }
@@ -62,10 +61,10 @@ impl Command {
   pub fn execute(self, cell: Cell) -> Result<()> {
     let tsfn_clone = cell.tsfn.try_clone()?;
 
-    let status: Result<Status> = match &self.kind {
+    let status: Result<Status> = match self.kind {
       Kind::Path(path) => path::path(path, cell),
       Kind::Internal(internal) => internal.mdx(self.args, cell),
-      Kind::External(command) => external::external(command, self.args, cell),
+      Kind::External(command) => external::external(&command, self.args, cell),
       Kind::NotFound => Ok(Status::Error),
     };
 

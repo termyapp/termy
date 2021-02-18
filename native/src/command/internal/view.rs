@@ -19,7 +19,7 @@ pub fn view<P: AsRef<Path>>(path: Option<P>) -> Result<String> {
 
 #[cfg(test)]
 mod tests {
-  use crate::util::paths::test_dir;
+  use crate::paths::test_dir;
 
   use super::*;
 

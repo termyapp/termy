@@ -206,7 +206,7 @@ enum SuggestionType {
 // to boost suggestions' score
 enum Priority {
   Low = 1,
-  Medium = 25,
+  // Medium = 25,
   High = 100,
 }
 
