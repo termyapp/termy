@@ -73,13 +73,8 @@ export default function Nav({ tabs, activeTab }: Props) {
                   width: 40,
                   height: 34,
                   padding: '12px 15px 12px 15px',
-                  opacity: 0.6,
                   shapeRendering: 'crispEdges',
                   cursor: 'pointer', // not working
-
-                  ':hover': {
-                    opacity: 1,
-                  },
                 }}
               >
                 <use xlinkHref={`./control-icons.svg#${item.icon}`} />
