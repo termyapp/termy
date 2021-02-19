@@ -64,16 +64,19 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     let mut chunk = [0u8; 1024];
 
     loop {
+      info!("Start of loop");
+
       if (*child_inner.lock().expect("Failed to lock child"))
         .try_wait()
         .expect("Failed to poll child")
         .is_some()
       {
-        info!("Breaking out 1");
+        info!("Breaking out 0");
         break;
       }
 
       let mut paused = paused.lock().expect("Failed to lock paused");
+      info!("Paused: {}", *paused);
       if *paused {
         // todo: find a better way to block thread until we can resume
         // maybe go back to channels and block on .recv()
@@ -82,13 +85,25 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
       } else {
         *paused = true;
 
+        if (*child_inner.lock().expect("Failed to lock child"))
+          .try_wait()
+          .expect("Failed to poll child")
+          .is_some()
+        {
+          info!("Breaking out 1");
+          break;
+        }
+
         let read = reader_inner.read(&mut chunk);
+
+        info!("read");
         if let Ok(len) = read {
           if len == 0 {
             info!("Breaking out 2");
             break;
           }
           let chunk = &chunk[..len];
+          info!("here?");
 
           info!("Sending chunk with length: {}", chunk.len());
           tsfn_send(
@@ -120,7 +135,16 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
         Action::Kill => {
           info!("Killing child");
           let mut child = child.lock().unwrap();
+          info!("Unlocked child");
           child.kill().expect("Failed to kill child");
+          info!("Killed child");
+
+          let successful = child.wait().expect("Failed to unwrap child").success();
+          return Ok(if successful {
+            Status::Success
+          } else {
+            Status::Error
+          });
         }
         Action::Write(data) => {
           info!("Writing data: {:?}", data);
