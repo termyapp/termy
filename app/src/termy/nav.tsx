@@ -1,4 +1,4 @@
-import { Div, Flex, Span } from '@components'
+import { Div, Flex } from '@components'
 import useStore from '@src/store'
 import { ipc, isMac } from '@src/utils'
 import type { WindowMessage } from '@types'
@@ -66,7 +66,7 @@ export default function Nav({ tabs, activeTab }: Props) {
             { icon: 'close-window', onClick: sendWindowsMessage('close') },
           ].map(item => (
             <Div key={item.icon} onClick={item.onClick}>
-              <Span
+              <Div
                 as="svg"
                 className="no-drag"
                 css={{
@@ -82,8 +82,8 @@ export default function Nav({ tabs, activeTab }: Props) {
                   },
                 }}
               >
-                <use xlinkHref={`/control-icons.svg#${item.icon}`} />
-              </Span>
+                <use xlinkHref={`./control-icons.svg#${item.icon}`} />
+              </Div>
             </Div>
           ))}
         </Div>
