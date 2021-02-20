@@ -1,6 +1,6 @@
 import { useDebounce } from '@hooks'
 import useStore from '@src/store'
-import { focusCell, ipc, isMac } from '@src/utils'
+import { ipc, isMac } from '@src/utils'
 import type { CellWithActive, Message, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
 import type { Terminal } from 'xterm'
@@ -46,9 +46,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
     })
 
     terminal.onKey(({ key, domEvent }) => {
-      if (domEvent.shiftKey && domEvent.key === 'Tab') {
-        focusCell(id)
-      } else if (!terminal.getOption('disableStdin')) {
+      if (!terminal.getOption('disableStdin')) {
         console.log('key', key.charCodeAt(0))
 
         const message: Message = {
@@ -101,7 +99,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
       }
       ipc.send('message', message)
     },
-    80,
+    50,
     [size, id, type],
   )
 

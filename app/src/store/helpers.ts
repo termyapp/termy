@@ -1,5 +1,5 @@
 import { api, ipc } from '@src/utils'
-import type { Cell, Message } from '@types'
+import type { Cell, Message, Status } from '@types'
 import { v4 } from 'uuid'
 
 export const getDefaultCell = (): Cell => {
@@ -43,4 +43,15 @@ export const nextOrPrevious = (
     newIndex = index > 0 ? index - 1 : keys.length - 1
   }
   return keys[newIndex]
+}
+
+export const focusCell = (id: string, status: Status) => {
+  if (status === 'running') {
+    console.log('focusing', document.getElementById(`output-${id}`))
+    document.getElementById(`output-${id}`)?.focus()
+  } else {
+    console.log('focusing', document.getElementById(`input-${id}`))
+
+    document.getElementById(`input-${id}`)?.focus()
+  }
 }

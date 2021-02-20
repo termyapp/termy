@@ -3,12 +3,12 @@ import { useListener, useXterm } from '@hooks'
 import { styled } from '@src/stitches.config'
 import useStore from '@src/store'
 import type { CellWithActive, ServerMessage, ThemeMode } from '@types'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Mdx from './mdx'
 
 export default function Output(cell: CellWithActive) {
   const dispatch = useStore(state => state.dispatch)
-  const { id } = cell
+  const { id, type, status } = cell
 
   // mdx
   const [mdx, setMdx] = useState('')
@@ -31,9 +31,8 @@ export default function Output(cell: CellWithActive) {
             break
           }
           case 'text': {
-            if (cell.type !== 'text') {
+            if (type !== 'text') {
               dispatch({ type: 'set-cell', id, cell: { type: 'text' } })
-              terminalRef.current?.focus()
             }
 
             const chunk = new Uint8Array(value)
@@ -81,12 +80,32 @@ export default function Output(cell: CellWithActive) {
         }
       }
     },
-    [cell.type],
+    [type],
   )
 
+  const focusMdx = () => {} // todo: focus
+
+  // focus output after running the cell
+  useEffect(() => {
+    if (status === 'running') {
+      if (type === 'text') {
+        terminalRef.current?.focus()
+      } else {
+        focusMdx()
+      }
+    }
+  }, [status, type])
+
   return (
-    <Wrapper>
-      <Pty show={cell.type === 'text'}>
+    <Wrapper
+      id={`output-${id}`}
+      tabIndex={-1} // make it focusable
+      onFocus={() => {
+        console.log(type === 'text', terminalRef.current)
+        type === 'text' ? terminalRef.current?.focus() : focusMdx()
+      }}
+    >
+      <Pty show={type === 'text'}>
         <Div
           ref={terminalContainerRef}
           css={{
@@ -100,7 +119,7 @@ export default function Output(cell: CellWithActive) {
       </Pty>
       <Div
         css={{
-          display: cell.type === 'mdx' ? 'block' : 'none',
+          display: type === 'mdx' ? 'block' : 'none',
           fontSize: '$sm',
           color: '$secondaryTextColor',
         }}

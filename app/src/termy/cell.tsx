@@ -31,8 +31,8 @@ export default function Cell({ id, active, showBorder }: Props) {
 
   return (
     <Container
-      onMouseEnter={() => dispatch({ type: 'focus-cell', id })}
-      onFocus={() => dispatch({ type: 'focus-cell', id })}
+      id={id}
+      onClick={() => dispatch({ type: 'focus-cell', id })}
       active={active}
       showBorder={showBorder}
     >
@@ -44,7 +44,7 @@ export default function Cell({ id, active, showBorder }: Props) {
 
 const Container = styled(Flex, {
   position: 'relative',
-  // borderRadius: '$default',
+  borderRadius: '$default',
   flexDirection: 'column',
 
   variants: {
@@ -55,10 +55,10 @@ const Container = styled(Flex, {
     },
     showBorder: {
       true: {
-        borderLeft: '1px solid $foreground',
+        border: '1px solid $accent',
       },
       false: {
-        borderLeft: '1px solid transparent',
+        border: '1px solid transparent',
       },
     },
   },

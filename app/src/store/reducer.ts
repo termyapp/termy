@@ -2,7 +2,13 @@ import { getTheme, ipc } from '@src/utils'
 import type { Cell, Message, ThemeMode } from '@types'
 import produce from 'immer'
 import { v4 } from 'uuid'
-import { getDefaultCell, killCell, nextOrLast, nextOrPrevious } from './helpers'
+import {
+  focusCell,
+  getDefaultCell,
+  killCell,
+  nextOrLast,
+  nextOrPrevious,
+} from './helpers'
 import type { State } from './state'
 
 // todo: https://artsy.github.io/blog/2018/11/21/conditional-types-in-typescript/
@@ -105,6 +111,8 @@ export default function reducer(state: State, action: Action) {
             draft.tabs[draft.activeTab].cells,
           )
         }
+
+        focusCell(id, draft.cells[id].status)
 
         draft.tabs[draft.activeTab].activeCell = id
         break
