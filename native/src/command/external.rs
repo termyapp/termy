@@ -12,7 +12,7 @@ use std::{
   sync::{Arc, Mutex},
 };
 
-pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Status> {
+pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> {
   info!("Running pty command: {:#?}", command);
 
   let pty_system = native_pty_system();
@@ -23,22 +23,18 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     pixel_height: 0,
   })?;
 
-  // examples: https://github.com/wez/wezterm/tree/e2e46cb50d32562cdb02e0a8d309fa9f7fbbecf0/pty/examples
-  let mut cmd = CommandBuilder::new(command);
-
-  cmd.env("LANG", "en_US.UTF-8");
-  cmd.env("TERM", "xterm-256color");
-  cmd.env("COLORTERM", "truecolor");
-  cmd.env("TERM_PROGRAM", "Termy");
-  cmd.env("TERM_PROGRAM_VERSION", "v0.2"); // todo: use a var here
+  let mut cmd = get_cmd(command, args);
   cmd.cwd(&cell.current_dir());
-  cmd.args(args);
+  for (key, val) in ENVS.iter() {
+    cmd.env(key, val);
+  }
+
+  let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
+  let child_inner = Arc::clone(&child);
 
   let mut master = pair.master;
   let mut reader = master.try_clone_reader()?;
   let mut reader_inner = master.try_clone_reader()?;
-  let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
-  let child_inner = Arc::clone(&child);
 
   let tsfn = cell
     .tsfn
@@ -187,6 +183,40 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     }
   }
 }
+
+#[cfg(not(windows))]
+fn get_cmd(command: &str, args: Vec<String>) -> CommandBuilder {
+  let mut cmd = CommandBuilder::new("sh");
+  cmd.arg("-c");
+  cmd.arg(command);
+  cmd.args(args);
+  cmd
+}
+
+#[cfg(windows)]
+fn get_cmd(command: &str, args: Vec<String>) -> CommandBuilder {
+  let mut cmd = CommandBuilder::new("cmd");
+  cmd.arg("/c");
+  cmd.arg(command);
+  cmd.args(args);
+  // not sure we need this:
+  // for arg in args {
+  //   // Clean the args before we use them:
+  //   let arg = arg.replace("|", "\\|");
+  //   cmd.arg(&arg);
+  // }
+  cmd
+}
+
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
+static ENVS: &[(&str, &str)] = &[
+  ("LANG", "en_US.UTF-8"),
+  ("TERM", "xterm-256color"),
+  ("COLORTERM", "truecolor"),
+  ("TERM_PROGRAM", "Termy"),
+  ("TERM_PROGRAM_VERSION", VERSION),
+];
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
