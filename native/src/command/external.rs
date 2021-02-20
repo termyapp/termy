@@ -1,6 +1,6 @@
 use crate::shell::{tsfn_send, Cell, CellChannel, Data, ServerMessage, Status};
 use anyhow::Result;
-use core::time;
+use crossbeam_channel::unbounded;
 use io::Read;
 use log::{error, info};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
@@ -45,10 +45,9 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
     .try_clone()
     .expect("Failed to clone threadsafe function");
 
-  let sender_clone = cell.sender.clone();
+  let sender_inner = cell.sender.clone();
 
-  let paused = Arc::new(Mutex::new(false));
-  let paused_clone = Arc::clone(&paused);
+  let (control_flow_sender, control_flow_receiver) = unbounded::<Action>();
 
   drop(pair.slave);
 
@@ -58,6 +57,7 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
     // https://en.wikipedia.org/wiki/Flow_control_(data)
     // https://xtermjs.org/docs/guides/flowcontrol/
     let mut chunk = [0u8; 1024];
+    let mut paused = false;
 
     loop {
       info!("Start of loop");
@@ -71,15 +71,15 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
         break;
       }
 
-      let mut paused = paused.lock().expect("Failed to lock paused");
-      info!("Paused: {}", *paused);
-      if *paused {
-        // todo: find a better way to block thread until we can resume
-        // maybe go back to channels and block on .recv()
-        // or https://doc.rust-lang.org/std/sync/struct.Condvar.html
-        thread::sleep(time::Duration::from_millis(10));
+      if paused {
+        // blocks thread
+        if let Ok(Action::Resume) = control_flow_receiver.recv() {
+          info!("Resuming")
+        } else {
+          error!("Failed to receive control flow action");
+        }
       } else {
-        *paused = true;
+        paused = true;
 
         if (*child_inner.lock().expect("Failed to lock child"))
           .try_wait()
@@ -112,7 +112,7 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
       }
     }
 
-    if let Err(err) = sender_clone.send(CellChannel::Exit) {
+    if let Err(err) = sender_inner.send(CellChannel::Exit) {
       error!("Error while sending exit code: {}", err);
     };
   });
@@ -124,9 +124,10 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
     match received {
       Ok(CellChannel::FrontendMessage(FrontendMessage { id: _, action })) => match action {
         Action::Resume => {
-          info!("Resuming");
-          let mut paused = paused_clone.lock().expect("Failed to lock paused clone");
-          *paused = false;
+          info!("Sending resuming");
+          control_flow_sender
+            .send(Action::Resume)
+            .expect("Failed to send control flow");
         }
         Action::Kill => {
           info!("Killing child");
