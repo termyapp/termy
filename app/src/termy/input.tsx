@@ -55,7 +55,6 @@ export default function Input({
       >
         <Div
           id={`input-${id}`}
-          data-cd={currentDir} // needed for monaco completion provider
           tabIndex={-1} // make it focusable
           onFocus={() => editorRef.current?.focus()}
           css={{

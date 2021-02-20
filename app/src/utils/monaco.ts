@@ -1,4 +1,5 @@
 import { loader } from '@monaco-editor/react'
+import useStore from '@src/store'
 import type { NativeSuggestion, Suggestion, SuggestionKind } from '@types'
 import { formatDistanceToNow } from 'date-fns'
 import type * as Monaco from 'monaco-editor'
@@ -70,18 +71,14 @@ export const loadMonaco = () => {
       ) => {
         const value = model.getValue()
         const cellId = model.uri.authority
-        const cell = document.getElementById(cellId) as HTMLDivElement
-
-        if (!cell) return { incomplete: false, suggestions: [] }
-        // todo: get fresh state outside of component
-        // https://github.com/pmndrs/zustand#readingwriting-state-and-reacting-to-changes-outside-of-components
-        const currentDir = cell.dataset.cd
+        const currentDir = useStore.getState().cells[cellId].currentDir
 
         const rawSuggestions: NativeSuggestion[] = await ipc.invoke(
           'suggestions',
           value,
           currentDir,
         )
+        console.log(rawSuggestions)
         const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
           suggestionToCompletionItem,
         )

@@ -11,7 +11,7 @@ export const darkTheme = {
     $foreground: baseTheme.colors.$white,
     $secondaryForeground: baseTheme.colors.$gray400,
 
-    $accent: baseTheme.colors.$gray800,
+    $accent: baseTheme.colors.$gray700,
     $caret: baseTheme.colors.$pink500,
     $selection: baseTheme.colors.$pink500,
 

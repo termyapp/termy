@@ -11,7 +11,7 @@ export const lightTheme = {
     $foreground: baseTheme.colors.$gray700,
     $secondaryForeground: baseTheme.colors.$gray700,
 
-    $accent: baseTheme.colors.$gray400,
+    $accent: baseTheme.colors.$gray500,
     $caret: baseTheme.colors.$teal500,
     $selection: baseTheme.colors.$teal200,
 
