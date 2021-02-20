@@ -44,6 +44,7 @@ const Wrapper = styled(Div, {
 const CurrentDir = styled(Div, {
   mr: '$3',
   fontSize: '$sm',
+  transform: 'translateY(1.5px)',
 })
 
 const Status = styled(Flex, {
