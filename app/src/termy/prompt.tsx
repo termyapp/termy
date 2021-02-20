@@ -28,7 +28,7 @@ export default function Prompt(cell: CellWithActive) {
 }
 
 const Wrapper = styled(Div, {
-  px: '$4',
+  px: '$2',
   py: '$1',
   display: 'flex',
   alignItems: 'center',
