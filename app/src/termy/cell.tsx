@@ -33,6 +33,7 @@ export default function Cell({ id, active, showBorder }: Props) {
     <Container
       id={id}
       onClick={() => dispatch({ type: 'focus-cell', id })}
+      onMouseEnter={() => dispatch({ type: 'focus-cell', id })}
       active={active}
       showBorder={showBorder}
     >
