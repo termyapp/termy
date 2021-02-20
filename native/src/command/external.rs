@@ -52,28 +52,20 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
         .expect("Failed to poll child")
         .is_some()
       {
-        info!("Breaking out 0");
+        info!("Breaking out 1");
         break;
       }
 
       if paused {
         // blocks thread
         if let Ok(Action::Resume) = control_flow_receiver.recv() {
-          info!("Resuming")
+          info!("Resuming");
+          paused = false;
         } else {
           error!("Failed to receive control flow action");
         }
       } else {
         paused = true;
-
-        if (*child_inner.lock().expect("Failed to lock child"))
-          .try_wait()
-          .expect("Failed to poll child")
-          .is_some()
-        {
-          info!("Breaking out 1");
-          break;
-        }
 
         let read = reader_inner.read(&mut chunk);
 
@@ -109,7 +101,7 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
     match received {
       Ok(CellChannel::FrontendMessage(FrontendMessage { id: _, action })) => match action {
         Action::Resume => {
-          info!("Sending resuming");
+          info!("Sending resume");
           control_flow_sender
             .send(Action::Resume)
             .expect("Failed to send control flow");
@@ -120,13 +112,6 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
           info!("Unlocked child");
           child.kill().expect("Failed to kill child");
           info!("Killed child");
-
-          let successful = child.wait().expect("Failed to unwrap child").success();
-          return Ok(if successful {
-            Status::Success
-          } else {
-            Status::Error
-          });
         }
         Action::Write(data) => {
           info!("Writing data: {:?}", data);
@@ -174,8 +159,8 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
 fn get_cmd(command: &str, args: Vec<String>) -> CommandBuilder {
   let mut cmd = CommandBuilder::new("sh");
   cmd.arg("-c");
-  cmd.arg(command);
-  cmd.args(args);
+  cmd.arg(vec![command.to_string(), args.join(" ")].join(" "));
+  info!("{:?}", cmd);
   cmd
 }
 
@@ -183,8 +168,7 @@ fn get_cmd(command: &str, args: Vec<String>) -> CommandBuilder {
 fn get_cmd(command: &str, args: Vec<String>) -> CommandBuilder {
   let mut cmd = CommandBuilder::new("cmd");
   cmd.arg("/c");
-  cmd.arg(command);
-  cmd.args(args);
+  cmd.arg(vec![command.to_string(), args.join(" ")].join(" "));
   // not sure we need this:
   // for arg in args {
   //   // Clean the args before we use them:
