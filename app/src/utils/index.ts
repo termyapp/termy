@@ -9,6 +9,7 @@ export const getTheme = (mode?: ThemeMode) =>
 export const isMac = /Mac/.test(navigator.userAgent)
 
 export const focusCell = (id: string) => {
+  // todo: if running, focus pty/mdx instead
   const cell = document.getElementById(id)
   if (cell) {
     cell.focus()
