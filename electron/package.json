@@ -31,7 +31,7 @@
       "to": "tldr"
     }
   },
-  "dependencies": {
+  "devDependencies": {
     "@types/electron-devtools-installer": "^2.2.0",
     "@types/electron-localshortcut": "^3.1.0",
     "copy-webpack-plugin": "^6.3.1",
