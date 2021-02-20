@@ -47,11 +47,8 @@ export const nextOrPrevious = (
 
 export const focusCell = (id: string, status: Status) => {
   if (status === 'running') {
-    console.log('focusing', document.getElementById(`output-${id}`))
     document.getElementById(`output-${id}`)?.focus()
   } else {
-    console.log('focusing', document.getElementById(`input-${id}`))
-
     document.getElementById(`input-${id}`)?.focus()
   }
 }

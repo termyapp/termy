@@ -56,7 +56,9 @@ export default function Input({
         <Div
           id={`input-${id}`}
           tabIndex={-1} // make it focusable
-          onFocus={() => editorRef.current?.focus()}
+          onFocus={() =>
+            editorRef.current?.hasWidgetFocus() || editorRef.current?.focus()
+          }
           css={{
             width: '100%',
             height: '100%',
@@ -73,11 +75,6 @@ export default function Input({
                 monaco.Uri.parse(`cell://${id}`),
               )
               editor.setModel(model)
-
-              // bring back native context menu actions
-              // https://github.com/microsoft/monaco-editor/issues/1084#issuecomment-509397388
-              const el = editor.getDomNode()
-              if (el) el.contentEditable = 'true'
 
               if (monaco) {
                 const { KeyCode, KeyMod } = monaco
@@ -163,11 +160,14 @@ export default function Input({
             }}
             value={value}
             onChange={(value = '', event) => {
+              // reset status
               if (status === 'error' || status === 'success') {
-                // reset status
                 dispatch({ type: 'set-cell', id, cell: { status: null } })
               }
-              value = value.replace(/\n|\r/g, '') // remove line breaks
+
+              // remove line breaks
+              value = value.replace(/\n|\r/g, '')
+
               dispatch({ type: 'set-cell', id, cell: { value } })
             }}
             overrideServices={{
@@ -213,7 +213,7 @@ export default function Input({
               overviewRulerLanes: 0,
               quickSuggestions: true,
               quickSuggestionsDelay: 0,
-              contextmenu: false,
+              // contextmenu: false,
               // model: this.model,
             }}
           />
