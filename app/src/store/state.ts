@@ -4,14 +4,14 @@ import type { Cell } from '../../types'
 import { getTheme, isDev } from '../utils'
 import { getDefaultCell } from './helpers'
 
-export interface ITab {
+export interface Tab {
   cells: string[]
   activeCell: string
 }
 
-export interface IState {
+export interface State {
   tabs: {
-    [id: string]: ITab
+    [id: string]: Tab
   }
   activeTab: string
   cells: {
@@ -20,11 +20,11 @@ export interface IState {
   theme: typeof darkTheme
 }
 
-export const createState = (): IState => {
+export const createState = (): State => {
   const tab = v4()
   const cell = { ...getDefaultCell(), value: 'shortcuts' }
 
-  const state: IState = {
+  const state: State = {
     tabs: {
       [tab]: {
         cells: [cell.id],

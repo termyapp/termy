@@ -1,11 +1,11 @@
 import create, { UseStore } from 'zustand'
 import { devtools, redux } from 'zustand/middleware'
-import type { TAction } from './reducer'
+import type { Action } from './reducer'
 import reducer from './reducer'
-import { createState, IState } from './state'
+import { createState, State } from './state'
 
-interface Store extends IState {
-  dispatch: (action: TAction) => void
+interface Store extends State {
+  dispatch: (action: Action) => void
 }
 
 // @ts-ignore
