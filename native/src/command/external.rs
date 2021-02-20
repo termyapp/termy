@@ -13,16 +13,10 @@ use std::{
 };
 
 pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> {
-  info!("Running pty command: {:#?}", command);
+  info!("Running external command: {:#?}", command);
 
   let pty_system = native_pty_system();
-  let pair = pty_system.openpty(PtySize {
-    rows: 50,
-    cols: 100,
-    pixel_width: 0,
-    pixel_height: 0,
-  })?;
-
+  let pair = pty_system.openpty(PtySize::default())?;
   let mut cmd = get_cmd(command, args);
   cmd.cwd(&cell.current_dir());
   for (key, val) in ENVS.iter() {
@@ -31,22 +25,13 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
 
   let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
   let child_inner = Arc::clone(&child);
-
   let mut master = pair.master;
   let mut reader = master.try_clone_reader()?;
   let mut reader_inner = master.try_clone_reader()?;
 
-  let tsfn = cell
-    .tsfn
-    .try_clone()
-    .expect("Failed to clone threadsafe function");
-  let tsfn_inner = cell
-    .tsfn
-    .try_clone()
-    .expect("Failed to clone threadsafe function");
-
+  let tsfn = cell.clone_tsfn();
+  let tsfn_inner = cell.clone_tsfn();
   let sender_inner = cell.sender.clone();
-
   let (control_flow_sender, control_flow_receiver) = unbounded::<Action>();
 
   drop(pair.slave);

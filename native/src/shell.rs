@@ -56,6 +56,13 @@ impl Cell {
   pub fn send(&self, message: ServerMessage) {
     tsfn_send(&self.tsfn, message);
   }
+
+  pub fn clone_tsfn(&self) -> ThreadsafeFunctionType {
+    self
+      .tsfn
+      .try_clone()
+      .expect("Failed to clone threadsafe function")
+  }
 }
 
 type ThreadsafeFunctionType =
