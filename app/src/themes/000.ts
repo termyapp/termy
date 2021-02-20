@@ -17,12 +17,12 @@ export const darkTheme = {
 
     $focusedBackground: baseTheme.colors.$black,
     $focusedForeground: baseTheme.colors.$white,
-    $runningBackground: baseTheme.colors.$blue100,
-    $runningForeground: baseTheme.colors.$blue700,
-    $successBackground: baseTheme.colors.$pink100,
-    $successForeground: baseTheme.colors.$pink600,
-    $errorBackground: baseTheme.colors.$red200,
-    $errorForeground: baseTheme.colors.$red600,
+    $runningBackground: baseTheme.colors.$gray900,
+    $runningForeground: baseTheme.colors.$gray400,
+    $successBackground: baseTheme.colors.$teal900,
+    $successForeground: baseTheme.colors.$teal400,
+    $errorBackground: baseTheme.colors.$red900,
+    $errorForeground: baseTheme.colors.$red400,
 
     $currentDirForeground: baseTheme.colors.$pink900,
     $currentDirBackground: baseTheme.colors.$white,

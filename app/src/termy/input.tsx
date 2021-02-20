@@ -163,6 +163,10 @@ export default function Input({
             }}
             value={value}
             onChange={(value = '', event) => {
+              if (status === 'error' || status === 'success') {
+                // reset status
+                dispatch({ type: 'set-cell', id, cell: { status: null } })
+              }
               value = value.replace(/\n|\r/g, '') // remove line breaks
               dispatch({ type: 'set-cell', id, cell: { value } })
             }}
