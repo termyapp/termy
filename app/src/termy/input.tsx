@@ -92,7 +92,10 @@ export default function Input({
                     const before = editor.getModel()?.getValue()
                     editor.trigger('', 'acceptSelectedSuggestion', {})
                     const after = editor.getModel()?.getValue()
-                    if (typeof before === 'string' && before === after) {
+                    if (
+                      typeof before === 'string' &&
+                      (before === after || before + '/' === after)
+                    ) {
                       // suggestion was same as the input value, so let's run it!
                       dispatch({ type: 'run-cell', id })
                     }
