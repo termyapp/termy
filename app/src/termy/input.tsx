@@ -85,6 +85,22 @@ export default function Input({
 
                 // Contexts:
                 // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
+                editor.addCommand(
+                  KeyCode.Enter,
+                  () => {
+                    editor.trigger('', 'acceptSelectedSuggestion', {})
+                  },
+                  'suggestWidgetVisible',
+                )
+
+                editor.addCommand(
+                  KeyCode.Enter,
+                  () => {
+                    editor.trigger('', 'acceptSelectedSuggestion', {})
+                    dispatch({ type: 'run-cell', id })
+                  },
+                  '!suggestWidgetVisible',
+                )
 
                 editor.addCommand(
                   KeyMod.CtrlCmd | KeyCode.Enter,
@@ -94,11 +110,6 @@ export default function Input({
                   },
                   'suggestWidgetVisible',
                 )
-
-                editor.addCommand(KeyCode.Enter, () => {
-                  editor.trigger('', 'hideSuggestWidget', {})
-                  dispatch({ type: 'run-cell', id })
-                })
 
                 editor.addCommand(
                   KeyCode.Tab,
