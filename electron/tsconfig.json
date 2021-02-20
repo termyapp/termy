@@ -4,6 +4,10 @@
   "compilerOptions": {
     "target": "es2015",
     "moduleResolution": "node",
-    "noEmit": false
-  }
+    "noEmit": false,
+    "paths": {
+      "@shared": ["../app/types/shared"]
+    }
+  },
+  "references": [{ "path": "../app/types/shared" }]
 }

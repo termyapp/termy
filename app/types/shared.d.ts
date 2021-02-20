@@ -1,6 +1,3 @@
-// In sync with ../electron/shared.d.ts
-// todo: figure out a way to reference the types
-
 export interface RunCell {
   id: string
   value: string

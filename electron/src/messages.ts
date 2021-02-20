@@ -3,7 +3,7 @@ import isDev from 'electron-is-dev'
 import fs from 'fs'
 import path from 'path'
 import native from '../../native'
-import type { Message, ServerMessage } from '../shared'
+import type { Message, ServerMessage } from '@shared'
 
 export default () => {
   ipcMain.on('message', (event, message) => {
