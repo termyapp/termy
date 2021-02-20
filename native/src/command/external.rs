@@ -1,8 +1,8 @@
 use crate::shell::{tsfn_send, Cell, CellChannel, Data, ServerMessage, Status};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use crossbeam_channel::unbounded;
 use io::Read;
-use log::{error, info};
+use log::{error, info, trace};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
 use std::io::Write;
@@ -14,14 +14,14 @@ use std::{
 
 pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> {
   info!("Running external command: {:#?}", command);
+  let pair = {
+    let pty = native_pty_system();
+    pty
+      .openpty(PtySize::default())
+      .with_context(|| "could not open pty")?
+  };
 
-  let pty_system = native_pty_system();
-  let pair = pty_system.openpty(PtySize::default())?;
-  let mut cmd = get_cmd(command, args);
-  cmd.cwd(&cell.current_dir());
-  for (key, val) in ENVS.iter() {
-    cmd.env(key, val);
-  }
+  let cmd = get_cmd(command, args, cell.current_dir());
 
   let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
   let child_inner = Arc::clone(&child);
@@ -47,15 +47,6 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
     loop {
       info!("Start of loop");
 
-      if (*child_inner.lock().expect("Failed to lock child"))
-        .try_wait()
-        .expect("Failed to poll child")
-        .is_some()
-      {
-        info!("Breaking out 1");
-        break;
-      }
-
       if paused {
         // blocks thread
         if let Ok(Action::Resume) = control_flow_receiver.recv() {
@@ -66,6 +57,15 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
         }
       } else {
         paused = true;
+
+        if (*child_inner.lock().expect("Failed to lock child"))
+          .try_wait()
+          .expect("Failed to poll child")
+          .is_some()
+        {
+          info!("Breaking out 1");
+          break;
+        }
 
         let read = reader_inner.read(&mut chunk);
 
@@ -115,7 +115,7 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
         }
         Action::Write(data) => {
           info!("Writing data: {:?}", data);
-          write!(master, "{}", data).expect("Failed to write to master");
+          master.write_all(data.as_bytes())?;
         }
         Action::Resize(Size { rows, cols }) => {
           info!("Resizing Pty: {} {}", rows, cols);
@@ -155,26 +155,36 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
   }
 }
 
-#[cfg(not(windows))]
-fn get_cmd(command: &str, args: Vec<String>) -> CommandBuilder {
-  let mut cmd = CommandBuilder::new("sh");
-  cmd.arg("-c");
-  cmd.arg(vec![command.to_string(), args.join(" ")].join(" "));
-  info!("{:?}", cmd);
-  cmd
-}
+fn get_cmd(command: &str, args: Vec<String>, current_dir: &str) -> CommandBuilder {
+  let mut cmd = {
+    #[cfg(not(windows))]
+    {
+      let mut cmd = CommandBuilder::new("sh");
+      cmd.arg("-c");
+      cmd
+    }
 
-#[cfg(windows)]
-fn get_cmd(command: &str, args: Vec<String>) -> CommandBuilder {
-  let mut cmd = CommandBuilder::new("cmd");
-  cmd.arg("/c");
+    #[cfg(windows)]
+    {
+      let mut cmd = CommandBuilder::new("cmd");
+      cmd.arg("/c");
+      // not sure we need this:
+      // for arg in args {
+      //   // Clean the args before we use them:
+      //   let arg = arg.replace("|", "\\|");
+      //   cmd.arg(&arg);
+      // }
+      cmd
+    }
+  };
+
   cmd.arg(vec![command.to_string(), args.join(" ")].join(" "));
-  // not sure we need this:
-  // for arg in args {
-  //   // Clean the args before we use them:
-  //   let arg = arg.replace("|", "\\|");
-  //   cmd.arg(&arg);
-  // }
+  cmd.cwd(current_dir);
+  for (key, val) in ENVS.iter() {
+    cmd.env(key, val);
+  }
+
+  trace!("{:?}", cmd);
   cmd
 }
 
