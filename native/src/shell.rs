@@ -1,6 +1,6 @@
 use crate::{command::external::FrontendMessage, command::Command};
 use crossbeam_channel::{Receiver, Sender};
-use log::error;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 
 pub struct Cell {
@@ -47,6 +47,8 @@ impl Cell {
 
     // once operators (|, &&, ||) are introduced, this could become Vec<Command>
     let command = parse_value(&(self.value), &(self.current_dir));
+
+    info!("Executing: {:?}", command);
 
     if let Err(err) = command.execute(self) {
       error!("Error while executing command: {}", err);
