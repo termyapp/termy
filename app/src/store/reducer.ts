@@ -114,8 +114,6 @@ export default function reducer(state: State, action: Action) {
 
         if (draft.tabs[draft.activeTab].activeCell === id) return
 
-        focusCell(id, draft.cells[id].status)
-
         draft.tabs[draft.activeTab].activeCell = id
         break
       }

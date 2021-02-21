@@ -33,11 +33,8 @@ export default function Input({
         readOnly: status === 'running',
       })
 
-      // focus & select input on finish
+      // select input on finish
       if (status === 'success' || status === 'error') {
-        // only focus if the cell is active
-        if (active) editorRef.current.focus()
-
         const range = editorRef.current.getModel()?.getFullModelRange()
         if (range) editorRef.current.setSelection(range)
       }

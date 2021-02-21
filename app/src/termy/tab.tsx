@@ -1,10 +1,9 @@
 import { Grid } from '@components'
 import { useMousetrap } from '@src/hooks'
-import { focusCell } from '@src/store/helpers'
 import React, { useCallback, useEffect } from 'react'
 import shallow from 'zustand/shallow'
 import useStore from '../store'
-import Cell from './cell'
+import Cell, { focusCell } from './cell'
 
 interface Props {
   id: string
@@ -13,6 +12,7 @@ interface Props {
 }
 
 export default function Tab({ id, index, activeTab }: Props) {
+  const dispatch = useStore(state => state.dispatch)
   const cellIds = useStore(
     useCallback(state => state.tabs[id].cells, [id]),
     shallow,
@@ -21,20 +21,18 @@ export default function Tab({ id, index, activeTab }: Props) {
     useCallback(state => state.tabs[id].activeCell, [id]),
     shallow,
   )
-  const activeCell = useStore(
-    useCallback(state => state.cells[activeCellId], [activeCellId]),
+  const activeCellStatus = useStore(
+    useCallback(state => state.cells[activeCellId].status, [activeCellId]),
     shallow,
   )
-  const dispatch = useStore(state => state.dispatch)
 
   useMousetrap(`mod+${index + 1}`, () => {
     dispatch({ type: 'focus-tab', id })
   })
 
   useEffect(() => {
-    // doesn't work in focus-tab because the active cell is not yet focusable
-    focusCell(activeCellId, activeCell.status)
-  }, [activeTab])
+    if (activeTab === id) focusCell(activeCellId, activeCellStatus)
+  }, [activeTab, activeCellId, activeCellStatus])
 
   return (
     <Grid

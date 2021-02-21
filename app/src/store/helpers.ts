@@ -44,11 +44,3 @@ export const nextOrPrevious = (
   }
   return keys[newIndex]
 }
-
-export const focusCell = (id: string, status: Status) => {
-  if (status === 'running') {
-    document.getElementById(`output-${id}`)?.focus()
-  } else {
-    document.getElementById(`input-${id}`)?.focus()
-  }
-}
