@@ -1,4 +1,3 @@
-import type { Status } from '@types'
 import React, { useCallback, useEffect } from 'react'
 import shallow from 'zustand/shallow'
 import { Flex } from '../components'
@@ -67,9 +66,3 @@ const Container = styled(Flex, {
     },
   },
 })
-
-export const focusCell = (id: string, status: Status) => {
-  id = status === 'running' ? `output-${id}` : `input-${id}`
-  document.getElementById(id)?.focus()
-  console.log(document.getElementById(id))
-}

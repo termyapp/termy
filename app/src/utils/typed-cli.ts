@@ -57,6 +57,7 @@ const getSuggestionsFromCommands = (commands: Command[]): Suggestion[] => {
   })
 }
 
+// cool parser: https://github.com/substack/node-shell-quote/blob/master/index.js
 export const getTypedCliSuggestions = (value: string): Suggestion[] => {
   const tokens = value.split(' ')
 
