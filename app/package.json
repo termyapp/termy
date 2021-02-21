@@ -10,7 +10,7 @@
     "sync": "cp types/shared.d.ts ../electron/shared.d.ts"
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.0.5",
+    "@monaco-editor/react": "^4.0.10",
     "@stitches/react": "^0.0.3-canary.4",
     "date-fns": "^2.16.1",
     "immer": "^8.0.1",

@@ -19,6 +19,7 @@ export type Message =
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
   | { type: 'tldr'; command: string }
+  | { type: 'write'; path: string; value: string }
 
 export interface ServerMessage {
   id: string

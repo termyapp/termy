@@ -8,7 +8,7 @@ export const lightTheme = {
     base: 'vs',
 
     $background: '#fff',
-    $foreground: baseTheme.colors.$gray700,
+    $foreground: baseTheme.colors.$gray900,
     $secondaryForeground: baseTheme.colors.$gray700,
 
     $accent: baseTheme.colors.$gray300,

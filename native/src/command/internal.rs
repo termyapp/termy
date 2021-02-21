@@ -1,11 +1,10 @@
-use std::path::{Path, PathBuf};
-
 use crate::{
   paths::CrossPath,
   shell::{Cell, Data, ServerMessage, Status},
 };
 use anyhow::Result;
 
+mod edit;
 mod home;
 mod shortcuts;
 mod theme;
@@ -17,6 +16,7 @@ pub enum Internal {
   Home,
   Theme,
   View,
+  Edit,
 }
 
 impl Internal {
@@ -26,6 +26,7 @@ impl Internal {
       "shortcuts" => Some(Self::Shortcuts),
       "theme" => Some(Self::Theme),
       "view" => Some(Self::View),
+      "edit" => Some(Self::Edit),
       _ => None,
     }
   }
@@ -38,6 +39,14 @@ impl Internal {
       Self::View => (
         if let Some(path) = find_path(cell.current_dir(), args.into_iter().next().unwrap()) {
           view::view(path)?
+        } else {
+          format!("Path does not exist")
+        },
+        None,
+      ),
+      Self::Edit => (
+        if let Some(path) = find_path(cell.current_dir(), args.into_iter().next().unwrap()) {
+          edit::edit(path)?
         } else {
           format!("Path does not exist")
         },

@@ -100,10 +100,9 @@ export default function Output(cell: CellWithActive) {
     <Wrapper
       id={`output-${id}`}
       tabIndex={-1} // make it focusable
-      onFocus={() => {
-        console.log(type === 'text', terminalRef.current)
+      onFocus={() =>
         type === 'text' ? terminalRef.current?.focus() : focusMdx()
-      }}
+      }
     >
       <Pty show={type === 'text'}>
         <Div
@@ -131,6 +130,7 @@ export default function Output(cell: CellWithActive) {
 }
 
 const Wrapper = styled(Div, {
+  position: 'relative',
   px: '$2',
   py: '$1',
   height: '100%',
