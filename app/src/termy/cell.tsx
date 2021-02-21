@@ -44,21 +44,24 @@ export default function Cell({ id, active, showBorder }: Props) {
 
 const Container = styled(Flex, {
   position: 'relative',
-  borderRadius: '$default',
   flexDirection: 'column',
+  // borderRadius: '$default',
 
   variants: {
     active: {
       true: {
-        color: '$focusedForeground',
+        opacity: 1,
+      },
+      false: {
+        opacity: 0.76,
       },
     },
     showBorder: {
       true: {
-        border: '1px solid $accent',
+        // border: '1px solid $accent',
       },
       false: {
-        border: '1px solid transparent',
+        // border: '1px solid transparent',
       },
     },
   },
