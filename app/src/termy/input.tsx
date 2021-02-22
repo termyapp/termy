@@ -53,9 +53,9 @@ export default function Input({
         <Div
           id={`input-${id}`}
           tabIndex={-1} // make it focusable
-          onFocus={() =>
-            editorRef.current?.hasWidgetFocus() || editorRef.current?.focus()
-          }
+          onFocus={() => {
+            editorRef.current?.focus()
+          }}
           css={{
             width: '100%',
             height: '100%',
@@ -79,31 +79,10 @@ export default function Input({
                 // Contexts:
                 // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
 
-                editor.addCommand(
-                  KeyCode.Enter,
-                  () => {
-                    const before = editor.getModel()?.getValue()
-                    editor.trigger('', 'acceptSelectedSuggestion', {})
-                    const after = editor.getModel()?.getValue()
-                    if (
-                      typeof before === 'string' &&
-                      (before === after || before + '/' === after)
-                    ) {
-                      // suggestion was same as the input value, so let's run it!
-                      dispatch({ type: 'run-cell', id })
-                    }
-                  },
-                  'suggestWidgetVisible',
-                )
-
-                editor.addCommand(
-                  KeyCode.Enter,
-                  () => {
-                    editor.trigger('', 'acceptSelectedSuggestion', {})
-                    dispatch({ type: 'run-cell', id })
-                  },
-                  '!suggestWidgetVisible',
-                )
+                editor.addCommand(KeyCode.Enter, () => {
+                  editor.trigger('', 'hideSuggestWidget', {})
+                  dispatch({ type: 'run-cell', id })
+                })
 
                 editor.addCommand(
                   KeyMod.CtrlCmd | KeyCode.Enter,
