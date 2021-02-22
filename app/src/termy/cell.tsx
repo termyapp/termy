@@ -23,7 +23,7 @@ export default function Cell({ id, active, showBorder }: Props) {
   useEffect(() => {
     if (cell.value === 'shortcuts') dispatch({ type: 'run-cell', id })
 
-    // kill on onmount
+    // kill on onMount
     return () => {
       dispatch({ type: 'kill-cell', id })
     }
@@ -32,7 +32,7 @@ export default function Cell({ id, active, showBorder }: Props) {
   return (
     <Container
       id={id}
-      onClick={() => dispatch({ type: 'focus-cell', id })}
+      onFocus={() => dispatch({ type: 'focus-cell', id })}
       active={active}
       showBorder={showBorder}
     >

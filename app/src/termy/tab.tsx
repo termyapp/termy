@@ -1,6 +1,6 @@
 import { Grid } from '@components'
 import { useMousetrap } from '@src/hooks'
-import type { Status } from '@types'
+import { focusCell } from '@src/utils'
 import React, { useCallback, useEffect } from 'react'
 import shallow from 'zustand/shallow'
 import useStore from '../store'
@@ -54,9 +54,4 @@ export default function Tab({ id, index, activeTab }: Props) {
       ))}
     </Grid>
   )
-}
-
-const focusCell = (id: string, status: Status) => {
-  id = status === 'running' ? `output-${id}` : `input-${id}`
-  document.getElementById(id)?.focus()
 }

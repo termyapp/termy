@@ -1,4 +1,4 @@
-import type { ThemeMode } from '../../types'
+import type { Status, ThemeMode } from '../../types'
 import { darkTheme, lightTheme } from '../themes'
 
 export const isDev = import.meta.env.MODE === 'development'
@@ -15,6 +15,11 @@ export const formatCurrentDir = (currentDir: string) => {
   }
   const relativePath = currentDir.split('/').slice(3).join('/')
   return (relativePath.length > 0 ? '~/' : '~') + relativePath
+}
+
+export const focusCell = (id: string, status: Status) => {
+  id = status === 'running' ? `output-${id}` : `input-${id}`
+  document.getElementById(id)?.focus()
 }
 
 export * from './ipc'
