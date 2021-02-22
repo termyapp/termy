@@ -29,8 +29,6 @@ impl Command {
     let current_path = CrossPath::new(current_dir);
     Self {
       kind: match command.as_str() {
-        // absolute path (eg. /Volumes)
-        path if CrossPath::new(path).buf.exists() => Kind::Path(current_path),
         // relative path (eg. /Users/martonlanga + dev)
         path if current_path.join(path).buf.exists() && !path.starts_with("./") => {
           Kind::Path(current_path.join(path))
@@ -39,6 +37,8 @@ impl Command {
         path if current_path.join(path).buf.exists() && path.starts_with("./") => {
           Kind::External(current_path.join(path).to_string())
         }
+        // absolute path (eg. /Volumes)
+        path if CrossPath::new(path).buf.exists() => Kind::Path(current_path),
         "~" => Kind::Path(CrossPath::home()), // todo: alias & expand this instead (so ~/dev works as well)
         // "cd" => {
         //   // get new directory from args
