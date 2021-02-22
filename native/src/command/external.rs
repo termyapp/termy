@@ -5,12 +5,12 @@ use io::Read;
 use log::{error, info, trace};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
-use std::io::Write;
 use std::thread;
 use std::{
   io,
   sync::{Arc, Mutex},
 };
+use std::{io::Write, time::Duration};
 
 pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> {
   info!("Running external command: {:#?}", command);
@@ -32,6 +32,7 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
   let tsfn = cell.clone_tsfn();
   let tsfn_inner = cell.clone_tsfn();
   let sender_inner = cell.sender.clone();
+  let sender_inner2 = cell.sender.clone();
   let (control_flow_sender, control_flow_receiver) = unbounded::<Action>();
 
   drop(pair.slave);
@@ -45,12 +46,12 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
     let mut paused = false;
 
     loop {
-      info!("Start of loop");
+      trace!("Start of loop");
 
       if paused {
         // blocks thread
         if let Ok(Action::Resume) = control_flow_receiver.recv() {
-          info!("Resuming");
+          trace!("Resuming");
           paused = false;
         } else {
           error!("Failed to receive control flow action");
@@ -58,22 +59,9 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
       } else {
         paused = true;
 
-        // check if this will be the last read
-        // if yes, break out and drop(master) before
-        // reading the last chunk, otherwise it hangs on windows
-        if (*child_inner.lock().expect("Failed to lock child"))
-          .try_wait()
-          .expect("Failed to poll child")
-          .is_some()
-        {
-          info!("Breaking out 1");
-          break;
-        }
-
-        info!("read");
         let len = match reader_inner.read(&mut chunk) {
           Ok(0) => {
-            info!("Breaking out 2");
+            trace!("Last read");
             break;
           }
           Ok(read) => read,
@@ -93,6 +81,28 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
     if let Err(err) = sender_inner.send(CellChannel::Exit) {
       error!("Error while sending exit code: {}", err);
     };
+  });
+
+  // unfortunately reading the last chunk hangs on windows
+  // https://github.com/wez/wezterm/issues/463
+  // we don't know when to drop master, but we need it to write/resize
+  // hopefull we'll have a better way in the future
+  #[cfg(windows)]
+  thread::spawn(move || loop {
+    thread::sleep(Duration::from_millis(50));
+    if (*child_inner.lock().expect("Failed to lock child"))
+      .try_wait()
+      .expect("Failed to poll child")
+      .is_some()
+    {
+      trace!("Breaking out");
+      if let Err(err) = sender_inner2.send(CellChannel::Exit) {
+        error!("Error while sending exit code: {}", err);
+      };
+      break;
+    } else {
+      info!("Not yet over");
+    }
   });
 
   loop {
