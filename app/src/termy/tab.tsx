@@ -31,6 +31,26 @@ export default function Tab({ id, index, activeTab }: Props) {
     dispatch({ type: 'focus-tab', id })
   })
 
+  // focus input
+  useMousetrap(
+    'mod+i',
+    () => {
+      focusCell(activeCellId, null)
+    },
+    undefined,
+    [activeCellId],
+  )
+
+  // focus output
+  useMousetrap(
+    'mod+o',
+    () => {
+      focusCell(activeCellId, 'running')
+    },
+    undefined,
+    [activeCellId],
+  )
+
   useEffect(() => {
     if (activeTab === id) focusCell(activeCellId, activeCellStatus)
   }, [activeTab, activeCellId, activeCellStatus])
