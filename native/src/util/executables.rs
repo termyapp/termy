@@ -20,7 +20,12 @@ fn get_executables() -> Vec<String> {
             .unwrap_or_default()
             .to_str()
             .expect("File name should be UTF-8");
-          executables.push(name.to_owned());
+
+          executables.push(if cfg!(windows) {
+            name.to_lowercase()
+          } else {
+            name.to_owned()
+          });
         }
       }
     }
