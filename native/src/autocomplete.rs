@@ -1,7 +1,8 @@
+use crate::paths::CrossPath;
 use crate::util::executables::EXECUTABLES;
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use log::{error, info};
+use log::{info, trace};
 use serde::Serialize;
 use std::{cmp, io};
 use std::{
@@ -60,21 +61,28 @@ impl Autocomplete {
   }
 
   fn paths(&mut self) -> Result<()> {
-    let mut path = String::new();
-    let mut value = self.value.clone();
-    let mut chunks = value.split('/').peekable();
-    while let Some(chunk) = chunks.next() {
-      if chunks.peek().is_none() {
-        value = chunk.to_string();
-        break;
+    let value = self.value.clone();
+    let current_dir = CrossPath::new(&self.current_dir);
+    for path in value.split_whitespace().into_iter() {
+      let path = clean_path(&path);
+      let cross_path = CrossPath::new(path);
+      if path.starts_with("/") && cross_path.buf.exists() {
+        // absolute root
+        self.path(path)?;
+      } else if current_dir.join(path).buf.exists() {
+        self.path(&(current_dir.join(path).to_string()))?;
+      } else {
+        self.path(&(current_dir.to_string()))?;
       }
-      path += &(format!("{}/", chunk));
     }
 
-    let path = self.current_dir.clone() + &(format!("/{}", path.clone()));
-    info!("Suggestions from path: {}", path);
+    Ok(())
+  }
 
-    if let Ok(read_dir) = fs::read_dir(&path) {
+  fn path(&mut self, dir: &str) -> Result<()> {
+    trace!("Suggestions from path: {}", dir);
+
+    if let Ok(read_dir) = fs::read_dir(dir) {
       for entry in read_dir {
         let entry = entry.unwrap();
         let is_dir = entry.metadata().unwrap().is_dir();
@@ -109,10 +117,7 @@ impl Autocomplete {
           },
         );
       }
-    } else {
-      error!("Invalid path: {}", path);
     }
-
     Ok(())
   }
 
@@ -218,6 +223,14 @@ where
   Ok(io::BufReader::new(file).lines())
 }
 
+fn clean_path(path: &str) -> &str {
+  if let Some(index) = path.rfind("/") {
+    &path[..index + 1]
+  } else {
+    path
+  }
+}
+
 fn find_common_words_index(a: &str, b: &str) -> usize {
   let mut index = 0;
 
@@ -225,7 +238,7 @@ fn find_common_words_index(a: &str, b: &str) -> usize {
   for i in a.split_whitespace().into_iter() {
     if let Some(j) = other.next() {
       if i == j {
-        index += i.len() + 1; // +1 for whitespace (might overlow, so we return the minimum)
+        index += i.len() + 1; // +1 for whitespace (it might overflow, so we return the minimum)
       }
     }
   }
@@ -254,5 +267,20 @@ mod tests {
     assert_eq!(find_common_words_index(a, b), 1);
 
     assert_eq!(find_common_words_index(b, c), 0);
+  }
+
+  #[test]
+  fn cleans_path() {
+    let path = "dev/ter";
+    assert_eq!(clean_path(path), "dev/");
+
+    let path = "dev/termy/";
+    assert_eq!(clean_path(path), "dev/termy/");
+
+    let path = "/";
+    assert_eq!(clean_path(path), "/");
+
+    let path = "";
+    assert_eq!(clean_path(path), "");
   }
 }
