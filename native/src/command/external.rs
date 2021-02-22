@@ -25,6 +25,7 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
 
   let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
   let child_inner = Arc::clone(&child);
+  let child_inner2 = Arc::clone(&child);
   let mut master = pair.master;
   let mut reader = master.try_clone_reader()?;
   let mut reader_inner = master.try_clone_reader()?;
@@ -47,6 +48,23 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
 
     loop {
       trace!("Start of loop");
+
+      #[cfg(windows)]
+      {
+        if (*child_inner.lock().expect("Failed to lock child"))
+          .try_wait()
+          .expect("Failed to poll child")
+          .is_some()
+        {
+          trace!("Breaking out inner");
+          if let Err(err) = sender_inner.send(CellChannel::Exit) {
+            error!("Error while sending exit code: {}", err);
+          };
+          break;
+        } else {
+          info!("Not yet over");
+        }
+      }
 
       if paused {
         // blocks thread
@@ -90,7 +108,7 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
   #[cfg(windows)]
   thread::spawn(move || loop {
     thread::sleep(Duration::from_millis(50));
-    if (*child_inner.lock().expect("Failed to lock child"))
+    if (*child_inner2.lock().expect("Failed to lock child"))
       .try_wait()
       .expect("Failed to poll child")
       .is_some()
