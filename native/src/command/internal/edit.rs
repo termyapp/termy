@@ -19,13 +19,7 @@ pub fn edit(path: CrossPath) -> Result<String> {
       content, path, language
     ));
   } else {
-    return Ok(format!(
-      "
-      ### Error
-      <Path>{}</Path> is not a file
-      ",
-      path
-    ));
+    return Ok(format!("<Path>{}</Path> is not a file", path));
   }
 }
 
@@ -48,14 +42,4 @@ mod tests {
   use crate::paths::test_dir;
 
   use super::*;
-
-  #[test]
-  fn reads_file() {
-    let test = test_dir().unwrap().join("test.txt");
-    let test = test.to_str().unwrap();
-    assert_eq!(
-      view(CrossPath::new(test)).unwrap(),
-      "```txt\nTest\n```".to_string()
-    );
-  }
 }

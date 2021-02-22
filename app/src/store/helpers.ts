@@ -1,5 +1,5 @@
 import { api, ipc } from '@src/utils'
-import type { Cell, Message, Status } from '@types'
+import type { Cell, Message } from '@types'
 import { v4 } from 'uuid'
 
 export const getDefaultCell = (): Cell => {
