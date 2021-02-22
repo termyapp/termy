@@ -58,6 +58,9 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
       } else {
         paused = true;
 
+        // check if this will be the last read
+        // if yes, break out and drop(master) before
+        // reading the last chunk, otherwise it hangs on windows
         if (*child_inner.lock().expect("Failed to lock child"))
           .try_wait()
           .expect("Failed to poll child")
@@ -67,25 +70,23 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
           break;
         }
 
-        let read = reader_inner.read(&mut chunk);
-
         info!("read");
-        if let Ok(len) = read {
-          if len == 0 {
+        let len = match reader_inner.read(&mut chunk) {
+          Ok(0) => {
             info!("Breaking out 2");
             break;
           }
-          let chunk = &chunk[..len];
-          info!("here?");
+          Ok(read) => read,
+          Err(err) => {
+            error!("Error while reading: {}", err);
+            break;
+          }
+        };
 
-          info!("Sending chunk with length: {}", chunk.len());
-          tsfn_send(
-            &tsfn_inner,
-            ServerMessage::new(Data::Text(chunk.to_vec()), None),
-          );
-        } else {
-          error!("Err: {}", read.unwrap_err());
-        }
+        tsfn_send(
+          &tsfn_inner,
+          ServerMessage::new(Data::Text(chunk[..len].to_vec()), None),
+        );
       }
     }
 
