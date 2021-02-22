@@ -143,8 +143,8 @@ fn tokenize_value(value: &str) -> Vec<String> {
   let mut tokens: Vec<String> = vec![];
   let mut token = String::new();
 
-  for c in value.chars() {
-    if c == '"' {
+  for (i, c) in value.chars().enumerate() {
+    if c == '"' && i > 0 && value.chars().nth(i - 1).unwrap_or_default() != '\\' {
       inside_quotes = !inside_quotes;
     } else if c.is_whitespace() && !inside_quotes {
       tokens.push(token.clone());
@@ -185,5 +185,19 @@ mod tests {
       tokenize_value("diskutil \"\"WIN10\"\""),
       vec!["diskutil".to_string(), "WIN10".to_string()]
     );
+
+    info!("back\\\"slash doesnt't break it");
+
+    assert_eq!(
+      tokenize_value("escaped \"back\\\"slash\" \"doesn't break it\""),
+      vec![
+        "escaped".to_string(),
+        "back\\\"slash".to_string(),
+        "doesn't break it".to_string()
+      ]
+    );
+
+    assert_eq!(tokenize_value("\""), vec!["\"".to_string()]);
+    assert_eq!(tokenize_value(""), vec!["".to_string()]);
   }
 }
