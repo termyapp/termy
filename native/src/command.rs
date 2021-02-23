@@ -39,7 +39,6 @@ impl Command {
         }
         // absolute path (eg. /Volumes)
         path if CrossPath::new(path).buf.exists() => Kind::Path(current_path),
-        "~" => Kind::Path(CrossPath::home()), // todo: alias & expand this instead (so ~/dev works as well)
         // "cd" => {
         //   // get new directory from args
         //   // if it fails, set home dir as the default

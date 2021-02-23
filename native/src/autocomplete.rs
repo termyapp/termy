@@ -1,5 +1,5 @@
-use crate::paths::CrossPath;
 use crate::util::executables::EXECUTABLES;
+use crate::{paths::CrossPath, shell::tokenize_value};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use log::{info, trace};
@@ -63,7 +63,7 @@ impl Autocomplete {
   fn paths(&mut self) -> Result<()> {
     let value = self.value.clone();
     let current_dir = CrossPath::new(&self.current_dir);
-    for path in value.split_whitespace().into_iter() {
+    for path in tokenize_value(&value).iter() {
       let path = clean_path(&path);
       let cross_path = CrossPath::new(path);
       if path.starts_with("/") && cross_path.buf.exists() {
@@ -71,8 +71,10 @@ impl Autocomplete {
         self.path(path)?;
       } else if current_dir.join(path).buf.exists() {
         self.path(&(current_dir.join(path).to_string()))?;
-      } else {
+      } else if path.len() <= 1 {
         self.path(&(current_dir.to_string()))?;
+      } else if path == "~/" {
+        self.path(&(CrossPath::home().to_string()))?;
       }
     }
 
@@ -91,10 +93,19 @@ impl Autocomplete {
           name.clone(),
           Suggestion {
             label: name.clone(),
-            insert_text: if is_dir {
-              Some(format!("{}/", name))
-            } else {
-              None
+            insert_text: {
+              let name = if name.contains(char::is_whitespace) {
+                // wrap name in quotes
+                format!("\"{}\"", name)
+              } else {
+                name
+              };
+
+              if is_dir {
+                Some(format!("{}/", name))
+              } else {
+                None
+              }
             },
             score: 100,
             kind: if is_dir {

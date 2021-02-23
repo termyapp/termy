@@ -1,4 +1,4 @@
-use crate::{command::external::FrontendMessage, command::Command};
+use crate::{command::external::FrontendMessage, command::Command, paths::CrossPath};
 use crossbeam_channel::{Receiver, Sender};
 use log::{error, info};
 use serde::{Deserialize, Serialize};
@@ -138,13 +138,22 @@ fn parse_value(value: &str, current_dir: &str) -> Command {
   Command::new(tokens.remove(0), tokens, current_dir)
 }
 
-fn tokenize_value(value: &str) -> Vec<String> {
+pub fn tokenize_value(value: &str) -> Vec<String> {
+  // first alias: ~ -> $HOME
+  let value = value.replace("~", &(CrossPath::home().to_string()));
+
   let mut inside_quotes = false;
   let mut tokens: Vec<String> = vec![];
   let mut token = String::new();
 
   for (i, c) in value.chars().enumerate() {
-    if c == '"' && i > 0 && value.chars().nth(i - 1).unwrap_or_default() != '\\' {
+    if c == '"'
+      && value
+        .chars()
+        .nth(if i > 0 { i - 1 } else { 0 })
+        .unwrap_or_default()
+        != '\\'
+    {
       inside_quotes = !inside_quotes;
     } else if c.is_whitespace() && !inside_quotes {
       tokens.push(token.clone());
@@ -174,7 +183,7 @@ mod tests {
     );
 
     assert_eq!(
-      tokenize_value("create \"Whitespace inside quotes yay'\""),
+      tokenize_value("\"create\" \"Whitespace inside quotes yay'\""),
       vec![
         "create".to_string(),
         "Whitespace inside quotes yay'".to_string()
@@ -197,7 +206,7 @@ mod tests {
       ]
     );
 
-    assert_eq!(tokenize_value("\""), vec!["\"".to_string()]);
+    assert_eq!(tokenize_value("\""), vec!["".to_string()]);
     assert_eq!(tokenize_value(""), vec!["".to_string()]);
   }
 }
