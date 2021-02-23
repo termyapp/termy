@@ -3,10 +3,10 @@ import type { Cell, Message, ThemeMode } from '@types'
 import produce from 'immer'
 import { v4 } from 'uuid'
 import { getDefaultCell, killCell, nextOrLast, nextOrPrevious } from './helpers'
-import type { IState } from './state'
+import type { State } from './state'
 
 // todo: https://artsy.github.io/blog/2018/11/21/conditional-types-in-typescript/
-export type TAction =
+export type Action =
   | { type: 'new-cell' }
   | { type: 'new-tab' }
   | { type: 'remove-cell'; id?: string }
@@ -19,7 +19,7 @@ export type TAction =
   | { type: 'focus-cell'; id: string | 'next' | 'previous' }
   | { type: 'focus-tab'; id: string | 'next' | 'previous' }
 
-export default function reducer(state: IState, action: TAction) {
+export default function reducer(state: State, action: Action) {
   return produce(state, draft => {
     console.log(action.type.toUpperCase(), action)
     switch (action.type) {
@@ -105,6 +105,8 @@ export default function reducer(state: IState, action: TAction) {
             draft.tabs[draft.activeTab].cells,
           )
         }
+
+        if (draft.tabs[draft.activeTab].activeCell === id) return
 
         draft.tabs[draft.activeTab].activeCell = id
         break

@@ -8,19 +8,19 @@ export const lightTheme = {
     base: 'vs',
 
     $background: '#fff',
-    $foreground: baseTheme.colors.$gray700,
+    $foreground: baseTheme.colors.$gray900,
     $secondaryForeground: baseTheme.colors.$gray700,
 
-    $accent: baseTheme.colors.$gray400,
+    $accent: baseTheme.colors.$gray300,
     $caret: baseTheme.colors.$teal500,
     $selection: baseTheme.colors.$teal200,
 
     $focusedBackground: baseTheme.colors.$white,
     $focusedForeground: baseTheme.colors.$black,
-    $runningBackground: baseTheme.colors.$blue100,
-    $runningForeground: baseTheme.colors.$blue700,
+    $runningBackground: baseTheme.colors.$gray200,
+    $runningForeground: baseTheme.colors.$gray700,
     $successBackground: baseTheme.colors.$teal100,
-    $successForeground: baseTheme.colors.$teal600,
+    $successForeground: baseTheme.colors.$teal500,
     $errorBackground: baseTheme.colors.$red200,
     $errorForeground: baseTheme.colors.$red600,
 

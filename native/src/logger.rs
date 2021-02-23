@@ -5,7 +5,7 @@ use log4rs::config::{Appender, Config, Root};
 use log4rs::encode::pattern::PatternEncoder;
 
 pub fn init() -> Result<()> {
-  // todo: create ~/termy folder and put log inside there & delete it on each init
+  // todo: create ~/.termy folder and put log inside there & delete it on each init
   // or .config folder (standard?)
   // let file = FileAppender::builder()
   //   .encoder(Box::new(PatternEncoder::new(
@@ -24,7 +24,7 @@ pub fn init() -> Result<()> {
       Root::builder()
         // .appender("logfile")
         .appender("console")
-        .build(LevelFilter::Info), // todo: include error and others as well
+        .build(LevelFilter::Trace),
     )?;
 
   log4rs::init_config(config)?;

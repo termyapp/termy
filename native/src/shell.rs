@@ -1,6 +1,6 @@
-use crate::{command::external::FrontendMessage, command::Command};
+use crate::{command::external::FrontendMessage, command::Command, paths::CrossPath};
 use crossbeam_channel::{Receiver, Sender};
-use log::error;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 
 pub struct Cell {
@@ -48,6 +48,8 @@ impl Cell {
     // once operators (|, &&, ||) are introduced, this could become Vec<Command>
     let command = parse_value(&(self.value), &(self.current_dir));
 
+    info!("Executing: {:?}", command);
+
     if let Err(err) = command.execute(self) {
       error!("Error while executing command: {}", err);
     };
@@ -55,6 +57,13 @@ impl Cell {
 
   pub fn send(&self, message: ServerMessage) {
     tsfn_send(&self.tsfn, message);
+  }
+
+  pub fn clone_tsfn(&self) -> ThreadsafeFunctionType {
+    self
+      .tsfn
+      .try_clone()
+      .expect("Failed to clone threadsafe function")
   }
 }
 
@@ -129,13 +138,22 @@ fn parse_value(value: &str, current_dir: &str) -> Command {
   Command::new(tokens.remove(0), tokens, current_dir)
 }
 
-fn tokenize_value(value: &str) -> Vec<String> {
+pub fn tokenize_value(value: &str) -> Vec<String> {
+  // first alias: ~ -> $HOME
+  let value = value.replace("~", &(CrossPath::home().to_string()));
+
   let mut inside_quotes = false;
   let mut tokens: Vec<String> = vec![];
   let mut token = String::new();
 
-  for c in value.chars() {
-    if c == '"' {
+  for (i, c) in value.chars().enumerate() {
+    if c == '"'
+      && value
+        .chars()
+        .nth(if i > 0 { i - 1 } else { 0 })
+        .unwrap_or_default()
+        != '\\'
+    {
       inside_quotes = !inside_quotes;
     } else if c.is_whitespace() && !inside_quotes {
       tokens.push(token.clone());
@@ -165,7 +183,7 @@ mod tests {
     );
 
     assert_eq!(
-      tokenize_value("create \"Whitespace inside quotes yay'\""),
+      tokenize_value("\"create\" \"Whitespace inside quotes yay'\""),
       vec![
         "create".to_string(),
         "Whitespace inside quotes yay'".to_string()
@@ -176,5 +194,19 @@ mod tests {
       tokenize_value("diskutil \"\"WIN10\"\""),
       vec!["diskutil".to_string(), "WIN10".to_string()]
     );
+
+    info!("back\\\"slash doesnt't break it");
+
+    assert_eq!(
+      tokenize_value("escaped \"back\\\"slash\" \"doesn't break it\""),
+      vec![
+        "escaped".to_string(),
+        "back\\\"slash".to_string(),
+        "doesn't break it".to_string()
+      ]
+    );
+
+    assert_eq!(tokenize_value("\""), vec!["".to_string()]);
+    assert_eq!(tokenize_value(""), vec!["".to_string()]);
   }
 }

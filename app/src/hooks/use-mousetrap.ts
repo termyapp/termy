@@ -25,6 +25,7 @@ export default function useMousetrap(
     repeat: false,
     action: undefined,
   } as Options,
+  deps = [] as any[],
 ) {
   let callbackRef = useRef<Callback>(callback)
   const { action, repeat, preventDefault } = options
@@ -47,5 +48,5 @@ export default function useMousetrap(
     return () => {
       mousetrap.unbind(handlerKey, action)
     }
-  }, [handlerKey, action])
+  }, [handlerKey, action, ...deps])
 }

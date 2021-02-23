@@ -31,11 +31,31 @@ const view: Command = {
   documentation: `
 # View
 
-View files and folders
+View files or folders
 
-### Example usage
+## Example usage
 
-\`view package.json\`
+### File
+
+\`\`\`view package.json\`\`\`
+
+### Folder
+
+\`\`\`view .\`\`\`
+
+`,
+}
+
+const edit: Command = {
+  name: 'edit',
+  documentation: `
+# Edit
+
+Edit files using VSCode's editor
+
+## Example usage
+
+\`\`\`edit package.json\`\`\`
 `,
 }
 
@@ -44,6 +64,7 @@ const typedCli: { [key: string]: Command } = {
   shortcuts,
   home,
   view,
+  edit,
 }
 
 const getSuggestionsFromCommands = (commands: Command[]): Suggestion[] => {
@@ -57,6 +78,7 @@ const getSuggestionsFromCommands = (commands: Command[]): Suggestion[] => {
   })
 }
 
+// cool parser: https://github.com/substack/node-shell-quote/blob/master/index.js
 export const getTypedCliSuggestions = (value: string): Suggestion[] => {
   const tokens = value.split(' ')
 

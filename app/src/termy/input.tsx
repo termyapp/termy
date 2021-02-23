@@ -33,11 +33,8 @@ export default function Input({
         readOnly: status === 'running',
       })
 
-      // focus & select input on finish
+      // select input on finish
       if (status === 'success' || status === 'error') {
-        // only focus if the cell is active
-        if (active) editorRef.current.focus()
-
         const range = editorRef.current.getModel()?.getFullModelRange()
         if (range) editorRef.current.setSelection(range)
       }
@@ -54,10 +51,11 @@ export default function Input({
         }}
       >
         <Div
-          id={id}
-          data-cd={currentDir} // needed for monaco completion provider
+          id={`input-${id}`}
           tabIndex={-1} // make it focusable
-          onFocus={() => editorRef.current?.focus()}
+          onFocus={() => {
+            editorRef.current?.focus()
+          }}
           css={{
             width: '100%',
             height: '100%',
@@ -75,16 +73,16 @@ export default function Input({
               )
               editor.setModel(model)
 
-              // bring back native context menu actions
-              // https://github.com/microsoft/monaco-editor/issues/1084#issuecomment-509397388
-              const el = editor.getDomNode()
-              if (el) el.contentEditable = 'true'
-
               if (monaco) {
                 const { KeyCode, KeyMod } = monaco
 
                 // Contexts:
                 // https://code.visualstudio.com/docs/getstarted/keybindings#_available-contexts
+
+                editor.addCommand(KeyCode.Enter, () => {
+                  editor.trigger('', 'hideSuggestWidget', {})
+                  dispatch({ type: 'run-cell', id })
+                })
 
                 editor.addCommand(
                   KeyMod.CtrlCmd | KeyCode.Enter,
@@ -94,11 +92,6 @@ export default function Input({
                   },
                   'suggestWidgetVisible',
                 )
-
-                editor.addCommand(KeyCode.Enter, () => {
-                  editor.trigger('', 'hideSuggestWidget', {})
-                  dispatch({ type: 'run-cell', id })
-                })
 
                 editor.addCommand(
                   KeyCode.Tab,
@@ -143,7 +136,14 @@ export default function Input({
             }}
             value={value}
             onChange={(value = '', event) => {
-              value = value.replace(/\n|\r/g, '') // remove line breaks
+              // reset status
+              if (status === 'error' || status === 'success') {
+                dispatch({ type: 'set-cell', id, cell: { status: null } })
+              }
+
+              // remove line breaks
+              value = value.replace(/\n|\r/g, '')
+
               dispatch({ type: 'set-cell', id, cell: { value } })
             }}
             overrideServices={{
@@ -189,7 +189,7 @@ export default function Input({
               overviewRulerLanes: 0,
               quickSuggestions: true,
               quickSuggestionsDelay: 0,
-              contextmenu: false,
+              // contextmenu: false,
               // model: this.model,
             }}
           />

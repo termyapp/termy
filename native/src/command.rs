@@ -26,18 +26,25 @@ enum Kind {
 
 impl Command {
   pub fn new(command: String, args: Vec<String>, current_dir: &str) -> Self {
-    let cross_path = CrossPath::new(current_dir);
+    let current_path = CrossPath::new(current_dir);
     Self {
       kind: match command.as_str() {
-        path if cross_path.join(path).buf.exists() => Kind::Path(cross_path.join(path)),
-        path if CrossPath::new(path).buf.exists() => Kind::Path(cross_path),
-        "~" => Kind::Path(CrossPath::home()),
+        // relative path (eg. /Users/martonlanga + dev)
+        path if current_path.join(path).buf.exists() && !path.starts_with("./") => {
+          Kind::Path(current_path.join(path))
+        }
+        // executable (eg. /Users/martonlanga + ./script.sh)
+        path if current_path.join(path).buf.exists() && path.starts_with("./") => {
+          Kind::External(current_path.join(path).to_string())
+        }
+        // absolute path (eg. /Volumes)
+        path if CrossPath::new(path).buf.exists() => Kind::Path(current_path),
         // "cd" => {
         //   // get new directory from args
         //   // if it fails, set home dir as the default
         //   let path = if let Some(path) = args.iter().next() {
-        //     if cross_path.buf.join(path).exists() {
-        //       cross_path.buf.join(path)
+        //     if current_path.buf.join(path).exists() {
+        //       current_path.buf.join(path)
         //     } else {
         //       PathBuf::from(path)
         //     }
@@ -51,7 +58,11 @@ impl Command {
         internal if Internal::parse(internal).is_some() => {
           Kind::Internal(Internal::parse(internal).unwrap())
         }
-        _ if EXECUTABLES.contains(&command) => Kind::External(command),
+        _ if EXECUTABLES.contains(&command)
+          || (cfg!(windows) && EXECUTABLES.contains(&command.to_lowercase())) =>
+        {
+          Kind::External(command)
+        }
         _ => Kind::NotFound,
       },
       args,

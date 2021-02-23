@@ -3,19 +3,19 @@ import React from 'react'
 import { Div } from './div'
 
 interface Props {
-  children: any[]
+  json: string
 }
 
-export const Table = ({ children }: Props) => {
-  children = children[0]
-  if (typeof children === 'string') {
-    children = JSON.parse(children)
-  }
-  return Array.isArray(children) ? (
+export const Table = ({ json }: Props) => {
+  json = JSON.parse(decodeURIComponent(escape(atob(json))))
+
+  console.log('js', json)
+
+  return Array.isArray(json) ? (
     <Container>
       <thead>
         <tr>
-          {Object.keys(children[0]).map((key, i) => (
+          {Object.keys(json[0]).map((key, i) => (
             <Div
               as="th"
               key={key + i}
@@ -31,7 +31,7 @@ export const Table = ({ children }: Props) => {
         </tr>
       </thead>
       <tbody>
-        {children.map((row, i) => (
+        {json.map((row, i) => (
           <Div as="tr" key={i} css={{}}>
             {Object.keys(row).map((key, j) => (
               <Div

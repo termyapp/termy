@@ -1,6 +1,3 @@
-// In sync with ../electron/shared.d.ts
-// todo: figure out a way to reference the types
-
 export interface RunCell {
   id: string
   value: string
@@ -22,6 +19,7 @@ export type Message =
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
   | { type: 'tldr'; command: string }
+  | { type: 'write'; path: string; value: string }
 
 export interface ServerMessage {
   id: string

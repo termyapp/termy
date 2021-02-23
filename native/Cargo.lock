@@ -465,9 +465,10 @@ source = "git+https://github.com/napi-rs/napi-rs#6b0aa231721ec8316c6ed5de4da5aef
 
 [[package]]
 name = "native"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
+ "base64",
  "crossbeam-channel",
  "dirs",
  "dunce",

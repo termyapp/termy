@@ -1,3 +1,4 @@
+import type { WindowMessage } from '@shared'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import debug from 'electron-debug'
 import installExtension, {
@@ -6,7 +7,6 @@ import installExtension, {
 } from 'electron-devtools-installer'
 import isDev from 'electron-is-dev'
 import path from 'path'
-import type { WindowMessage } from '../shared'
 
 const isMac = process.platform === 'darwin'
 

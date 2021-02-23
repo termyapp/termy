@@ -1,12 +1,14 @@
 import { Card, Path, Table } from '@components'
+import Edit from '@src/tapp/edit'
 import Markdown from 'markdown-to-jsx'
 import React from 'react'
 
 // Provide custom components for markdown elements
 const overrides = {
-  Card: { component: Card },
-  Path: { component: Path },
-  Table: { component: Table },
+  Card,
+  Path,
+  Table,
+  Edit,
 }
 
 interface Props {

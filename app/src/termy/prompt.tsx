@@ -1,5 +1,4 @@
-import { Div, Flex, Path } from '@components'
-import { CheckIcon, Cross2Icon, PlayIcon } from '@modulz/radix-icons'
+import { Div, Path, Span } from '@components'
 import { styled } from '@src/stitches.config'
 import { formatCurrentDir } from '@src/utils'
 import type { CellWithActive } from '@types'
@@ -14,21 +13,16 @@ export default function Prompt(cell: CellWithActive) {
       active={active}
       // newLine={currentDir.length > 60} // todo: do better with long lines (decrease fontSize)
     >
-      <CurrentDir>
+      <CurrentDir status={cell.status === null ? 'default' : cell.status}>
         <Path>{formatCurrentDir(currentDir)}</Path>
       </CurrentDir>
       <Input {...cell} />
-      <Status status={cell.status === null ? 'default' : cell.status}>
-        {cell.status === 'success' && <CheckIcon />}
-        {cell.status === 'running' && <PlayIcon />}
-        {cell.status === 'error' && <Cross2Icon />}
-      </Status>
     </Wrapper>
   )
 }
 
 const Wrapper = styled(Div, {
-  px: '$4',
+  pl: '-$2',
   py: '$1',
   display: 'flex',
   alignItems: 'center',
@@ -42,25 +36,17 @@ const Wrapper = styled(Div, {
 })
 
 const CurrentDir = styled(Div, {
-  mr: '$3',
+  mr: '$1',
+  ml: '$2',
   fontSize: '$sm',
-})
-
-const Status = styled(Flex, {
-  borderRadius: '$full',
-  alignItems: 'center',
-  p: '$1',
-
-  svg: {
-    width: '$4',
-    height: '$4',
-  },
+  transform: 'translateY(1.5px)',
+  position: 'relative',
+  px: '$2',
+  borderRadius: '$md',
 
   variants: {
     status: {
-      default: {
-        display: 'none',
-      },
+      default: {},
       running: {
         backgroundColor: '$runningBackground',
         color: '$runningForeground',

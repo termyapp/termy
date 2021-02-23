@@ -13,25 +13,47 @@ interface Props {
 }
 
 export default function Tab({ id, index, activeTab }: Props) {
+  const dispatch = useStore(state => state.dispatch)
   const cellIds = useStore(
     useCallback(state => state.tabs[id].cells, [id]),
     shallow,
   )
-  const activeCell = useStore(
+  const activeCellId = useStore(
     useCallback(state => state.tabs[id].activeCell, [id]),
     shallow,
   )
-  const dispatch = useStore(state => state.dispatch)
+  const activeCellStatus = useStore(
+    useCallback(state => state.cells[activeCellId].status, [activeCellId]),
+    shallow,
+  )
 
   useMousetrap(`mod+${index + 1}`, () => {
     dispatch({ type: 'focus-tab', id })
   })
 
+  // focus input
+  useMousetrap(
+    'mod+i',
+    () => {
+      focusCell(activeCellId, null)
+    },
+    undefined,
+    [activeCellId],
+  )
+
+  // focus output
+  useMousetrap(
+    'mod+o',
+    () => {
+      focusCell(activeCellId, 'running')
+    },
+    undefined,
+    [activeCellId],
+  )
+
   useEffect(() => {
-    if (activeTab === id) {
-      focusCell(activeCell)
-    }
-  }, [activeTab, activeCell])
+    if (activeTab === id) focusCell(activeCellId, activeCellStatus)
+  }, [activeTab, activeCellId, activeCellStatus])
 
   return (
     <Grid
@@ -46,8 +68,8 @@ export default function Tab({ id, index, activeTab }: Props) {
         <Cell
           key={cellId}
           id={cellId}
-          active={cellId === activeCell}
-          showBorder={cellId === activeCell && cellIds.length > 1}
+          active={cellId === activeCellId}
+          showBorder={cellId === activeCellId && cellIds.length > 1}
         />
       ))}
     </Grid>

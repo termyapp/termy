@@ -23,7 +23,7 @@ export default function Cell({ id, active, showBorder }: Props) {
   useEffect(() => {
     if (cell.value === 'shortcuts') dispatch({ type: 'run-cell', id })
 
-    // kill on onmount
+    // kill on onMount
     return () => {
       dispatch({ type: 'kill-cell', id })
     }
@@ -31,7 +31,7 @@ export default function Cell({ id, active, showBorder }: Props) {
 
   return (
     <Container
-      onMouseEnter={() => dispatch({ type: 'focus-cell', id })}
+      id={id}
       onFocus={() => dispatch({ type: 'focus-cell', id })}
       active={active}
       showBorder={showBorder}
@@ -44,21 +44,24 @@ export default function Cell({ id, active, showBorder }: Props) {
 
 const Container = styled(Flex, {
   position: 'relative',
-  borderRadius: '$md',
   flexDirection: 'column',
+  // borderRadius: '$default',
 
   variants: {
     active: {
       true: {
-        color: '$focusedForeground',
+        opacity: 1,
+      },
+      false: {
+        opacity: 0.76,
       },
     },
     showBorder: {
       true: {
-        border: '1px solid $accent',
+        // border: '1px solid $accent',
       },
       false: {
-        border: '1px solid transparent',
+        // border: '1px solid transparent',
       },
     },
   },

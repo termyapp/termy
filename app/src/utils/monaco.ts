@@ -1,12 +1,14 @@
 import { loader } from '@monaco-editor/react'
+import useStore from '@src/store'
 import type { NativeSuggestion, Suggestion, SuggestionKind } from '@types'
 import { formatDistanceToNow } from 'date-fns'
+import _ from 'lodash'
 import type * as Monaco from 'monaco-editor'
 import { TERMY } from '../termy/input'
 import { getTypedCliSuggestions, ipc } from './'
 
 export const loadMonaco = () => {
-  loader.config({ paths: { vs: 'monaco-editor' } })
+  // loader.config({ paths: { vs: 'monaco-editor' } })
   loader.init().then(monaco => {
     const toMonacoKind = (kind: SuggestionKind) => {
       // info: https://user-images.githubusercontent.com/35271042/96901834-9bdbb480-1448-11eb-906a-4a80f5f14921.png
@@ -31,12 +33,12 @@ export const loadMonaco = () => {
       let documentation = suggestion.documentation
       let label: unknown = suggestion.label
 
-      // todo: move this into resolveCompletionItem
+      // todo: move this into resolveCompletionItem (or to native)
       const tldr = ipc.sendSync('message', {
         type: 'tldr',
         command: suggestion.label,
       })
-      if (tldr) {
+      if (tldr && !documentation) {
         documentation =
           tldr + '\n*Source:* [📚tldr](https://github.com/tldr-pages/tldr)'
       }
@@ -70,39 +72,20 @@ export const loadMonaco = () => {
       ) => {
         const value = model.getValue()
         const cellId = model.uri.authority
-        const cell = document.getElementById(cellId) as HTMLDivElement
-
-        if (!cell) return { incomplete: false, suggestions: [] }
-        // todo: get fresh state outside of component
-        // https://github.com/pmndrs/zustand#readingwriting-state-and-reacting-to-changes-outside-of-components
-        const currentDir = cell.dataset.cd
+        const currentDir = useStore.getState().cells[cellId].currentDir
 
         const rawSuggestions: NativeSuggestion[] = await ipc.invoke(
           'suggestions',
           value,
           currentDir,
         )
-        const suggestions: Monaco.languages.CompletionItem[] = rawSuggestions.map(
-          suggestionToCompletionItem,
-        )
+        console.log(rawSuggestions)
+        let suggestions: Monaco.languages.CompletionItem[] = [
+          ...getTypedCliSuggestions(value).map(suggestionToCompletionItem),
+          ...rawSuggestions.map(suggestionToCompletionItem),
+        ]
 
-        return { incomplete: false, suggestions }
-      },
-    })
-
-    monaco.languages.registerCompletionItemProvider(TERMY, {
-      triggerCharacters: [' '],
-      provideCompletionItems: async (
-        model: Monaco.editor.ITextModel,
-        position: Monaco.Position,
-        context: Monaco.languages.CompletionContext,
-        token: Monaco.CancellationToken,
-      ) => {
-        const value = model.getValue()
-
-        const suggestions = getTypedCliSuggestions(value).map(
-          suggestionToCompletionItem,
-        )
+        suggestions = _.uniqBy(suggestions, 'label')
 
         return { incomplete: false, suggestions }
       },

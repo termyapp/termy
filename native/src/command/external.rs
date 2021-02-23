@@ -1,58 +1,40 @@
 use crate::shell::{tsfn_send, Cell, CellChannel, Data, ServerMessage, Status};
-use anyhow::Result;
-use core::time;
+use anyhow::{Context, Result};
+use crossbeam_channel::unbounded;
 use io::Read;
-use log::{error, info};
+use log::{error, info, trace};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
-use std::io::Write;
 use std::thread;
 use std::{
   io,
   sync::{Arc, Mutex},
 };
+use std::{io::Write, time::Duration};
 
-pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Status> {
-  info!("Running pty command: {:#?}", command);
+pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> {
+  info!("Running external command: {:#?}", command);
+  let pair = {
+    let pty = native_pty_system();
+    pty
+      .openpty(PtySize::default())
+      .with_context(|| "could not open pty")?
+  };
 
-  let pty_system = native_pty_system();
-  let pair = pty_system.openpty(PtySize {
-    rows: 50,
-    cols: 100,
-    pixel_width: 0,
-    pixel_height: 0,
-  })?;
+  let cmd = get_cmd(command, args, cell.current_dir());
 
-  // examples: https://github.com/wez/wezterm/tree/e2e46cb50d32562cdb02e0a8d309fa9f7fbbecf0/pty/examples
-  let mut cmd = CommandBuilder::new(command);
-
-  cmd.env("LANG", "en_US.UTF-8");
-  cmd.env("TERM", "xterm-256color");
-  cmd.env("COLORTERM", "truecolor");
-  cmd.env("TERM_PROGRAM", "Termy");
-  cmd.env("TERM_PROGRAM_VERSION", "v0.2"); // todo: use a var here
-  cmd.cwd(&cell.current_dir());
-  cmd.args(args);
-
+  let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
+  let child_inner = Arc::clone(&child);
+  let child_inner2 = Arc::clone(&child);
   let mut master = pair.master;
   let mut reader = master.try_clone_reader()?;
   let mut reader_inner = master.try_clone_reader()?;
-  let child = Arc::new(Mutex::new(pair.slave.spawn_command(cmd)?));
-  let child_inner = Arc::clone(&child);
 
-  let tsfn = cell
-    .tsfn
-    .try_clone()
-    .expect("Failed to clone threadsafe function");
-  let tsfn_inner = cell
-    .tsfn
-    .try_clone()
-    .expect("Failed to clone threadsafe function");
-
-  let sender_clone = cell.sender.clone();
-
-  let paused = Arc::new(Mutex::new(false));
-  let paused_clone = Arc::clone(&paused);
+  let tsfn = cell.clone_tsfn();
+  let tsfn_inner = cell.clone_tsfn();
+  let sender_inner = cell.sender.clone();
+  let sender_inner2 = cell.sender.clone();
+  let (control_flow_sender, control_flow_receiver) = unbounded::<Action>();
 
   drop(pair.slave);
 
@@ -62,48 +44,83 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     // https://en.wikipedia.org/wiki/Flow_control_(data)
     // https://xtermjs.org/docs/guides/flowcontrol/
     let mut chunk = [0u8; 1024];
+    let mut paused = false;
 
     loop {
-      if (*child_inner.lock().expect("Failed to lock child"))
-        .try_wait()
-        .expect("Failed to poll child")
-        .is_some()
+      trace!("Start of loop");
+
+      #[cfg(windows)]
       {
-        info!("Breaking out 1");
-        break;
+        if (*child_inner.lock().expect("Failed to lock child"))
+          .try_wait()
+          .expect("Failed to poll child")
+          .is_some()
+        {
+          trace!("Breaking out inner");
+          if let Err(err) = sender_inner.send(CellChannel::Exit) {
+            error!("Error while sending exit code: {}", err);
+          };
+          break;
+        } else {
+          info!("Not yet over");
+        }
       }
 
-      let mut paused = paused.lock().expect("Failed to lock paused");
-      if *paused {
-        // todo: find a better way to block thread until we can resume
-        // maybe go back to channels and block on .recv()
-        // or https://doc.rust-lang.org/std/sync/struct.Condvar.html
-        thread::sleep(time::Duration::from_millis(10));
+      if paused {
+        // blocks thread
+        if let Ok(Action::Resume) = control_flow_receiver.recv() {
+          trace!("Resuming");
+          paused = false;
+        } else {
+          error!("Failed to receive control flow action");
+        }
       } else {
-        *paused = true;
+        paused = true;
 
-        let read = reader_inner.read(&mut chunk);
-        if let Ok(len) = read {
-          if len == 0 {
-            info!("Breaking out 2");
+        let len = match reader_inner.read(&mut chunk) {
+          Ok(0) => {
+            trace!("Last read");
             break;
           }
-          let chunk = &chunk[..len];
+          Ok(read) => read,
+          Err(err) => {
+            error!("Error while reading: {}", err);
+            break;
+          }
+        };
 
-          info!("Sending chunk with length: {}", chunk.len());
-          tsfn_send(
-            &tsfn_inner,
-            ServerMessage::new(Data::Text(chunk.to_vec()), None),
-          );
-        } else {
-          error!("Err: {}", read.unwrap_err());
-        }
+        tsfn_send(
+          &tsfn_inner,
+          ServerMessage::new(Data::Text(chunk[..len].to_vec()), None),
+        );
       }
     }
 
-    if let Err(err) = sender_clone.send(CellChannel::Exit) {
+    if let Err(err) = sender_inner.send(CellChannel::Exit) {
       error!("Error while sending exit code: {}", err);
     };
+  });
+
+  // unfortunately reading the last chunk hangs on windows
+  // https://github.com/wez/wezterm/issues/463
+  // we don't know when to drop master, but we need it to write/resize
+  // hopefull we'll have a better way in the future
+  #[cfg(windows)]
+  thread::spawn(move || loop {
+    thread::sleep(Duration::from_millis(50));
+    if (*child_inner2.lock().expect("Failed to lock child"))
+      .try_wait()
+      .expect("Failed to poll child")
+      .is_some()
+    {
+      trace!("Breaking out");
+      if let Err(err) = sender_inner2.send(CellChannel::Exit) {
+        error!("Error while sending exit code: {}", err);
+      };
+      break;
+    } else {
+      info!("Not yet over");
+    }
   });
 
   loop {
@@ -113,18 +130,21 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     match received {
       Ok(CellChannel::FrontendMessage(FrontendMessage { id: _, action })) => match action {
         Action::Resume => {
-          info!("Resuming");
-          let mut paused = paused_clone.lock().expect("Failed to lock paused clone");
-          *paused = false;
+          info!("Sending resume");
+          control_flow_sender
+            .send(Action::Resume)
+            .expect("Failed to send control flow");
         }
         Action::Kill => {
           info!("Killing child");
           let mut child = child.lock().unwrap();
+          info!("Unlocked child");
           child.kill().expect("Failed to kill child");
+          info!("Killed child");
         }
         Action::Write(data) => {
           info!("Writing data: {:?}", data);
-          write!(master, "{}", data).expect("Failed to write to master");
+          master.write_all(data.as_bytes())?;
         }
         Action::Resize(Size { rows, cols }) => {
           info!("Resizing Pty: {} {}", rows, cols);
@@ -163,6 +183,49 @@ pub fn external(command: &String, args: Vec<String>, cell: Cell) -> Result<Statu
     }
   }
 }
+
+fn get_cmd(command: &str, args: Vec<String>, current_dir: &str) -> CommandBuilder {
+  let mut cmd = {
+    #[cfg(not(windows))]
+    {
+      let mut cmd = CommandBuilder::new("sh");
+      cmd.arg("-c");
+      cmd
+    }
+
+    #[cfg(windows)]
+    {
+      let mut cmd = CommandBuilder::new("cmd");
+      cmd.arg("/c");
+      // not sure we need this:
+      // for arg in args {
+      //   // Clean the args before we use them:
+      //   let arg = arg.replace("|", "\\|");
+      //   cmd.arg(&arg);
+      // }
+      cmd
+    }
+  };
+
+  cmd.arg(vec![command.to_string(), args.join(" ")].join(" "));
+  cmd.cwd(current_dir);
+  for (key, val) in ENVS.iter() {
+    cmd.env(key, val);
+  }
+
+  trace!("{:?}", cmd);
+  cmd
+}
+
+const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+
+static ENVS: &[(&str, &str)] = &[
+  ("LANG", "en_US.UTF-8"),
+  ("TERM", "xterm-256color"),
+  ("COLORTERM", "truecolor"),
+  ("TERM_PROGRAM", "Termy"),
+  ("TERM_PROGRAM_VERSION", VERSION),
+];
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

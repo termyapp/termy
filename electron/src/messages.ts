@@ -3,11 +3,11 @@ import isDev from 'electron-is-dev'
 import fs from 'fs'
 import path from 'path'
 import native from '../../native'
-import type { Message, ServerMessage } from '../shared'
+import type { Message, ServerMessage } from '@shared'
 
 export default () => {
   ipcMain.on('message', (event, message) => {
-    // console.log('message', message)
+    console.log('message', message)
     event.returnValue = handleMessage(event, message)
   })
 
@@ -85,6 +85,12 @@ const handleMessage = (event: Electron.IpcMainEvent, message: Message) => {
         // file does not exist
         return null
       }
+    }
+    case 'write': {
+      const { path, value } = message
+      fs.writeFile(path, value, err => {
+        console.error('Error while writing to file: err')
+      })
     }
   }
 }
