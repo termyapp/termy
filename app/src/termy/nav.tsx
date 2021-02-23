@@ -56,7 +56,6 @@ export default function Nav({ tabs, activeTab }: Props) {
       <Flex
         onClick={() => dispatch({ type: 'new-tab' })}
         css={{
-          cursor: 'pointer',
           width: '15px',
           height: '15px',
           mr: '$3',
@@ -99,7 +98,6 @@ export default function Nav({ tabs, activeTab }: Props) {
                   height: 34,
                   padding: '12px 15px 12px 15px',
                   shapeRendering: 'crispEdges',
-                  cursor: 'pointer', // not working
                 }}
               >
                 <use xlinkHref={`./control-icons.svg#${item.icon}`} />
