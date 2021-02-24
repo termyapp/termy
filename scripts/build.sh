@@ -7,7 +7,7 @@ echo Cargo: "$(cargo version)" || echo Cargo not found
 
 # Update submodules
 echo Updating submodules...
-git submodule update --recursive
+git submodule update --init --recursive
 
 # Building
 echo Building native module...
