@@ -76,4 +76,16 @@ Critical dependency: the request of a dependency is an expression
 
 ## App Warnings
 
-- Source maps not loading
+### Source maps not loading
+
+To hide them, disable source maps in electron's chrome settings.
+
+### Insecure Content-Security-Policy
+
+Only an issue in `dev` because we are loading the content using the `http` protocol.
+
+To hide it, use this filter in the console:
+
+```
+-url:electron/js2c/renderer_init.js
+```
