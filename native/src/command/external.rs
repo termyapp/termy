@@ -5,12 +5,12 @@ use io::Read;
 use log::{error, info, trace};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
+use std::io::Write;
 use std::thread;
 use std::{
   io,
   sync::{Arc, Mutex},
 };
-use std::{io::Write, time::Duration};
 
 pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> {
   info!("Running external command: {:#?}", command);
@@ -57,9 +57,6 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
           .is_some()
         {
           trace!("Breaking out inner");
-          if let Err(err) = sender_inner.send(CellChannel::Exit) {
-            error!("Error while sending exit code: {}", err);
-          };
           break;
         } else {
           info!("Not yet over");
@@ -106,20 +103,16 @@ pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> 
   // we don't know when to drop master, but we need it to write/resize
   // hopefull we'll have a better way in the future
   #[cfg(windows)]
-  thread::spawn(move || loop {
-    thread::sleep(Duration::from_millis(50));
+  thread::spawn(move || {
     if (*child_inner2.lock().expect("Failed to lock child"))
-      .try_wait()
-      .expect("Failed to poll child")
-      .is_some()
+      .wait()
+      .expect("Failed to wait for child")
     {
       trace!("Breaking out");
       if let Err(err) = sender_inner2.send(CellChannel::Exit) {
         error!("Error while sending exit code: {}", err);
       };
       break;
-    } else {
-      info!("Not yet over");
     }
   });
 
