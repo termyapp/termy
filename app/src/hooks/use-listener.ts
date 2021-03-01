@@ -1,5 +1,5 @@
+import { ipc } from '@src/utils'
 import { useEffect } from 'react'
-import { ipc } from '../utils'
 
 export default function useListener(
   channel: string,
