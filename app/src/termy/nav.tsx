@@ -11,13 +11,27 @@ interface Props {
 
 export default function Nav({ tabs, activeTab }: Props) {
   const dispatch = useStore(state => state.dispatch)
+  const isMaximized = useStore(state => state.windowInfo.isMaximized)
 
   const sendWindowsMessage = (action: WindowAction) => () => {
     ipc.invoke({ type: 'window-action', action })
   }
 
+  const controlItems = [
+    {
+      icon: 'minimize-window',
+      onClick: sendWindowsMessage('minimize'),
+    },
+    {
+      icon: isMaximized ? 'restore-window' : 'maximize-window',
+      onClick: sendWindowsMessage(isMaximized ? 'unmaximize' : 'maximize'),
+    },
+    { icon: 'close-window', onClick: sendWindowsMessage('close') },
+  ]
+
   return (
     <Flex
+      as="nav"
       className="header"
       css={{
         height: navHeight,
@@ -79,17 +93,7 @@ export default function Nav({ tabs, activeTab }: Props) {
 
       {!isMac && (
         <Div css={{ display: 'flex', alignItems: 'center' }}>
-          {[
-            {
-              icon: 'minimize-window',
-              onClick: sendWindowsMessage('minimize'),
-            },
-            {
-              icon: 'maximize-window',
-              onClick: sendWindowsMessage('maximize'),
-            },
-            { icon: 'close-window', onClick: sendWindowsMessage('close') },
-          ].map(item => (
+          {controlItems.map(item => (
             <Div key={item.icon} onClick={item.onClick}>
               <Div
                 as="svg"
