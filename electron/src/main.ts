@@ -12,6 +12,7 @@ function init() {
   contextMenu()
 
   app.on('ready', () => {
+    initIpc()
     createWindow()
   })
 
@@ -29,5 +30,4 @@ function init() {
   })
 }
 
-initIpc()
 init()

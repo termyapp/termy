@@ -23,7 +23,6 @@ export const initIpc = (): any | Promise<any> => {
         const info: WindowInfo = {
           isMaximized: window.isMaximized(),
         }
-        console.log('infooo', info)
         return info
       }
       case 'api': {
@@ -89,7 +88,6 @@ export const initIpc = (): any | Promise<any> => {
         const info: WindowInfo = {
           isMaximized: window.isMaximized(),
         }
-        console.log('infooo', info)
         returnValue = info
         break
       }
@@ -158,7 +156,6 @@ const handleRunCell = (message: RunCell, window: TermyWindow): boolean => {
       console.error('Error while receiving server message:', args)
       return
     } else {
-      console.log('received', receivedMessage)
       // send message to app
       window.webContents.send(id, receivedMessage)
 
