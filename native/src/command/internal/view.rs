@@ -20,8 +20,12 @@ pub fn view(path: CrossPath) -> Result<String> {
       })
       .collect();
 
+    if json.len() == 0 {
+      return Ok(format!("Folder is empty"));
+    }
+
     let json = serde_json::to_string(&json).unwrap();
-    return Ok(format!("<Table json=\"{}\" />", base64::encode(json)));
+    Ok(format!("<Table json=\"{}\" />", base64::encode(json)))
   } else if path.buf.is_file() {
     let extension = path.buf.extension().unwrap_or_default();
     let content = fs::read_to_string(&path.buf)?;
