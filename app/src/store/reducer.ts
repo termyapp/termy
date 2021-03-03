@@ -186,6 +186,6 @@ export default function reducer(state: State, action: Action) {
       }
     }
 
-    saveState(JSON.stringify(draft))
+    saveState(draft)
   })
 }

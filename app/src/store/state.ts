@@ -25,15 +25,15 @@ export const getDefaultState = (): State => {
   const item = window.localStorage.getItem(TERMY_STATE)
   if (item) {
     const state = JSON.parse(item)
-    console.info('Restoring state from local storate', state)
+    console.info('restoring state from local storate', state)
     return state
   } else {
     return defaultState
   }
 }
 
-export const saveState = (value: string) => {
-  window.localStorage.setItem(TERMY_STATE, value)
+export const saveState = (state: State) => {
+  window.localStorage.setItem(TERMY_STATE, JSON.stringify(state))
 }
 
 const TERMY_STATE = 'TERMY_STATE'
