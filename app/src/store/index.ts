@@ -14,4 +14,6 @@ const useStore: UseStore<Store> = create(
   devtools(redux(reducer, createState())),
 )
 
+export const dispatchSelector = (state: Store) => state.dispatch
+
 export default useStore

@@ -1,4 +1,6 @@
 export { default as useDebounce } from './use-debounce'
-export { default as useXterm } from './use-xterm'
-export { default as useMousetrap } from './use-mousetrap'
+export { default as useGlobalShortcuts } from './use-global-shortcuts'
 export { default as useListener } from './use-listener'
+export { default as useMousetrap } from './use-mousetrap'
+export { default as useWindowInfo } from './use-window-info'
+export { default as useXterm } from './use-xterm'

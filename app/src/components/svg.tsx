@@ -1,3 +1,4 @@
+import React from 'react'
 import { styled } from '../stitches.config'
 
 export const Svg = styled.svg({
@@ -11,15 +12,24 @@ export const Svg = styled.svg({
 type SvgProps = React.ComponentProps<typeof Svg>
 
 export const Folder = ({ css = {} }: SvgProps) => (
-  <Svg
-    css={{
-      // @ts-ignore
-      ...css,
-    }}
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 512 512"
-  >
+  <Svg css={css} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
     <title>Folder Open</title>
     <path d="M408 96H252.11a23.89 23.89 0 01-13.31-4L211 73.41A55.77 55.77 0 00179.89 64H104a56.06 56.06 0 00-56 56v24h416c0-30.88-25.12-48-56-48zM423.75 448H88.25a56 56 0 01-55.93-55.15L16.18 228.11v-.28A48 48 0 0164 176h384.1a48 48 0 0147.8 51.83v.28l-16.22 164.74A56 56 0 01423.75 448zm56.15-221.45z" />
+  </Svg>
+)
+
+export const Plus = ({ css = {} }: SvgProps) => (
+  <Svg
+    css={css}
+    viewBox="0 0 15 15"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z"
+      fill="currentColor"
+      fillRule="evenodd"
+      clipRule="evenodd"
+    ></path>
   </Svg>
 )

@@ -1,14 +1,39 @@
-import { useListener } from '@src/hooks'
+import { useMonaco } from '@monaco-editor/react'
+import { useGlobalShortcuts, useWindowInfo } from '@src/hooks'
+import { css, globalStyles } from '@src/stitches.config'
 import useStore from '@src/store'
-import React from 'react'
-import type { WindowInfo } from 'types/shared'
-import Terminal from './terminal'
+import { getThemeData, loadMonaco } from '@src/utils'
+import React, { useEffect, useMemo } from 'react'
+import shallow from 'zustand/shallow'
+import { TERMY } from './input'
+import Tabs from './tabs'
+
+loadMonaco()
 
 export default function Termy() {
-  const dispatch = useStore(state => state.dispatch)
-  useListener('window-info', (_, info: WindowInfo) => {
-    dispatch({ type: 'update-window-info', info })
-  })
+  const tabs = useStore(state => Object.keys(state.tabs), shallow)
+  const activeTab = useStore(state => state.activeTab)
 
-  return <Terminal />
+  const theme = useStore(state => state.theme)
+
+  useMemo(() => globalStyles(), [])
+  const themeClass = useMemo(() => css.theme(theme), [theme])
+
+  useEffect(() => {
+    document.body.className = themeClass
+  }, [themeClass])
+
+  const monaco = useMonaco()
+
+  // update monaco theme
+  useEffect(() => {
+    monaco?.editor.defineTheme(TERMY, getThemeData(theme))
+    monaco?.editor.setTheme(TERMY) // force re-render
+  }, [theme, monaco])
+
+  useWindowInfo()
+  useGlobalShortcuts()
+
+  // composition: Tabs -> Tab (only displaying active Tab) -> Cell(s)
+  return <Tabs tabs={tabs} activeTab={activeTab} />
 }
