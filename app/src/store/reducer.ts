@@ -177,6 +177,13 @@ export default function reducer(state: State, action: Action) {
         draft.theme = getTheme(action.theme)
         break
       }
+      case 'update-window-info': {
+        draft.windowInfo = action.info
+        break
+      }
+      default: {
+        console.error('Invalid action: ', action)
+      }
     }
   })
 }

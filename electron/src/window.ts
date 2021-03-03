@@ -6,6 +6,7 @@ import installExtension, {
 import isDev from 'electron-is-dev'
 import electronLocalshortcut from 'electron-localshortcut'
 import path from 'path'
+import type { WindowInfo } from 'types/shared'
 import { getWindowPosition, recordWindowPosition } from './config'
 
 const isMac = process.platform === 'darwin'
@@ -38,7 +39,7 @@ export const createWindow = async (): Promise<TermyWindow> => {
 
   await window.loadURL(getUrl())
 
-  // todo: Window.updateAppAboutWindowInfo(window)
+  Window.updateWindowInfo(window)
   Window.handleNewWindow(window)
   Window.setupDevTools(window)
   Window.disableRefresh(window)
@@ -48,10 +49,18 @@ export const createWindow = async (): Promise<TermyWindow> => {
 }
 
 const Window = {
-  // updateAppAboutWindowInfo: (window: TermyWindow): void => {
-  //   // todo: listen for settings/ismaximized onchange and update accordingly
-  //   console.log('here', info)
-  // },
+  updateWindowInfo: (window: TermyWindow): void => {
+    window.on('maximize', () => {
+      window.webContents.send('window-info', {
+        isMaximized: true,
+      } as WindowInfo)
+    })
+    window.on('unmaximize', () => {
+      window.webContents.send('window-info', {
+        isMaximized: false,
+      } as WindowInfo)
+    })
+  },
   handleNewWindow: (window: TermyWindow): void => {
     // open urls in external browser
     window.webContents.on('new-window', (event, url) => {
