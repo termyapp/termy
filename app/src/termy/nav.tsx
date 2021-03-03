@@ -45,6 +45,7 @@ export default function Nav({ tabs, activeTab }: Props) {
         {tabs.length > 1 &&
           tabs.map((id, i) => (
             <Flex
+              className="no-drag"
               key={id}
               css={{
                 width: '100%',
@@ -69,6 +70,7 @@ export default function Nav({ tabs, activeTab }: Props) {
       </Flex>
 
       <Flex
+        className="no-drag"
         onClick={() => dispatch({ type: 'new-tab' })}
         css={{
           width: '15px',
