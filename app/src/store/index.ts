@@ -2,7 +2,7 @@ import create, { UseStore } from 'zustand'
 import { devtools, redux } from 'zustand/middleware'
 import type { Action } from './reducer'
 import reducer from './reducer'
-import { createState, State } from './state'
+import { getDefaultState, State } from './state'
 
 interface Store extends State {
   dispatch: (action: Action) => void
@@ -11,7 +11,7 @@ interface Store extends State {
 // @ts-ignore
 const useStore: UseStore<Store> = create(
   // @ts-ignore
-  devtools(redux(reducer, createState())),
+  devtools(redux(reducer, getDefaultState())),
 )
 
 export const dispatchSelector = (state: Store) => state.dispatch

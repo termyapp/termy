@@ -2,12 +2,14 @@ import { useDebounce } from '@hooks'
 import useStore, { dispatchSelector } from '@src/store'
 import { isMac } from '@src/utils'
 import type { CellWithActive, XtermSize } from '@types'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 
 const SHORTCUTS = ['r', 't', 's', 'n', 'w', 'j', 'k']
+
+const fitAddon = new FitAddon()
 
 export default function useXterm({ id, status, active, type }: CellWithActive) {
   const theme = useStore(state => state.theme)
@@ -17,8 +19,6 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
 
   let terminalRef = useRef<Terminal | null>(null)
   let terminalContainerRef = useRef<HTMLDivElement>(null)
-
-  const fitAddon = new FitAddon()
 
   const over = status !== 'running'
 
@@ -79,7 +79,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
   // debounced onResize
   const [, cancel] = useDebounce(
     () => {
-      if (!terminalRef.current || type !== 'text') return
+      if (!terminalRef.current || type !== 'text' || !active) return
       console.log('resize', size)
 
       terminalRef.current.loadAddon(fitAddon)
@@ -90,7 +90,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
       dispatch({ type: 'frontend-message', id, action: { resize: size } })
     },
     50,
-    [size, id, type],
+    [size, id, type, active],
   )
 
   // update theme

@@ -9,7 +9,7 @@ import type {
 import produce from 'immer'
 import { v4 } from 'uuid'
 import { getDefaultCell, nextOrLast, nextOrPrevious } from './helpers'
-import type { State } from './state'
+import { saveState, State } from './state'
 
 // todo: https://artsy.github.io/blog/2018/11/21/conditional-types-in-typescript/
 export type Action =
@@ -185,5 +185,7 @@ export default function reducer(state: State, action: Action) {
         console.error('Invalid action: ', action)
       }
     }
+
+    saveState(JSON.stringify(draft))
   })
 }
