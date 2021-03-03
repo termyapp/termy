@@ -34,7 +34,7 @@ export const loadMonaco = () => {
       let label: unknown = suggestion.label
 
       // todo: move this into resolveCompletionItem (or to native)
-      const tldr = ipc.sendSync('message', {
+      const tldr = ipc.sync({
         type: 'tldr',
         command: suggestion.label,
       })
@@ -74,12 +74,12 @@ export const loadMonaco = () => {
         const cellId = model.uri.authority
         const currentDir = useStore.getState().cells[cellId].currentDir
 
-        const rawSuggestions: NativeSuggestion[] = await ipc.invoke(
-          'suggestions',
+        const rawSuggestions: NativeSuggestion[] = await ipc.invoke({
+          type: 'autocomplete',
           value,
           currentDir,
-        )
-        console.log(rawSuggestions)
+        })
+
         let suggestions: Monaco.languages.CompletionItem[] = [
           ...getTypedCliSuggestions(value).map(suggestionToCompletionItem),
           ...rawSuggestions.map(suggestionToCompletionItem),

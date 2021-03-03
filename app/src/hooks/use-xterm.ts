@@ -1,6 +1,6 @@
 import { useDebounce } from '@hooks'
 import useStore from '@src/store'
-import { ipc, isMac } from '@src/utils'
+import { isMac } from '@src/utils'
 import type { CellWithActive, Message, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
 import type { Terminal } from 'xterm'
@@ -11,6 +11,7 @@ const SHORTCUTS = ['r', 't', 's', 'n', 'w', 'j', 'k']
 
 export default function useXterm({ id, status, active, type }: CellWithActive) {
   const theme = useStore(state => state.theme)
+  const dispatch = useStore(state => state.dispatch)
 
   const [size, setSize] = useState<XtermSize>()
 
@@ -35,7 +36,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
       else if (e.metaKey && e.key === 'v') {
         // paste
         navigator.clipboard.readText().then(text =>
-          ipc.send('message', {
+          dispatch({
             type: 'frontend-message',
             id,
             action: { write: text },
@@ -48,13 +49,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
     terminal.onKey(({ key, domEvent }) => {
       if (!terminal.getOption('disableStdin')) {
         console.log('key', key.charCodeAt(0))
-
-        const message: Message = {
-          type: 'frontend-message',
-          id,
-          action: { write: key },
-        }
-        ipc.send('message', message)
+        dispatch({ type: 'frontend-message', id, action: { write: key } })
       }
     })
 
@@ -92,12 +87,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
 
       // pty only lives as long as it's not over
       if (over || !size) return
-      const message: Message = {
-        type: 'frontend-message',
-        id,
-        action: { resize: size },
-      }
-      ipc.send('message', message)
+      dispatch({ type: 'frontend-message', id, action: { resize: size } })
     },
     50,
     [size, id, type],

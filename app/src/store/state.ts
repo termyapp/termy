@@ -1,7 +1,7 @@
 import type { darkTheme } from '@src/themes'
 import { v4 } from 'uuid'
-import type { Cell } from '../../types'
-import { getTheme, isDev } from '../utils'
+import type { Cell, WindowInfo } from '../../types'
+import { getTheme, ipc, isDev } from '../utils'
 import { getDefaultCell } from './helpers'
 
 export interface Tab {
@@ -10,6 +10,7 @@ export interface Tab {
 }
 
 export interface State {
+  windowInfo: WindowInfo
   tabs: {
     [id: string]: Tab
   }
@@ -25,6 +26,7 @@ export const createState = (): State => {
   const cell = { ...getDefaultCell(), value: 'shortcuts' }
 
   const state: State = {
+    windowInfo: ipc.sync({ type: 'get-window-info' }) as WindowInfo,
     tabs: {
       [tab]: {
         cells: [cell.id],

@@ -76,6 +76,10 @@ Critical dependency: the request of a dependency is an expression
 
 ## App Warnings
 
+### Dev Tools not working
+
+To hide the messages in the console, filter them using `-devtools` flag.
+
 ### Source maps not loading
 
 To hide them, disable source maps in electron's chrome settings.

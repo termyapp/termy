@@ -32,14 +32,13 @@
     }
   },
   "devDependencies": {
-    "@types/electron-devtools-installer": "^2.2.0",
     "@types/electron-localshortcut": "^3.1.0",
     "copy-webpack-plugin": "^7.0.0",
     "cross-env": "^7.0.2",
     "electron": "^11.3.0",
     "electron-builder": "^22.9.1",
     "electron-context-menu": "^2.4.0",
-    "electron-devtools-installer": "^3.1.1",
+    "electron-devtools-installer": "git+https://github.com/MarshallOfSound/electron-devtools-installer.git",
     "electron-is-dev": "^1.2.0",
     "electron-localshortcut": "^3.2.1",
     "fix-path": "^3.0.0",

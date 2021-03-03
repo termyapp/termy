@@ -1,7 +1,7 @@
 import { Div, Flex, Svg } from '@components'
 import useStore from '@src/store'
 import { ipc, isMac } from '@src/utils'
-import type { WindowMessage } from '@types'
+import type { WindowAction } from '@types'
 import React from 'react'
 
 interface Props {
@@ -12,8 +12,9 @@ interface Props {
 export default function Nav({ tabs, activeTab }: Props) {
   const dispatch = useStore(state => state.dispatch)
 
-  const sendWindowsMessage = (message: WindowMessage) => () =>
-    ipc.send('window', message)
+  const sendWindowsMessage = (action: WindowAction) => () => {
+    ipc.invoke({ type: 'window-action', action })
+  }
 
   return (
     <Flex

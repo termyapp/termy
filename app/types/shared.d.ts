@@ -16,13 +16,17 @@ export interface FrontendMessage {
 
 export type Message =
   | { type: 'api'; command: string } // todo: create types for the api
+  | { type: 'autocomplete'; value: string; currentDir: string }
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
   | { type: 'tldr'; command: string }
   | { type: 'write'; path: string; value: string }
+  | { type: 'get-window-info' }
+  | { type: 'window-action'; action: WindowAction }
+
+export type WindowAction = 'minimize' | 'maximize' | 'unmaximize' | 'close'
 
 export interface ServerMessage {
-  id: string
   action?: [ActionKeys, string][]
   text?: number[]
   mdx?: string
@@ -51,4 +55,6 @@ export type SuggestionKind =
   | 'executable'
   | 'externalHistory'
 
-export type WindowMessage = 'minimize' | 'maximize' | 'unmaximize' | 'close'
+export interface WindowInfo {
+  isMaximized: boolean
+}

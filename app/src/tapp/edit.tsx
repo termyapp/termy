@@ -1,8 +1,8 @@
-import React from 'react'
 import Editor from '@monaco-editor/react'
 import { Div } from '@src/components'
 import { ipc } from '@src/utils'
 import type { Message } from '@types'
+import React from 'react'
 
 interface Props {
   path: string
@@ -32,7 +32,7 @@ export default function Edit({ path, value, language }: Props) {
             // save
             editor.addCommand(KeyMod.CtrlCmd | KeyCode.KEY_S, () => {
               const value = editor.getModel()?.getValue()
-              ipc.sendSync('message', {
+              ipc.sync({
                 type: 'write',
                 path,
                 value,

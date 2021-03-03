@@ -11,7 +11,7 @@ export default function useListener(
     ipc.on(channel, listener)
 
     return () => {
-      ipc.removeListener(channel, listener)
+      ipc.removeAllListeners(channel)
     }
-  }, [channel, listener, ...deps])
+  }, [channel, ...deps])
 }
