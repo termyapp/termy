@@ -6,6 +6,7 @@ import installExtension, {
 import isDev from 'electron-is-dev'
 import electronLocalshortcut from 'electron-localshortcut'
 import path from 'path'
+import { getWindowPosition, recordWindowPosition } from './config'
 
 const isMac = process.platform === 'darwin'
 
@@ -15,9 +16,8 @@ export interface TermyWindow extends BrowserWindow {
 
 // todo: menu — include shift in zoom accelerators
 export const createWindow = async (): Promise<TermyWindow> => {
+  const { position, size } = getWindowPosition()
   const window = new BrowserWindow({
-    minWidth: 370,
-    minHeight: 190,
     title: 'Termy',
     titleBarStyle: 'hiddenInset',
     frame: isMac,
@@ -27,6 +27,12 @@ export const createWindow = async (): Promise<TermyWindow> => {
       preload: getPreloadPath(),
       contextIsolation: true,
     },
+    width: size[0],
+    height: size[1],
+    x: position[0],
+    y: position[1],
+    minWidth: 370,
+    minHeight: 190,
   }) as TermyWindow
   window.runningCells = {}
 
@@ -36,6 +42,7 @@ export const createWindow = async (): Promise<TermyWindow> => {
   Window.handleNewWindow(window)
   Window.setupDevTools(window)
   Window.disableRefresh(window)
+  recordWindowPosition(window)
 
   return window
 }

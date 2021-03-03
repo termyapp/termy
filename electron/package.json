@@ -41,6 +41,7 @@
     "electron-devtools-installer": "git+https://github.com/MarshallOfSound/electron-devtools-installer.git",
     "electron-is-dev": "^1.2.0",
     "electron-localshortcut": "^3.2.1",
+    "electron-store": "^7.0.2",
     "fix-path": "^3.0.0",
     "node-loader": "^1.0.2",
     "request": "^2.88.2",
