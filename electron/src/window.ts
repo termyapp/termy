@@ -1,17 +1,20 @@
-import type { WindowMessage } from '@shared'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
-import debug from 'electron-debug'
+import { app, BrowserWindow, shell } from 'electron'
 import installExtension, {
   REACT_DEVELOPER_TOOLS,
   REDUX_DEVTOOLS,
 } from 'electron-devtools-installer'
 import isDev from 'electron-is-dev'
+import electronLocalshortcut from 'electron-localshortcut'
 import path from 'path'
 
 const isMac = process.platform === 'darwin'
 
+export interface TermyWindow extends BrowserWindow {
+  runningCells: { [key: string]: any }
+}
+
 // todo: menu — include shift in zoom accelerators
-export const createWindow = async (): Promise<BrowserWindow> => {
+export const createWindow = async (): Promise<TermyWindow> => {
   const window = new BrowserWindow({
     minWidth: 370,
     minHeight: 190,
@@ -21,66 +24,71 @@ export const createWindow = async (): Promise<BrowserWindow> => {
     transparent: isMac,
     acceptFirstMouse: true,
     webPreferences: {
-      preload: path.resolve(
-        app.getAppPath(),
-        isDev ? './preload.js' : 'build/preload.js',
-      ),
-      nodeIntegration: false,
-      // todo: https://www.electronjs.org/docs/tutorial/context-isolation
-      // currently this would break the ipc communcication
-      // contextIsolation: true,
-      // worldSafeExecuteJavaScript: true,
+      preload: getPreloadPath(),
+      contextIsolation: true,
     },
-  })
+  }) as TermyWindow
+  window.runningCells = {}
 
-  ipcMain.on('window', (event, message: WindowMessage) => {
-    console.log('window message', message)
-    switch (message) {
-      case 'minimize':
-        window.minimize()
-        break
-      case 'maximize':
-        window.isMaximized() ? window.unmaximize() : window.maximize()
-        break
-      // case 'unmaximize':
-      //   window.unmaximize()
-      //   break
-      case 'close':
-        window.close()
-        break
-      default:
-        console.log(`Invalid window message: ${message}`)
-        break
-    }
-  })
+  await window.loadURL(getUrl())
 
-  await window.loadURL(
-    isDev
-      ? 'http://localhost:4242'
-      : `file://${path.join(app.getAppPath(), 'build/index.html')}`,
-  )
+  // todo: Window.updateAppAboutWindowInfo(window)
+  Window.handleNewWindow(window)
+  Window.setupDevTools(window)
+  Window.disableRefresh(window)
 
-  // open urls in external browser
-  window.webContents.on('new-window', (e, url) => {
-    e.preventDefault()
-    shell.openExternal(url)
-  })
+  return window
+}
 
-  window.webContents.on('did-frame-finish-load', async () => {
+const Window = {
+  // updateAppAboutWindowInfo: (window: TermyWindow): void => {
+  //   // todo: listen for settings/ismaximized onchange and update accordingly
+  //   console.log('here', info)
+  // },
+  handleNewWindow: (window: TermyWindow): void => {
+    // open urls in external browser
+    window.webContents.on('new-window', (event, url) => {
+      const protocol = new URL(url).protocol
+      if (protocol === 'http:' || protocol === 'https:') {
+        event.preventDefault()
+        shell.openExternal(url)
+      }
+    })
+  },
+  setupDevTools: async (window: TermyWindow) => {
     if (isDev) {
-      debug()
-
       window.webContents.openDevTools()
       try {
-        // doesn't work on >=9: https://github.com/electron/electron/issues/23662
-        // this is the only reason for using electron 8
-        await installExtension(REACT_DEVELOPER_TOOLS)
-        await installExtension(REDUX_DEVTOOLS)
+        // todo:
+        // const extensions = [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS]
+        // await installExtension(extensions, {
+        //   loadExtensionOptions: { allowFileAccess: true },
+        // })
       } catch (error) {
         console.error(error)
       }
     }
-  })
+  },
+  disableRefresh: (window: TermyWindow): void => {
+    // until we don't have a custom menu
+    window.on('focus', () => {
+      electronLocalshortcut.register(
+        window,
+        ['CommandOrControl+R', 'CommandOrControl+Shift+R', 'F5'],
+        () => {},
+      )
+    })
 
-  return window
+    window.on('blur', () => {
+      electronLocalshortcut.unregisterAll(window)
+    })
+  },
 }
+
+const getUrl = () =>
+  isDev
+    ? 'http://localhost:4242'
+    : `file://${path.join(app.getAppPath(), 'build/index.html')}`
+
+const getPreloadPath = () =>
+  path.resolve(app.getAppPath(), isDev ? './preload.js' : 'build/preload.js')

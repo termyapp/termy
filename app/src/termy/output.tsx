@@ -17,7 +17,7 @@ export default function Output(cell: CellWithActive) {
   const { terminalContainerRef, terminalRef } = useXterm(cell)
 
   useListener(
-    `message-${id}`,
+    id,
     (_, message: ServerMessage) => {
       console.log('received', message)
       for (const [key, value] of Object.entries(message)) {
@@ -80,7 +80,7 @@ export default function Output(cell: CellWithActive) {
         }
       }
     },
-    [type],
+    [id, type, dispatch],
   )
 
   const focusMdx = () => {} // todo: focus

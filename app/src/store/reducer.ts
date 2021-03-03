@@ -1,8 +1,14 @@
 import { getTheme, ipc } from '@src/utils'
-import type { Cell, Message, ThemeMode } from '@types'
+import type {
+  Cell,
+  FrontendMessage,
+  Message,
+  ThemeMode,
+  WindowInfo,
+} from '@types'
 import produce from 'immer'
 import { v4 } from 'uuid'
-import { getDefaultCell, killCell, nextOrLast, nextOrPrevious } from './helpers'
+import { getDefaultCell, nextOrLast, nextOrPrevious } from './helpers'
 import type { State } from './state'
 
 // todo: https://artsy.github.io/blog/2018/11/21/conditional-types-in-typescript/
@@ -15,9 +21,11 @@ export type Action =
   | { type: 'run-cell'; id?: string }
   | { type: 'kill-cell'; id?: string }
   | { type: 'resume-cell'; id?: string }
+  | ({ type: 'frontend-message' } & FrontendMessage)
   | { type: 'set-theme'; theme: ThemeMode }
   | { type: 'focus-cell'; id: string | 'next' | 'previous' }
   | { type: 'focus-tab'; id: string | 'next' | 'previous' }
+  | { type: 'update-window-info'; info: WindowInfo }
 
 export default function reducer(state: State, action: Action) {
   return produce(state, draft => {
@@ -142,12 +150,12 @@ export default function reducer(state: State, action: Action) {
           value: cell.value,
           currentDir: cell.currentDir,
         }
-        ipc.send('message', message)
+        ipc.invoke(message)
         break
       }
       case 'kill-cell': {
         const id = action.id ?? draft.tabs[draft.activeTab].activeCell
-        killCell(id)
+        ipc.invoke({ type: 'frontend-message', id, action: 'kill' })
         break
       }
       case 'resume-cell': {
@@ -158,7 +166,11 @@ export default function reducer(state: State, action: Action) {
           id,
           action: 'resume',
         }
-        ipc.send('message', message)
+        ipc.invoke(message)
+        break
+      }
+      case 'frontend-message': {
+        ipc.invoke(action)
         break
       }
       case 'set-theme': {

@@ -1,25 +1,16 @@
-import { api, ipc } from '@src/utils'
-import type { Cell, Message } from '@types'
+import { ipc } from '@src/utils'
+import type { Cell } from '@types'
 import { v4 } from 'uuid'
 
 export const getDefaultCell = (): Cell => {
   const id = v4()
   return {
     id,
-    currentDir: api('home'),
+    currentDir: ipc.sync({ type: 'api', command: 'home' }),
     value: '',
     type: null,
     status: null,
   }
-}
-
-export const killCell = (id: string) => {
-  const message: Message = {
-    type: 'frontend-message',
-    id,
-    action: 'kill',
-  }
-  ipc.send('message', message)
 }
 
 export const nextOrLast = (key: string, keys: string[]) => {

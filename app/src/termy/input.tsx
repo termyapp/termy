@@ -84,14 +84,10 @@ export default function Input({
                   dispatch({ type: 'run-cell', id })
                 })
 
-                editor.addCommand(
-                  KeyMod.CtrlCmd | KeyCode.Enter,
-                  () => {
-                    editor.trigger('', 'acceptSelectedSuggestion', {})
-                    dispatch({ type: 'run-cell', id })
-                  },
-                  'suggestWidgetVisible',
-                )
+                editor.addCommand(KeyMod.CtrlCmd | KeyCode.Enter, () => {
+                  editor.trigger('', 'acceptSelectedSuggestion', {})
+                  dispatch({ type: 'run-cell', id })
+                })
 
                 editor.addCommand(
                   KeyCode.Tab,

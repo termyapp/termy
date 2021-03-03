@@ -16,13 +16,6 @@ module.exports = {
       static: true,
       resolve: false,
     },
-
-    // https://github.com/suren-atoyan/monaco-react/issues/12
-    // '../external/monaco-editor/min-maps': {
-    //   url: '/min-maps',
-    //   static: true,
-    //   resolve: false,
-    // },
   },
   plugins: [
     // '@snowpack/plugin-react-refresh',

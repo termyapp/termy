@@ -1,5 +1,5 @@
+import { ipc } from '@src/utils'
 import { useEffect } from 'react'
-import { ipc } from '../utils'
 
 export default function useListener(
   channel: string,
@@ -11,7 +11,7 @@ export default function useListener(
     ipc.on(channel, listener)
 
     return () => {
-      ipc.removeListener(channel, listener)
+      ipc.removeAllListeners(channel)
     }
-  }, [channel, listener, ...deps])
+  }, [channel, ...deps])
 }
