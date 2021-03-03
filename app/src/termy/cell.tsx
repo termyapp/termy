@@ -1,8 +1,7 @@
+import useStore, { dispatchSelector } from '@src/store'
 import React, { useCallback, useEffect } from 'react'
-import shallow from 'zustand/shallow'
 import { Flex } from '../components'
 import { styled } from '../stitches.config'
-import useStore from '../store'
 import Output from './output'
 import Prompt from './prompt'
 
@@ -13,11 +12,8 @@ interface Props {
 }
 
 export default function Cell({ id, active, showBorder }: Props) {
-  const cell = useStore(
-    useCallback(state => state.cells[id], [id]),
-    shallow,
-  )
-  const dispatch = useStore(state => state.dispatch)
+  const cell = useStore(useCallback(state => state.cells[id], [id]))
+  const dispatch = useStore(dispatchSelector)
 
   // run initial cell on mount
   useEffect(() => {

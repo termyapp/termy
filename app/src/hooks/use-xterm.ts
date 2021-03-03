@@ -1,7 +1,7 @@
 import { useDebounce } from '@hooks'
-import useStore from '@src/store'
+import useStore, { dispatchSelector } from '@src/store'
 import { isMac } from '@src/utils'
-import type { CellWithActive, Message, XtermSize } from '@types'
+import type { CellWithActive, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
@@ -11,7 +11,7 @@ const SHORTCUTS = ['r', 't', 's', 'n', 'w', 'j', 'k']
 
 export default function useXterm({ id, status, active, type }: CellWithActive) {
   const theme = useStore(state => state.theme)
-  const dispatch = useStore(state => state.dispatch)
+  const dispatch = useStore(dispatchSelector)
 
   const [size, setSize] = useState<XtermSize>()
 

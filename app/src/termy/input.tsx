@@ -1,10 +1,10 @@
 import Editor from '@monaco-editor/react'
+import useStore, { dispatchSelector } from '@src/store'
 // only import it as type, otherwise it overrides @monaco-editor/react instance
 import type * as Monaco from 'monaco-editor'
 import React, { useEffect, useRef } from 'react'
 import type { CellWithActive } from '../../types'
 import { Div } from '../components'
-import useStore from '../store'
 
 export const TERMY = 'shell'
 
@@ -15,7 +15,7 @@ export default function Input({
   status,
   active,
 }: CellWithActive) {
-  const dispatch = useStore(state => state.dispatch)
+  const dispatch = useStore(dispatchSelector)
   const theme = useStore(state => state.theme)
 
   const currentDirRef = useRef<string>(currentDir)

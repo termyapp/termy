@@ -1,13 +1,13 @@
 import { Div } from '@components'
 import { useListener, useXterm } from '@hooks'
 import { styled } from '@src/stitches.config'
-import useStore from '@src/store'
+import useStore, { dispatchSelector } from '@src/store'
 import type { CellWithActive, ServerMessage, ThemeMode } from '@types'
 import React, { useEffect, useState } from 'react'
 import Mdx from './mdx'
 
 export default function Output(cell: CellWithActive) {
-  const dispatch = useStore(state => state.dispatch)
+  const dispatch = useStore(dispatchSelector)
   const { id, type, status } = cell
 
   // mdx

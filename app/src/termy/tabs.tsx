@@ -1,5 +1,5 @@
-import { Div, Flex, Plus, Svg } from '@components'
-import useStore from '@src/store'
+import { Div, Flex, Plus } from '@components'
+import useStore, { dispatchSelector } from '@src/store'
 import { ipc, isMac } from '@src/utils'
 import type { WindowAction } from '@types'
 import React from 'react'
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function Tabs({ tabs, activeTab }: Props) {
-  const dispatch = useStore(state => state.dispatch)
+  const dispatch = useStore(dispatchSelector)
   const isMaximized = useStore(state => state.windowInfo.isMaximized)
 
   const sendWindowsMessage = (action: WindowAction) => () => {

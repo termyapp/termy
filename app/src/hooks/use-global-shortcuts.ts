@@ -1,8 +1,8 @@
-import useStore from '@src/store'
+import useStore, { dispatchSelector } from '@src/store'
 import { useMousetrap } from './'
 
 export default function useGlobalShortcuts() {
-  const dispatch = useStore(state => state.dispatch)
+  const dispatch = useStore(dispatchSelector)
 
   useMousetrap('mod+t', () => {
     dispatch({ type: 'new-tab' })
