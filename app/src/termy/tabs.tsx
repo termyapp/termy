@@ -42,7 +42,14 @@ export default function Tabs({ tabs, activeTab }: Props) {
       {/* spacing */}
       {isMac && <Div css={{ width: '69px' }} />}
 
-      <Flex css={{ width: '100%', mb: '$1', alignItems: 'center' }}>
+      <Flex
+        css={{
+          width: '100%',
+          mb: '$1',
+          alignItems: 'center',
+          pr: '$8', // whitespace to be able to grab & move window
+        }}
+      >
         {tabs.map((id, i) => (
           // not that the current tab will display the cells (absolute positioned)
           <Tab key={id} id={id} index={i} activeTab={activeTab} />
