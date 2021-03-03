@@ -139,7 +139,7 @@ fn parse_value(value: &str, current_dir: &str) -> Command {
 }
 
 pub fn tokenize_value(value: &str) -> Vec<String> {
-  // todo: only replace if result is a valid path (eg. don't replace HEAD~)
+  // todo: #80
   // first alias: ~ -> $HOME
   let value = value.replace("~", &(CrossPath::home().to_string()));
 

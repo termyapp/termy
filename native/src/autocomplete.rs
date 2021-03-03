@@ -94,25 +94,23 @@ impl Autocomplete {
           Suggestion {
             label: name.clone(),
             insert_text: {
-              let name = if name.contains(char::is_whitespace) {
+              if name.contains(char::is_whitespace) {
                 // wrap name in quotes
-                format!("\"{}\"", name)
-              } else {
-                name
-              };
-
-              if is_dir {
+                let name = format!("\"{}\"", name);
+                if is_dir {
+                  Some(format!("{}/", name))
+                } else {
+                  Some(name)
+                }
+              } else if is_dir {
+                // append `/` at the end of dirs
                 Some(format!("{}/", name))
               } else {
                 None
               }
             },
             score: 100,
-            kind: if is_dir {
-              SuggestionType::Directory
-            } else {
-              SuggestionType::File
-            },
+            kind: SuggestionType::Directory,
             documentation: None,
             date: Some(
               entry
