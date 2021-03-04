@@ -110,7 +110,11 @@ impl Autocomplete {
               }
             },
             score: 100,
-            kind: SuggestionType::Directory,
+            kind: if is_dir {
+              SuggestionType::Directory
+            } else {
+              SuggestionType::File
+            },
             documentation: None,
             date: Some(
               entry
