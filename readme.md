@@ -16,7 +16,7 @@ There have been many shells (_bash, zsh, fish_) and many terminal emulators (_iT
 
 <br/>
 
-### Design
+### Concepts
 
 Termy is made up of cells. This user interface might be familiar to those who've used Jupyter Notebook before.
 
