@@ -30,8 +30,8 @@ export const createWindow = async (): Promise<TermyWindow> => {
     },
     width: size[0],
     height: size[1],
-    x: position[0],
-    y: position[1],
+    x: position[0] === -1 ? undefined : position[0], // if it's `-1` then don't set and
+    y: position[1] === -1 ? undefined : position[1], // let electron center it by default
     minWidth: 370,
     minHeight: 190,
   }) as TermyWindow

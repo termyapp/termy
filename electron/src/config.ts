@@ -3,8 +3,8 @@ import Store from 'electron-store'
 import { isValidPosition } from './utils'
 
 export const defaults = {
-  windowPosition: [50, 50],
-  windowSize: [540, 380],
+  windowPosition: [-1, -1],
+  windowSize: [800, 600],
 }
 
 export const getWindowPosition = (): { position: number[]; size: number[] } => {
