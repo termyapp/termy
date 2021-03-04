@@ -11,9 +11,6 @@ import Tabs from './tabs'
 loadMonaco()
 
 export default function Termy() {
-  const tabs = useStore(state => Object.keys(state.tabs), shallow)
-  const activeTab = useStore(state => state.activeTab)
-
   const theme = useStore(state => state.theme)
 
   useMemo(() => globalStyles(), [])
@@ -35,5 +32,5 @@ export default function Termy() {
   useGlobalShortcuts()
 
   // composition: Tabs -> Tab (only displaying active Tab) -> Cell(s)
-  return <Tabs tabs={tabs} activeTab={activeTab} />
+  return <Tabs />
 }

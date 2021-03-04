@@ -4,6 +4,8 @@ import type { Cell, WindowInfo } from '../../types'
 import { getTheme, ipc, isDev } from '../utils'
 import { getDefaultCell } from './helpers'
 
+const TERMY_STATE = 'TERMY_STATE'
+
 export interface Tab {
   cells: string[]
   activeCell: string
@@ -21,24 +23,27 @@ export interface State {
   theme: typeof darkTheme
 }
 
-export const getDefaultState = (): State => {
+export const getState = (): State => {
   const item = window.localStorage.getItem(TERMY_STATE)
   if (item) {
-    const state = JSON.parse(item)
-    console.info('restoring state from local storate', state)
-    return state
+    try {
+      console.info('restoring state from local storage')
+      const state: State = JSON.parse(item)
+      for (const id in state.cells) {
+        state.cells[id].status = null
+        state.cells[id].type = null
+      }
+      return state
+    } catch {
+      console.info("couldn't restore state from local storage")
+      return getDefaultState()
+    }
   } else {
-    return defaultState
+    return getDefaultState()
   }
 }
 
-export const saveState = (state: State) => {
-  window.localStorage.setItem(TERMY_STATE, JSON.stringify(state))
-}
-
-const TERMY_STATE = 'TERMY_STATE'
-
-const defaultState: State = (() => {
+export const getDefaultState = (): State => {
   const tab = v4()
   const cell = { ...getDefaultCell(), value: 'shortcuts' }
 
@@ -58,4 +63,8 @@ const defaultState: State = (() => {
   }
 
   return state
-})()
+}
+
+export const saveState = (state: Readonly<State>) => {
+  window.localStorage.setItem(TERMY_STATE, JSON.stringify(state))
+}

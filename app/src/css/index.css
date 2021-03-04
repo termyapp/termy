@@ -24,8 +24,10 @@ img {
   height: auto;
 }
 
+/* ---------------------------------------------------------------- */
+
 /* Make navbar draggable: https://stackoverflow.com/questions/44818508/how-do-i-move-a-frameless-window-in-electron-without-using-webkit-app-region */
-.header {
+.drag {
   -webkit-app-region: drag;
 }
 
@@ -33,10 +35,14 @@ img {
   -webkit-app-region: no-drag;
 }
 
+/* ---------------------------------------------------------------- */
+
 /* Hide scrollbar */
 ::-webkit-scrollbar {
   display: none;
 }
+
+/* ---------------------------------------------------------------- */
 
 /* Monaco-editor */
 .monaco-editor .view-overlays .current-line {
@@ -52,3 +58,5 @@ img {
 .monaco-editor .selectionHighlight {
   background-color: transparent !important;
 }
+
+/* ---------------------------------------------------------------- */

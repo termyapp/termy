@@ -902,6 +902,74 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
+"@radix-ui/number@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/number/-/number-0.0.1.tgz#07be7d2712aa26ed810fa185dfbc73abf70af6be"
+  integrity sha512-qkg9slhy28L8YFT12LpVg8YAHgzUfDtaiIU9cyPKOAsQwerx8BzzkBxAAn8rc9lb1Zi6hMpOrpt3CtOJ+o9b4g==
+
+"@radix-ui/primitive@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/primitive/-/primitive-0.0.1.tgz#402fe0e690d5ff970737689dbb5f24705d423889"
+  integrity sha512-Z8R0kdAZui8eYTuGY5oQUA0SU4jYq43m4bZW6Dw0B35fUp+U3r+pCrkj0EADJAPv1UaKNskSv/lrfRdC7719Rg==
+
+"@radix-ui/react-context@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-context/-/react-context-0.0.1.tgz#23524f0d605fe12ee806f6e1e3834d41988c7d3d"
+  integrity sha512-oNm8xrhzbCKu/Y6E80x+mbzNlF4v34avfTqj9ZvHQzRhTKAhlgGT7JRXT3aeV7vZj4M1ofsaj/b57pYPx+GKXw==
+
+"@radix-ui/react-id@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-id/-/react-id-0.0.1.tgz#f04627366a64c3ceab321258731dcb9515a31451"
+  integrity sha512-b6ihKYxBV/4B6A49NBRMYdHVpyvavk8QakFMm+6JFwQqad4iSPbJt8aN4wOeLyEfG97rDf6hVR1YdOuA/x85dg==
+
+"@radix-ui/react-polymorphic@0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-polymorphic/-/react-polymorphic-0.0.6.tgz#7cbadb346925d459984f540bab32403913f60ef0"
+  integrity sha512-M6VVxOLII8bdnKIYK9qDH8kO8/sYJXunA0VcNKlGJvD95GuolwypXGi3gLIHCqlAozHMFJ5hzy/Vsy/rCU8Glw==
+
+"@radix-ui/react-primitive@0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-primitive/-/react-primitive-0.0.5.tgz#2e56cf75ada56258458957ae930771e502f151b9"
+  integrity sha512-zZacpav02cmljSaBfuc/jTqJdsZmVSQsp9Eh03v6ksS/6sGmLga46cwztDzb2by/x2izodke5NdHrVOUNAMbeA==
+  dependencies:
+    "@radix-ui/react-polymorphic" "0.0.6"
+
+"@radix-ui/react-roving-focus@0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-roving-focus/-/react-roving-focus-0.0.6.tgz#806f1dce422e0738b737dc520e5c3fed187fcb67"
+  integrity sha512-Y5Ku+TGZW8LHvGUy4vQrSwI22XgYDPd3JZvxFmEh/d4YcJNSkLuPZOqPos7eoJzF6hQ95WvAEMbUgcuuBj7C3A==
+  dependencies:
+    "@radix-ui/number" "0.0.1"
+    "@radix-ui/react-context" "0.0.1"
+    "@radix-ui/react-id" "0.0.1"
+    "@radix-ui/react-use-controllable-state" "0.0.1"
+
+"@radix-ui/react-tabs@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-tabs/-/react-tabs-0.0.6.tgz#e963e789fb612c45dc4a29e0da1b74dc769967e3"
+  integrity sha512-PFkZIsmEQOZstWS10l7+IsrF4vLiWCdbTqBJQVw9zNXO2ayyXO+G5Q5Crs3gJAIcQRc4ZhmOiDPCpO3+eUqcIw==
+  dependencies:
+    "@radix-ui/primitive" "0.0.1"
+    "@radix-ui/react-context" "0.0.1"
+    "@radix-ui/react-id" "0.0.1"
+    "@radix-ui/react-polymorphic" "0.0.6"
+    "@radix-ui/react-primitive" "0.0.5"
+    "@radix-ui/react-roving-focus" "0.0.6"
+    "@radix-ui/react-use-callback-ref" "0.0.1"
+    "@radix-ui/react-use-controllable-state" "0.0.1"
+
+"@radix-ui/react-use-callback-ref@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-0.0.1.tgz#70c8fd7d6a146bf65860ae7d4915985aacc53acc"
+  integrity sha512-WNqLyGlHuxfghIPuKH1/1q/NNc+W2ve2S823syefD78btShmR6LJqpUXinn9X7uK7ih/pB3UySMmbTv9CWrb9A==
+
+"@radix-ui/react-use-controllable-state@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-0.0.1.tgz#e31ae3d52ce7db5bdae215008fe81f7eda701440"
+  integrity sha512-xWirTCesup7uyt7jDRkQDQbjKzlNq7B4y+FhHFjRF5ZThSVICdR30O4IXhfAs3gH0Of/6yLR+RnGPOwEui1bqQ==
+  dependencies:
+    "@radix-ui/react-use-callback-ref" "0.0.1"
+
 "@rollup/plugin-node-resolve@^8.4.0":
   version "8.4.0"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-node-resolve/-/plugin-node-resolve-8.4.0.tgz#261d79a680e9dc3d86761c14462f24126ba83575"
