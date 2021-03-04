@@ -1,5 +1,7 @@
 import Editor from '@monaco-editor/react'
 import { Div } from '@src/components'
+import useStore from '@src/store'
+import { TERMY } from '@src/termy/input'
 import { ipc } from '@src/utils'
 import type { Message } from '@types'
 import React from 'react'
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export default function Edit({ path, value, language }: Props) {
+  const theme = useStore(state => state.theme)
   value = decodeURIComponent(escape(atob(value))) // decode
 
   return (
@@ -23,6 +26,7 @@ export default function Edit({ path, value, language }: Props) {
     >
       <Editor
         key={path + value} // wouldn't rerender otherwise when running `edit` twice
+        theme={TERMY}
         defaultLanguage={language}
         defaultValue={value}
         onMount={(editor, monaco) => {
@@ -40,6 +44,11 @@ export default function Edit({ path, value, language }: Props) {
               console.log('saved', path, value)
             })
           }
+        }}
+        options={{
+          fontSize: 16,
+          suggestFontSize: 16,
+          fontFamily: theme.fonts.$mono,
         }}
       />
     </Div>
