@@ -22,7 +22,7 @@ Termy is made up of cells. This user interface might be familiar to those who've
 
 - Two things make up a cell: **the prompt and the output**. Input goes into the prompt and the output will be shown right below the prompt.
 
-- You can **reuse cells**. After you're cell finished running, you can run it again with the same or a different command.
+- You can **reuse cells**. After your cell finished running, you can run it again with the same or a different command.
 
 <br/>
 
