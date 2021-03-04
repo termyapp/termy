@@ -19,6 +19,7 @@ export default function Tab({ id, index, activeTab }: Props) {
     useCallback(state => state.cells[state.tabs[id].activeCell], [id]),
   )
 
+  // todo: Mod + 9 should focus last tab? what about Mod + 0?
   useMousetrap(`mod+${index + 1}`, () => {
     dispatch({ type: 'focus-tab', id })
   })
