@@ -75,7 +75,14 @@ export default function Tabs(props: Props) {
 
           {/* control items on !mac */}
           {!isMac && (
-            <Flex css={{ ml: 'auto', alignItems: 'center' }}>
+            <Flex
+              css={{
+                ml: 'auto',
+                alignItems: 'center',
+                marginTop: '-5px',
+                marginBottom: '-5px',
+              }}
+            >
               {controlItems.map(item => (
                 <Div key={item.icon} onClick={item.onClick}>
                   <Div
