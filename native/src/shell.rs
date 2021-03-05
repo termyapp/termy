@@ -2,6 +2,7 @@ use crate::{command::external::FrontendMessage, command::Command, paths::CrossPa
 use crossbeam_channel::{Receiver, Sender};
 use log::{error, info};
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 pub struct Cell {
   #[allow(dead_code)]
@@ -133,16 +134,25 @@ pub enum Status {
 }
 
 fn parse_value(value: &str, current_dir: &str) -> Command {
-  let mut tokens = tokenize_value(value);
+  let mut tokens: Vec<String> = tokenize_value(value)
+    .into_iter()
+    .map(expand_alias)
+    .collect();
 
   Command::new(tokens.remove(0), tokens, current_dir)
 }
 
-pub fn tokenize_value(value: &str) -> Vec<String> {
-  // todo: #80
-  // first alias: ~ -> $HOME
-  let value = value.replace("~", &(CrossPath::home().to_string()));
+pub fn expand_alias(string: String) -> String {
+  // ~ -> $HOME
+  let path = string.replace("~", &(CrossPath::home().to_string()));
+  if Path::new(&path).exists() {
+    path
+  } else {
+    string
+  }
+}
 
+pub fn tokenize_value(value: &str) -> Vec<String> {
   let mut inside_quotes = false;
   let mut tokens: Vec<String> = vec![];
   let mut token = String::new();
@@ -171,6 +181,16 @@ pub fn tokenize_value(value: &str) -> Vec<String> {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn expands_alias() {
+    assert_eq!(expand_alias("~".to_string()), CrossPath::home().to_string());
+    assert_eq!(
+      expand_alias("~/dev".to_string()),
+      CrossPath::home().join("dev").to_string()
+    );
+    assert_eq!(expand_alias("HEAD~".to_string()), "HEAD~".to_string());
+  }
 
   #[test]
   fn tokenizes_value() {
