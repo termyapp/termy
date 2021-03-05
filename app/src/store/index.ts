@@ -17,5 +17,6 @@ const useStore: UseStore<Store> = create(
 useStore.subscribe(saveState)
 
 export const dispatchSelector = (state: Store) => state.dispatch
+export const themeSelector = (state: Store) => state.theme
 
 export default useStore
