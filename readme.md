@@ -12,6 +12,12 @@
 
 <br/>
 
+<p align="center">
+  <a href="https://termy.app" target="_blank"><img src="https://termy.app/screenshot.jpg" /></a>
+</p>
+
+<br/>
+
 There have been many shells (_bash, zsh, fish_) and many terminal emulators (_iTerm, Hyper, Windows Terminal_) created. But not one that tried to combine these two. [Termy](https://termy.app/) is a terminal with a built-in shell that tries to combine these two worlds and provide the user with a better experience.
 
 <br/>
