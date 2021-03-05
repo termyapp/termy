@@ -204,11 +204,11 @@ fn get_cmd(command: &str, args: Vec<String>, current_dir: &str) -> CommandBuilde
     }
   };
 
-  // wrap paths inside quotes and join the args
+  // join the args and wrap args inside quotes that have spaces in them
   let args_with_quotes = args
     .iter()
     .map(|arg| {
-      if Path::new(arg).exists() {
+      if arg.contains(char::is_whitespace) {
         format!("\"{}\"", arg)
       } else {
         arg.to_owned()
