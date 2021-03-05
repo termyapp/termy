@@ -34,6 +34,32 @@ Termy is made up of cells. This user interface might be familiar to those who've
 
 <br/>
 
+### FAQ
+
+#### How does this work?
+
+Instead of loading your shell at start, Termy spawns a new "shell" every time you run a command.
+
+##### Why?
+
+To provide VSCode style autocompletions in the terminal we need know the current state of the shell. But since the shell handles everything internally, external programs don't know what the current state is. Termy goes around this issue by separating the input and output layer and holding its own state.
+
+##### But this approach also has its downsides
+
+Since Termy doesn't use the shell as intended, many of the built-in features will stop working (installed plugins, user config).
+
+But don't worry: many oh-my-zsh plugins will be in Termy and soon you'll also be able to configure your settings!
+
+#### What about performance?
+
+Even without optimizations Termy is pretty fast at the moment. Now, I'm mainly focusing on the features that make Termy unique, but before the v1.0 release performance will improve a lot.
+
+#### Does it have `TRUECOLOR`?
+
+Yes.
+
+<br/>
+
 ### Built-in commands
 
 | Command |            Description             |
@@ -66,29 +92,3 @@ Termy is made up of cells. This user interface might be familiar to those who've
 | Focus Tab (_1-9_)            |  <kbd>Mod+(_1-9_)</kbd>  |               |
 | Focus Input                  |     <kbd>Mod+I</kbd>     |               |
 | Focus Output                 |     <kbd>Mod+O</kbd>     |               |
-
-<br/>
-
-### FAQ
-
-#### How does this work?
-
-Instead of loading your shell at start, Termy spawns a new "shell" every time you run a command.
-
-##### Why?
-
-To provide VSCode style autocompletions in the terminal we need know the current state of the shell. But since the shell handles everything internally, external programs don't know what the current state is. Termy goes around this issue by separating the input and output layer and holding its own state.
-
-##### But this approach also has its downsides
-
-Since Termy doesn't use the shell as intended, many of the built-in features will stop working (installed plugins, user config).
-
-But don't worry: many oh-my-zsh plugins will be in Termy and soon you'll also be able to configure your settings!
-
-#### What about performance?
-
-Even without optimizations Termy is pretty fast at the moment. Now, I'm mainly focusing on the features that make Termy unique, but before the v1.0 release performance will improve a lot.
-
-#### Does it have `TRUECOLOR`?
-
-Yes.
