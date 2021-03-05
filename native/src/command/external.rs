@@ -204,7 +204,12 @@ fn get_cmd(command: &str, args: Vec<String>, current_dir: &str) -> CommandBuilde
     }
   };
 
-  cmd.arg(vec![command.to_string(), args.join(" ")].join(" "));
+  let args_with_quotes = if args.len() > 0 {
+    format!("\"{}\"", args.join("\" \""))
+  } else {
+    String::default()
+  };
+  cmd.arg(vec![command.to_string(), args_with_quotes].join(" "));
   cmd.cwd(current_dir);
   for (key, val) in ENVS.iter() {
     cmd.env(key, val);
