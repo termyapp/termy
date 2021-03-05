@@ -45,7 +45,7 @@ export const getState = (): State => {
 
 export const getDefaultState = (): State => {
   const tab = v4()
-  const cell = { ...getDefaultCell(), value: 'shortcuts' }
+  const cell = getDefaultCell()
 
   const state: State = {
     windowInfo: ipc.sync({ type: 'get-window-info' }) as WindowInfo,

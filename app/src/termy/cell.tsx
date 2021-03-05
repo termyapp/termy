@@ -15,10 +15,7 @@ export default function Cell({ id, active, showBorder }: Props) {
   const cell = useStore(useCallback(state => state.cells[id], [id]))
   const dispatch = useStore(dispatchSelector)
 
-  // run initial cell on mount
   useEffect(() => {
-    if (cell.value === 'shortcuts') dispatch({ type: 'run-cell', id })
-
     // kill on onMount
     return () => {
       dispatch({ type: 'kill-cell', id })
