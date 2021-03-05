@@ -79,6 +79,7 @@ Yes.
 | Run Cell                     |     <kbd>Enter</kbd>     | Input Focused |
 | Insert Suggestion & Run      |   <kbd>Mod+Enter</kbd>   | Input Focused |
 | Accept or Trigger Suggestion |      <kbd>Tab</kbd>      | Input Focused |
+| Save File                    |     <kbd>Mod+S</kbd>     |  Edit Focused |
 | Run Cell                     |     <kbd>Mod+R</kbd>     |               |
 | Stop Cell                    |     <kbd>Mod+S</kbd>     |               |
 | New Cell                     |     <kbd>Mod+N</kbd>     |               |
