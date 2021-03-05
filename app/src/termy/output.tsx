@@ -65,6 +65,22 @@ export default function Output(cell: CellWithActive) {
                     })
                     break
                   }
+                  case 'pretty_path': {
+                    dispatch({
+                      type: 'set-cell',
+                      id,
+                      cell: { prettyPath: actionValue },
+                    })
+                    break
+                  }
+                  case 'branch': {
+                    dispatch({
+                      type: 'set-cell',
+                      id,
+                      cell: { branch: actionValue },
+                    })
+                    break
+                  }
                   case 'theme': {
                     dispatch({
                       type: 'set-theme',

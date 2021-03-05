@@ -3,9 +3,9 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
-pub fn view(path: CrossPath) -> Result<String> {
+pub fn view(path: &CrossPath) -> Result<String> {
   if path.buf.is_dir() {
-    let dir = fs::read_dir(path.buf)?;
+    let dir = fs::read_dir(&path.buf)?;
     let json: Vec<Entry> = dir
       .map(|entry| {
         let entry = entry.unwrap();
@@ -65,7 +65,7 @@ mod tests {
     let test = test_dir().unwrap().join("test.txt");
     let test = test.to_str().unwrap();
     assert_eq!(
-      view(CrossPath::new(test)).unwrap(),
+      view(&CrossPath::new(test)).unwrap(),
       "```txt\nTest\n```".to_string()
     );
   }

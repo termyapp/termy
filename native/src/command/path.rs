@@ -12,11 +12,14 @@ pub fn path(mut path: CrossPath, cell: Cell) -> Result<Status> {
 
   if path.buf.is_dir() {
     info!("Changing directory to {}", path);
-    let path_clone = path.to_string();
 
     cell.send(ServerMessage::new(
-      Data::Mdx(view::view(path).unwrap()),
-      Some(vec![(String::from("cd"), path_clone)]),
+      Data::Mdx(view::view(&path).unwrap()),
+      Some(vec![
+        (String::from("cd"), path.to_string()),
+        (String::from("pretty_path"), path.pretty_path()),
+        (String::from("branch"), path.branch().unwrap_or_default()),
+      ]),
     ));
 
     return Ok(Status::Success);

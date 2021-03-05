@@ -35,7 +35,7 @@ export interface ServerMessage {
   error?: string
 }
 
-export type ActionKeys = 'cd' | 'theme'
+export type ActionKeys = 'cd' | 'theme' | 'pretty_path' | 'branch'
 
 export interface Suggestion {
   label: string

@@ -7,6 +7,8 @@ export const getDefaultCell = (): Cell => {
   return {
     id,
     currentDir: ipc.sync({ type: 'api', command: 'home' }),
+    prettyPath: '~',
+    branch: '',
     value: '',
     type: null,
     status: null,
