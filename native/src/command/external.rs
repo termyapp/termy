@@ -5,12 +5,12 @@ use io::Read;
 use log::{error, info, trace};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
-use std::thread;
 use std::{
   io,
   sync::{Arc, Mutex},
 };
 use std::{io::Write, time::Duration};
+use std::{path::Path, thread};
 
 pub fn external(command: &str, args: Vec<String>, cell: Cell) -> Result<Status> {
   info!("Running external command: {:#?}", command);
@@ -204,7 +204,19 @@ fn get_cmd(command: &str, args: Vec<String>, current_dir: &str) -> CommandBuilde
     }
   };
 
-  cmd.arg(vec![command.to_string(), args.join(" ")].join(" "));
+  // join the args and wrap args inside quotes that have spaces in them
+  let args_with_quotes = args
+    .iter()
+    .map(|arg| {
+      if arg.contains(char::is_whitespace) {
+        format!("\"{}\"", arg)
+      } else {
+        arg.to_owned()
+      }
+    })
+    .collect::<Vec<String>>()
+    .join(" ");
+  cmd.arg(vec![command.to_string(), args_with_quotes].join(" "));
   cmd.cwd(current_dir);
   for (key, val) in ENVS.iter() {
     cmd.env(key, val);
