@@ -38,7 +38,7 @@ impl Internal {
       Self::Theme => theme::theme(args),
       Self::View => (
         if let Some(path) = find_path(cell.current_dir(), args.into_iter().next().unwrap()) {
-          view::view(path)?
+          view::view(&path)?
         } else {
           format!("Path does not exist")
         },

@@ -1,12 +1,11 @@
-import { Div, Path, Span } from '@components'
+import { Div, Flex, GitBranch, Path, Span } from '@components'
 import { styled } from '@src/stitches.config'
-import { formatCurrentDir } from '@src/utils'
 import type { CellWithActive } from '@types'
 import React from 'react'
 import Input from './input'
 
 export default function Prompt(cell: CellWithActive) {
-  const { active, currentDir } = cell
+  const { active, prettyPath, branch } = cell
 
   return (
     <Wrapper
@@ -14,7 +13,20 @@ export default function Prompt(cell: CellWithActive) {
       // newLine={currentDir.length > 60} // todo: do better with long lines (decrease fontSize)
     >
       <CurrentDir status={cell.status === null ? 'default' : cell.status}>
-        <Path>{formatCurrentDir(currentDir)}</Path>
+        <Path>{prettyPath}</Path>
+        {branch && (
+          <Flex
+            css={{
+              color: '$secondaryForeground',
+              ml: '$1',
+              alignItems: 'center',
+              '& + &': { ml: '$1' },
+            }}
+          >
+            on
+            <GitBranch /> <Span css={{ fontWeight: '$medium' }}>{branch}</Span>
+          </Flex>
+        )}
       </CurrentDir>
       <Input {...cell} />
     </Wrapper>
@@ -35,7 +47,7 @@ const Wrapper = styled(Div, {
   },
 })
 
-const CurrentDir = styled(Div, {
+const CurrentDir = styled(Flex, {
   mr: '$1',
   ml: '$2',
   fontSize: '$sm',

@@ -9,7 +9,7 @@ mod tests {
   use super::*;
 
   #[test]
-  fn returns_something() {
+  fn home_not_empty() {
     assert!(!home().is_empty());
   }
 }

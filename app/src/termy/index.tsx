@@ -1,17 +1,16 @@
 import { useMonaco } from '@monaco-editor/react'
 import { useGlobalShortcuts, useWindowInfo } from '@src/hooks'
 import { css, globalStyles } from '@src/stitches.config'
-import useStore from '@src/store'
+import useStore, { themeSelector } from '@src/store'
 import { getThemeData, loadMonaco } from '@src/utils'
 import React, { useEffect, useMemo } from 'react'
-import shallow from 'zustand/shallow'
 import { TERMY } from './input'
 import Tabs from './tabs'
 
 loadMonaco()
 
 export default function Termy() {
-  const theme = useStore(state => state.theme)
+  const theme = useStore(themeSelector)
 
   useMemo(() => globalStyles(), [])
   const themeClass = useMemo(() => css.theme(theme), [theme])

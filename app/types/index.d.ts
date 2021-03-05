@@ -8,6 +8,8 @@ export interface Cell {
   id: string
   value: string
   currentDir: string
+  prettyPath: string
+  branch: string
   type: OutputType
   status: Status
 }

@@ -1,8 +1,8 @@
 import { useDebounce } from '@hooks'
-import useStore, { dispatchSelector } from '@src/store'
+import useStore, { dispatchSelector, themeSelector } from '@src/store'
 import { isMac } from '@src/utils'
 import type { CellWithActive, XtermSize } from '@types'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
@@ -12,7 +12,7 @@ const SHORTCUTS = ['r', 't', 's', 'n', 'w', 'j', 'k']
 const fitAddon = new FitAddon()
 
 export default function useXterm({ id, status, active, type }: CellWithActive) {
-  const theme = useStore(state => state.theme)
+  const theme = useStore(themeSelector)
   const dispatch = useStore(dispatchSelector)
 
   const [size, setSize] = useState<XtermSize>()

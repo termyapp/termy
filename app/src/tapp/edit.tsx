@@ -1,6 +1,6 @@
 import Editor from '@monaco-editor/react'
 import { Div } from '@src/components'
-import useStore from '@src/store'
+import useStore, { themeSelector } from '@src/store'
 import { TERMY } from '@src/termy/input'
 import { ipc } from '@src/utils'
 import type { Message } from '@types'
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function Edit({ path, value, language }: Props) {
-  const theme = useStore(state => state.theme)
+  const theme = useStore(themeSelector)
   value = decodeURIComponent(escape(atob(value))) // decode
 
   return (
