@@ -1,5 +1,5 @@
-use crate::util::executables::EXECUTABLES;
 use crate::{paths::CrossPath, shell::tokenize_value};
+use crate::{shell::expand_alias, util::executables::EXECUTABLES};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use log::{info, trace};
@@ -63,7 +63,7 @@ impl Autocomplete {
   fn paths(&mut self) -> Result<()> {
     let value = self.value.clone();
     let current_dir = CrossPath::new(&self.current_dir);
-    for path in tokenize_value(&value).iter() {
+    for path in tokenize_value(&value).into_iter().map(expand_alias) {
       let path = clean_path(&path);
       let cross_path = CrossPath::new(path);
       if path.starts_with("/") && cross_path.buf.exists() {
