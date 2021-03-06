@@ -1,9 +1,11 @@
 use is_executable::IsExecutable;
 
 lazy_static! {
+  // todo: update this periodically
   pub static ref EXECUTABLES: Vec<String> = get_executables();
 }
 
+// todo: add `cmd` built-ins on windows
 fn get_executables() -> Vec<String> {
   let path_var = std::env::var_os("PATH").expect("PATH not found");
   let paths: Vec<_> = std::env::split_paths(&path_var).collect();
