@@ -64,27 +64,19 @@ impl Autocomplete {
     let value = self.value.clone();
     let current_dir = CrossPath::new(&self.current_dir);
     for path in tokenize_value(&value).into_iter().map(expand_alias) {
-      let path = clean_path(&path);
-      let cross_path = CrossPath::new(path);
-      if path.starts_with("/") && cross_path.buf.exists() {
-        // absolute root
-        self.path(path)?;
-      } else if current_dir.join(path).buf.exists() {
-        self.path(&(current_dir.join(path).to_string()))?;
+      let clean_path = clean_path(&path);
+      if let Some(path) = current_dir.find_path(clean_path) {
+        self.path(path.to_string())?;
       } else if path.len() <= 1 {
-        self.path(&(current_dir.to_string()))?;
-      } else if path == "~/" {
-        self.path(&(CrossPath::home().to_string()))?;
+        self.path(current_dir.to_string())?;
       }
     }
 
     Ok(())
   }
 
-  fn path(&mut self, dir: &str) -> Result<()> {
-    trace!("Suggestions from path: {}", dir);
-
-    if let Ok(read_dir) = fs::read_dir(dir) {
+  fn path<P: AsRef<Path>>(&mut self, path: P) -> Result<()> {
+    if let Ok(read_dir) = fs::read_dir(path) {
       for entry in read_dir {
         let entry = entry.unwrap();
         let is_dir = entry.metadata().unwrap().is_dir();
