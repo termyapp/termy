@@ -13,7 +13,6 @@
 //     //   cmd: 'viewCommand',
 //     //   path,
 //     // })
-//     // console.log(data)
 //     // return data
 //   } catch (error) {
 //     console.error('Error while getting files: ', error)

@@ -16,7 +16,7 @@ import type { TermyWindow } from './window'
 
 export const initIpc = (): any | Promise<any> => {
   ipcMain.handle('ipc', async (event, message: Message) => {
-    console.log('IPC: ', message)
+    console.debug('IPC: ', message)
     switch (message.type) {
       case 'get-window-info': {
         const window = getWindow(event)
@@ -81,7 +81,7 @@ export const initIpc = (): any | Promise<any> => {
   // todo: handle sync stuff better
   ipcMain.on('ipc-sync', (event, message: Message) => {
     let returnValue = null
-    console.log('IPC-SYNC: ', message)
+    console.debug('IPC-SYNC: ', message)
     switch (message.type) {
       case 'get-window-info': {
         const window = getWindow(event)

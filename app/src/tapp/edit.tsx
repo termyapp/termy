@@ -41,7 +41,6 @@ export default function Edit({ path, value, language }: Props) {
                 path,
                 value,
               } as Message)
-              console.log('saved', path, value)
             })
           }
         }}

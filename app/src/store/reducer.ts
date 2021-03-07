@@ -29,7 +29,7 @@ export type Action =
 
 export default function reducer(state: State, action: Action) {
   return produce(state, draft => {
-    console.log(action.type.toUpperCase(), action)
+    console.debug(action.type.toUpperCase(), action)
     switch (action.type) {
       case 'new-cell': {
         const cell = getDefaultCell()

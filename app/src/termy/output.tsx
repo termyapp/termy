@@ -19,7 +19,7 @@ export default function Output(cell: CellWithActive) {
   useListener(
     id,
     (_, message: ServerMessage) => {
-      console.log('received', message)
+      console.debug('RECEIVED', message)
       for (const [key, value] of Object.entries(message)) {
         switch (key) {
           case 'error': {

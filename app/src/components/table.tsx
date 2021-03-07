@@ -9,8 +9,6 @@ interface Props {
 export const Table = ({ json }: Props) => {
   json = JSON.parse(decodeURIComponent(escape(atob(json))))
 
-  console.log('js', json)
-
   return Array.isArray(json) ? (
     <Container>
       <thead>

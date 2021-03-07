@@ -48,7 +48,6 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
 
     terminal.onKey(({ key, domEvent }) => {
       if (!terminal.getOption('disableStdin')) {
-        console.log('key', key.charCodeAt(0))
         dispatch({ type: 'frontend-message', id, action: { write: key } })
       }
     })
@@ -80,8 +79,6 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
   const [, cancel] = useDebounce(
     () => {
       if (!terminalRef.current || type !== 'text' || !active) return
-      console.log('resize', size)
-
       terminalRef.current.loadAddon(fitAddon)
       fitAddon.fit()
 
