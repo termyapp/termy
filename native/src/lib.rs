@@ -12,7 +12,6 @@ use napi::{
 };
 use shell::{Cell, CellChannel, CellProps, ServerMessage};
 use std::thread;
-
 mod autocomplete;
 mod command;
 mod db;
@@ -25,13 +24,12 @@ mod util;
 fn init(mut exports: JsObject) -> Result<()> {
   exports.create_named_method("api", api)?;
 
-  exports.create_named_method("getSuggestions", get_suggestions)?;
+  exports.create_named_method("autocomplete", autocomplete)?;
 
   exports.create_named_method("runCell", run_cell)?;
 
   exports.create_named_method("frontendMessage", frontend_message)?;
 
-  // todo: this fails in prod
   // db::init().expect("Failed to initialize database");
 
   logger::init().unwrap();
@@ -55,16 +53,15 @@ fn api(ctx: CallContext) -> napi::Result<JsString> {
 }
 
 #[js_function(2)]
-fn get_suggestions(ctx: CallContext) -> napi::Result<JsUnknown> {
+fn autocomplete(ctx: CallContext) -> napi::Result<JsObject> {
   let value = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
   let current_dir: String = ctx.get::<JsString>(1)?.into_utf8()?.into_owned()?;
 
   info!("Getting suggestions for {}", value);
 
-  let suggestions = Autocomplete::new(value, current_dir).suggestions();
+  let autocomplete = Autocomplete::new(value, current_dir);
 
-  // needs "serde-json" feature
-  ctx.env.to_js_value(&suggestions)
+  ctx.env.spawn(autocomplete).map(|a| a.promise_object())
 }
 
 #[js_function(5)]

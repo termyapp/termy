@@ -30,10 +30,11 @@ export const initIpc = (): any | Promise<any> => {
         return result
       }
       case 'autocomplete': {
-        const suggestions = await native.getSuggestions(
+        const suggestions = await native.autocomplete(
           message.value,
           message.currentDir,
         )
+
         return suggestions
       }
       case 'run-cell': {

@@ -1,14 +1,12 @@
-import { RunCell, FrontendMessage, Suggestion } from '../electron/shared'
-
 declare function api(command: string): unknown
 
-declare function getSuggestions(value: string, currentDir: string): Suggestion[]
+declare function autocomplete(value: string, currentDir: string): any
 
 declare function runCell(
-  props: RunCell,
+  props: any,
   serverMessage: (...args: any[]) => void,
 ): any // external fn (sender) is returned
 
-declare function frontendMessage(external: any, props: FrontendMessage)
+declare function frontendMessage(external: any, props: any)
 
 export { api, getSuggestions, runCell, frontendMessage }

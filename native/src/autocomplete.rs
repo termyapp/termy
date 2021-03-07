@@ -3,6 +3,7 @@ use crate::{shell::expand_alias, util::executables::EXECUTABLES};
 use anyhow::Result;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use log::{info, trace};
+use napi::{Env, JsUnknown, Task};
 use serde::Serialize;
 use std::{cmp, io};
 use std::{
@@ -16,31 +17,27 @@ use std::{
 pub struct Autocomplete {
   value: String,
   current_dir: String,
-  matcher: SkimMatcherV2,
-  suggestions: HashMap<String, Suggestion>,
 }
 
 impl Autocomplete {
   pub fn new(value: String, current_dir: String) -> Self {
-    Self {
-      value,
-      current_dir,
-      matcher: SkimMatcherV2::default(),
-      suggestions: HashMap::new(),
-    }
+    Self { value, current_dir }
   }
+}
 
-  pub fn suggestions(mut self) -> Vec<Suggestion> {
-    if self.value.len() < 1 {
-      return vec![];
-    }
+impl Task for Autocomplete {
+  type Output = Vec<Suggestion>;
+  type JsValue = JsUnknown;
+
+  fn compute(&mut self) -> napi::Result<Self::Output> {
+    let mut suggestions = Suggestions::new(self.value.clone(), self.current_dir.clone());
 
     // order matters since we're using a hashmap
-    self.paths().expect("Error in paths");
-    self.executables();
-    self.zsh_history();
+    suggestions.paths().expect("Error in paths");
+    suggestions.executables();
 
-    let mut suggestions: Vec<Suggestion> = self.suggestions.into_iter().map(|(_, s)| s).collect();
+    let mut suggestions: Vec<Suggestion> =
+      suggestions.hash_map.into_iter().map(|(_, s)| s).collect();
 
     suggestions.sort_by(|a, b| b.score.cmp(&a.score));
 
@@ -49,14 +46,44 @@ impl Autocomplete {
       .take(100)
       .collect::<Vec<Suggestion>>();
 
-    suggestions
+    trace!("Suggestions: {:?}", suggestions);
+
+    Ok(suggestions)
+  }
+
+  fn resolve(self, env: Env, output: Self::Output) -> napi::Result<Self::JsValue> {
+    // needs "serde-json" feature
+    env.to_js_value(&output)
+  }
+
+  // fn reject(self, env: Env, err: Error) -> Result<Self::JsValue> {
+  //   self.data.unref(env)?;
+  //   Err(err)
+  // }
+}
+
+struct Suggestions {
+  value: String,
+  current_dir: String,
+  matcher: SkimMatcherV2,
+  hash_map: HashMap<String, Suggestion>,
+}
+
+impl Suggestions {
+  fn new(value: String, current_dir: String) -> Self {
+    Self {
+      value,
+      current_dir,
+      matcher: SkimMatcherV2::default(),
+      hash_map: HashMap::new(),
+    }
   }
 
   fn insert(&mut self, key: String, value: Suggestion) {
-    if let Some(s) = self.suggestions.get_mut(&key) {
+    if let Some(s) = self.hash_map.get_mut(&key) {
       s.score += Priority::Low as i64;
     } else {
-      self.suggestions.insert(key, value);
+      self.hash_map.insert(key, value);
     }
   }
 
@@ -131,7 +158,7 @@ impl Autocomplete {
     for executable in executables {
       // if let Ok(suggestion) = get_docs(&executable) {
       if let Some((score, _)) = self.matcher.fuzzy_indices(&executable, self.value.as_ref()) {
-        self.suggestions.insert(
+        self.insert(
           executable.clone(),
           Suggestion {
             label: executable.clone(),
@@ -153,38 +180,37 @@ impl Autocomplete {
   }
 
   // todo: index these during init
-  fn zsh_history(&mut self) {
-    // bash: ~/.bash_history
-    // fish: ~/.local/share/fish/fish_history
-    // zsh: /.zsh_history
-    if let Ok(lines) =
-      read_lines(dirs::home_dir().unwrap().to_string_lossy().to_string() + "/.zsh_history")
-    {
-      for line in lines {
-        if let Ok(line) = line {
-          if let Some(command) = line.split(";").last() {
-            let command = command.to_string();
-            if let Some((score, _)) = self.matcher.fuzzy_indices(&command, self.value.as_ref()) {
-              let label =
-                String::from(&command[find_common_words_index(self.value.as_ref(), &command)..]);
-              self.insert(
-                command.clone(),
-                Suggestion {
-                  insert_text: Some(label.clone()),
-                  label,
-                  score: score - Priority::High as i64,
-
-                  kind: SuggestionType::ExternalHistory,
-                  documentation: None,
-                  date: None,
-                },
-              );
-            }
-          }
-        }
-      }
-    }
-  }
+  // fn zsh_history(&mut self) {
+  //   // bash: ~/.bash_history
+  //   // fish: ~/.local/share/fish/fish_history
+  //   // zsh: /.zsh_history
+  //   if let Ok(lines) =
+  //     read_lines(dirs::home_dir().unwrap().to_string_lossy().to_string() + "/.zsh_history")
+  //   {
+  //     for line in lines {
+  //       if let Ok(line) = line {
+  //         if let Some(command) = line.split(";").last() {
+  //           let command = command.to_string();
+  //           if let Some((score, _)) = self.matcher.fuzzy_indices(&command, self.value.as_ref()) {
+  //             let label =
+  //               String::from(&command[find_common_words_index(self.value.as_ref(), &command)..]);
+  //             self.insert(
+  //               command.clone(),
+  //               Suggestion {
+  //                 insert_text: Some(label.clone()),
+  //                 label,
+  //                 score: score - Priority::High as i64,
+  //                 kind: SuggestionType::ExternalHistory,
+  //                 documentation: None,
+  //                 date: None,
+  //               },
+  //             );
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 #[derive(Serialize, Debug)]
