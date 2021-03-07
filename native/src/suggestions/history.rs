@@ -1,4 +1,4 @@
-use crate::{cross_path, util::dirs::config};
+use crate::{util::cross_path, util::dirs::config};
 use anyhow::Result;
 use chrono::Utc;
 use std::{

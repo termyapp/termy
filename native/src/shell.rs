@@ -1,4 +1,4 @@
-use crate::{command::external::FrontendMessage, command::Command, cross_path::CrossPath};
+use crate::{command::external::FrontendMessage, command::Command, util::cross_path::CrossPath};
 use crossbeam_channel::{Receiver, Sender};
 use log::{error, info};
 use serde::{Deserialize, Serialize};

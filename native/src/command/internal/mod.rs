@@ -1,6 +1,6 @@
 use crate::{
-  cross_path::CrossPath,
   shell::{Cell, Data, ServerMessage, Status},
+  util::cross_path::CrossPath,
 };
 use anyhow::Result;
 

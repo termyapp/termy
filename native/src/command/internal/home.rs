@@ -1,4 +1,4 @@
-use crate::cross_path::CrossPath;
+use crate::util::cross_path::CrossPath;
 
 pub fn home() -> String {
   CrossPath::home().to_string()

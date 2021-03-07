@@ -13,7 +13,6 @@ use shell::{Cell, CellChannel, CellProps, ServerMessage};
 use std::thread;
 use suggestions::Suggestions;
 mod command;
-mod cross_path;
 mod logger;
 mod shell;
 mod suggestions;
