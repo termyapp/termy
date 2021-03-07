@@ -1,6 +1,6 @@
 use super::internal::view;
 use crate::{
-  paths::CrossPath,
+  cross_path::CrossPath,
   shell::{Cell, Data, ServerMessage, Status},
 };
 use anyhow::Result;

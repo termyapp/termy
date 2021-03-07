@@ -1,6 +1,6 @@
 declare function api(command: string): unknown
 
-declare function autocomplete(value: string, currentDir: string): any
+declare function getSuggestions(value: string, currentDir: string): Promise<any>
 
 declare function runCell(
   props: any,

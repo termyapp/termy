@@ -75,7 +75,7 @@ export const loadMonaco = () => {
         const currentDir = useStore.getState().cells[cellId].currentDir
 
         const rawSuggestions: NativeSuggestion[] = await ipc.invoke({
-          type: 'autocomplete',
+          type: 'get-suggestions',
           value,
           currentDir,
         })

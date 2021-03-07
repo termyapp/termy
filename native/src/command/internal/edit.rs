@@ -1,4 +1,4 @@
-use crate::paths::CrossPath;
+use crate::cross_path::CrossPath;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -38,8 +38,4 @@ enum Kind {
 }
 
 #[cfg(test)]
-mod tests {
-  use crate::paths::test_dir;
-
-  use super::*;
-}
+mod tests {}

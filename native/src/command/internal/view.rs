@@ -1,4 +1,4 @@
-use crate::paths::CrossPath;
+use crate::cross_path::CrossPath;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -56,13 +56,13 @@ enum Kind {
 
 #[cfg(test)]
 mod tests {
-  use crate::paths::test_dir;
+  use crate::util::dirs::test_dir;
 
   use super::*;
 
   #[test]
   fn reads_file() {
-    let test = test_dir().unwrap().join("test.txt");
+    let test = test_dir().join("test.txt");
     let test = test.to_str().unwrap();
     assert_eq!(
       view(&CrossPath::new(test)).unwrap(),

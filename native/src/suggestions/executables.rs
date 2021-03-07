@@ -1,8 +1,47 @@
+use super::{Priority, ProviderState, Suggestion, SuggestionProvider, SuggestionType};
+use anyhow::Result;
+use fuzzy_matcher::FuzzyMatcher;
 use is_executable::IsExecutable;
 
 lazy_static! {
   // todo: update this periodically
-  pub static ref EXECUTABLES: Vec<String> = get_executables();
+   pub static ref EXECUTABLES: Vec<String> = get_executables();
+}
+
+pub struct Executables;
+
+impl SuggestionProvider for Executables {
+  fn suggestions(&self, state: &mut ProviderState) -> Result<()> {
+    let executables = EXECUTABLES.iter();
+    for executable in executables {
+      // todo: get tldr docs
+      // if let Ok(suggestion) = get_docs(&executable) {
+      if let Some((score, _)) = state
+        .matcher
+        .fuzzy_indices(&executable, state.value.as_ref())
+      {
+        state.insert(
+          executable.clone(),
+          Suggestion {
+            label: executable.clone(),
+            insert_text: None,
+            score: if &(state.value) == executable {
+              // boosting so for something like `bash`, the
+              // `bash` executable shows up as the 1st suggestion
+              score + Priority::High as i64
+            } else {
+              score
+            },
+            kind: SuggestionType::Executable,
+            documentation: None,
+            date: None,
+          },
+        );
+      }
+    }
+
+    Ok(())
+  }
 }
 
 // todo: add `cmd` built-ins on windows

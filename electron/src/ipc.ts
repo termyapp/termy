@@ -29,8 +29,8 @@ export const initIpc = (): any | Promise<any> => {
         const result = native.api(message.command)
         return result
       }
-      case 'autocomplete': {
-        const suggestions = await native.autocomplete(
+      case 'get-suggestions': {
+        const suggestions = await native.getSuggestions(
           message.value,
           message.currentDir,
         )
