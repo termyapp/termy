@@ -29,32 +29,15 @@ impl Command {
     let current_path = CrossPath::new(current_dir);
     Self {
       kind: match command.as_str() {
-        // relative path (eg. /Users/martonlanga + dev)
-        path if current_path.join(path).buf.exists() && !path.starts_with("./") => {
-          Kind::Path(current_path.join(path))
+        path if current_path.find_path(path).is_some() => {
+          let cross_path = current_path.find_path(path).unwrap();
+          if path.starts_with("./") {
+            // executable
+            Kind::External(path.to_string())
+          } else {
+            Kind::Path(cross_path)
+          }
         }
-        // executable (eg. /Users/martonlanga + ./script.sh)
-        path if current_path.join(path).buf.exists() && path.starts_with("./") => {
-          Kind::External(current_path.join(path).to_string())
-        }
-        // absolute path (eg. /Volumes)
-        path if CrossPath::new(path).buf.exists() => Kind::Path(current_path),
-        // "cd" => {
-        //   // get new directory from args
-        //   // if it fails, set home dir as the default
-        //   let path = if let Some(path) = args.iter().next() {
-        //     if current_path.buf.join(path).exists() {
-        //       current_path.buf.join(path)
-        //     } else {
-        //       PathBuf::from(path)
-        //     }
-        //   } else {
-        //     dirs::home_dir().unwrap()
-        //   };
-
-        //   info!("set path to {:?}", path);
-        //   Kind::Path(path)
-        // }
         internal if Internal::parse(internal).is_some() => {
           Kind::Internal(Internal::parse(internal).unwrap())
         }

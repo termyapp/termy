@@ -17,6 +17,7 @@ pub enum Internal {
   Theme,
   View,
   Edit,
+  Cd,
 }
 
 impl Internal {
@@ -27,6 +28,7 @@ impl Internal {
       "theme" => Some(Self::Theme),
       "view" => Some(Self::View),
       "edit" => Some(Self::Edit),
+      "cd" => Some(Self::Cd),
       _ => None,
     }
   }
@@ -37,7 +39,9 @@ impl Internal {
       Self::Home => (home::home(), None),
       Self::Theme => theme::theme(args),
       Self::View => (
-        if let Some(path) = find_path(cell.current_dir(), args.into_iter().next().unwrap()) {
+        if let Some(path) =
+          CrossPath::new(cell.current_dir()).find_path(&args.into_iter().next().unwrap())
+        {
           view::view(&path)?
         } else {
           format!("Path does not exist")
@@ -45,13 +49,32 @@ impl Internal {
         None,
       ),
       Self::Edit => (
-        if let Some(path) = find_path(cell.current_dir(), args.into_iter().next().unwrap()) {
+        if let Some(path) =
+          CrossPath::new(cell.current_dir()).find_path(&args.into_iter().next().unwrap())
+        {
           edit::edit(path)?
         } else {
           format!("Path does not exist")
         },
         None,
       ),
+      Self::Cd => {
+        if let Some(mut path) =
+          CrossPath::new(cell.current_dir()).find_path(&args.into_iter().next().unwrap())
+        {
+          path.canonicalize();
+          (
+            view::view(&path)?,
+            Some(vec![
+              (String::from("cd"), path.to_string()),
+              (String::from("pretty_path"), path.pretty_path()),
+              (String::from("branch"), path.branch().unwrap_or_default()),
+            ]),
+          )
+        } else {
+          (format!("Path does not exist"), None)
+        }
+      }
     };
 
     cell.send(ServerMessage::new(Data::Mdx(mdx), action));
@@ -65,17 +88,5 @@ impl Internal {
       Self::Home => home::home(),
       _ => todo!(),
     }
-  }
-}
-
-fn find_path(current_dir: &str, path: String) -> Option<CrossPath> {
-  let cross_path = CrossPath::new(&path);
-  let current_dir = CrossPath::new(current_dir);
-  if current_dir.join(&path).buf.exists() {
-    Some(current_dir.join(path))
-  } else if cross_path.buf.exists() {
-    Some(cross_path)
-  } else {
-    None
   }
 }

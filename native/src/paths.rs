@@ -2,7 +2,7 @@ use anyhow::Result;
 use dunce::canonicalize;
 use git2::Repository;
 use log::warn;
-use path_slash::{PathBufExt, PathExt};
+use path_slash::PathBufExt;
 use pathdiff::diff_paths;
 use std::{
   env, fmt,
@@ -77,6 +77,19 @@ impl CrossPath {
       self
         .to_string()
         .replacen(&CrossPath::home().to_string(), "~", 1)
+    }
+  }
+
+  pub fn find_path(&self, path: &str) -> Option<CrossPath> {
+    let cross_path = CrossPath::new(&path);
+    if self.join(&path).buf.exists() {
+      // relative path
+      Some(self.join(path))
+    } else if cross_path.buf.exists() {
+      // absolute path
+      Some(cross_path)
+    } else {
+      None
     }
   }
 }

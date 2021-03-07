@@ -62,11 +62,12 @@ Yes.
 
 ### Built-in commands
 
-| Command |            Description             |
-| ------- | :--------------------------------: |
-| `edit`  |  Edit files using VSCode's editor  |
-| `view`  | Lists all the files in a directory |
-| `theme` |  Change theme (`#000` or `#fff`)   |
+| Command |                Description                 |
+| ------- | :----------------------------------------: |
+| `edit`  |      Edit files using VSCode's editor      |
+| `view`  |     Lists all the files in a directory     |
+| `theme` |      Change theme (`#000` or `#fff`)       |
+| `cd`    | Fallback `cd` command (Coming in `v0.3.1`) |
 
 <br/>
 
