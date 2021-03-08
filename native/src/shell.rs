@@ -1,4 +1,8 @@
-use crate::{command::external::FrontendMessage, command::Command, util::cross_path::CrossPath};
+use crate::{
+  command::{external::FrontendMessage, Command},
+  suggestions::history::History,
+  util::cross_path::CrossPath,
+};
 use crossbeam_channel::{Receiver, Sender};
 use log::{error, info};
 use serde::{Deserialize, Serialize};
@@ -48,6 +52,9 @@ impl Cell {
 
     // once operators (|, &&, ||) are introduced, this could become Vec<Command>
     let command = parse_value(&(self.value), &(self.current_dir));
+
+    let mut history = History::new();
+    history.add(self.current_dir.clone(), self.value.clone());
 
     info!("Executing: {:?}", command);
 

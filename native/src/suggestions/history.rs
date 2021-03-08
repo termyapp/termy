@@ -1,12 +1,15 @@
-use crate::util::dirs::config;
+use crate::util::{dirs::config, find_common_words_index};
 use anyhow::Result;
 use chrono::Utc;
-use log::error;
+use fuzzy_matcher::FuzzyMatcher;
+use log::{error, info};
 use std::{
   fs::{File, OpenOptions},
   io::{BufRead, BufReader, BufWriter, Write},
   path::{Path, PathBuf},
 };
+
+use super::{Priority, Suggestion, SuggestionProvider, SuggestionType};
 
 lazy_static! {
   //   pub static ref EXECUTABLES: Vec<String> = get_executables();
@@ -55,6 +58,38 @@ impl History {
   }
 }
 
+impl SuggestionProvider for History {
+  fn suggestions(&self, state: &mut super::ProviderState) -> Result<()> {
+    // todo: current_dir -> diff path
+    for entry in &self.entries {
+      if let Some((score, _)) = state
+        .matcher
+        .fuzzy_indices(&entry.value, state.value.as_ref())
+      {
+        let label =
+          String::from(&entry.value[find_common_words_index(state.value.as_ref(), &entry.value)..]);
+        state.insert(
+          entry.value.clone(),
+          Suggestion {
+            label,
+            insert_text: None,
+            score: if entry.current_dir == state.current_dir {
+              score + Priority::High as i64
+            } else {
+              score
+            },
+            kind: SuggestionType::History,
+            documentation: None,
+            date: None,
+          },
+        );
+      }
+    }
+
+    Ok(())
+  }
+}
+
 fn history_path() -> PathBuf {
   if cfg!(debug_assertions) {
     use crate::util::dirs::test_dir;
@@ -65,7 +100,7 @@ fn history_path() -> PathBuf {
 }
 
 fn parse_history() -> Vec<Entry> {
-  let file = OpenOptions::new().read(true).open(history_path()).unwrap();
+  let file = File::open(history_path()).unwrap();
   let reader = BufReader::new(file);
   let mut entries = vec![];
 

@@ -1,13 +1,20 @@
-use std::{env, path::PathBuf};
+use std::{env, fs, path::PathBuf};
 
+use log::{error, info};
+
+// $HOME_DIR/.termy
 pub fn config() -> PathBuf {
-  if cfg!(debug_assertions) {
-    // electron/.termy
-    env::current_dir().unwrap().join("../.termy")
-  } else {
-    // HOME_DIR/.termy
-    dirs::home_dir().unwrap().join(".termy")
+  let path = dirs::home_dir().unwrap().join(".termy");
+
+  if !path.exists() {
+    // create the directory if it doesn't exist
+    info!("Creating config directory at `{}`", path.to_string_lossy());
+    if let Err(err) = fs::create_dir(&path) {
+      error!("Error creating config directory: {}", err);
+    }
   }
+
+  path
 }
 
 /// | Environment| Dev | Production |
@@ -18,13 +25,14 @@ pub fn config() -> PathBuf {
 ///
 /// Path is different during build time, running Termy in development mode and running in production
 pub fn root_path() -> PathBuf {
-  let path = if cfg!(debug_assertions) {
-    env::current_dir()
+  if cfg!(debug_assertions) {
+    // todo: fix this
+    // problem is there are 2 different debug paths (native, electron)
+    dirs::home_dir().unwrap().join("dev/termy/native")
   } else {
     // https://www.electron.build/configuration/contents.html#filesetto
-    env::current_exe()
-  };
-  path.unwrap()
+    env::current_exe().unwrap()
+  }
 }
 
 #[allow(dead_code)]

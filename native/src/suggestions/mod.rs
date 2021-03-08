@@ -1,14 +1,15 @@
 use anyhow::Result;
 use executables::Executables;
 use fuzzy_matcher::skim::SkimMatcherV2;
+use history::History;
 use log::trace;
 use napi::{Env, JsUnknown, Task};
 use paths::Paths;
 use serde::Serialize;
-use std::{cmp, collections::HashMap};
+use std::collections::HashMap;
 
 pub mod executables;
-mod history;
+pub mod history;
 mod paths;
 
 pub struct Suggestions(pub String, pub String);
@@ -23,8 +24,8 @@ impl Task for Suggestions {
     // order matters since we're using a hashmap
     Executables.suggestions(&mut state).unwrap();
     Paths.suggestions(&mut state).unwrap();
-    // history -> (value, current_dir) -> if current_dir == dir { boost }
-    // history -> current_dir ->
+    let history = History::new();
+    history.suggestions(&mut state).unwrap();
 
     let mut suggestions: Vec<Suggestion> = state.hash_map.into_iter().map(|(_, s)| s).collect();
     suggestions.sort_by(|a, b| b.score.cmp(&a.score));
@@ -102,7 +103,8 @@ enum SuggestionType {
   File,
   Directory,
   Executable,
-  ExternalHistory,
+  History,
+  // ExternalHistory,
 }
 
 // to boost suggestions' score
@@ -111,44 +113,4 @@ enum Priority {
   Low = 16,
   Medium = 32,
   High = 64,
-}
-
-fn find_common_words_index(a: &str, b: &str) -> usize {
-  let mut index = 0;
-
-  let mut other = b.split_whitespace().into_iter();
-  for i in a.split_whitespace().into_iter() {
-    if let Some(j) = other.next() {
-      if i == j {
-        index += i.len() + 1; // +1 for whitespace
-      }
-    }
-  }
-
-  // might overflow because of the +1, so we return the minimum
-  cmp::min(index, cmp::min(a.len(), b.len()))
-}
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn find_common_words() {
-    let a = "git commit --message \"Init\"";
-    let b = "git commit -m";
-
-    assert_eq!(find_common_words_index(a, b), 11);
-  }
-
-  #[test]
-  fn doesnt_overflow() {
-    let a = "l";
-    let b = "l arg";
-    let c = "n";
-
-    assert_eq!(find_common_words_index(a, b), 1);
-
-    assert_eq!(find_common_words_index(b, c), 0);
-  }
 }

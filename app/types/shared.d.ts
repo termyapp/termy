@@ -53,6 +53,7 @@ export type SuggestionKind =
   | 'file'
   | 'directory'
   | 'executable'
+  | 'history'
   | 'externalHistory'
 
 export interface WindowInfo {
