@@ -4,7 +4,7 @@ use chrono::Utc;
 use fuzzy_matcher::FuzzyMatcher;
 use log::{error, info};
 use std::{
-  fs::{File, OpenOptions},
+  fs::{self, File, OpenOptions},
   io::{BufRead, BufReader, BufWriter, Write},
   path::{Path, PathBuf},
 };
@@ -95,7 +95,17 @@ fn history_path() -> PathBuf {
     use crate::util::dirs::test_dir;
     test_dir().join("history")
   } else {
-    config().join("history")
+    let path = config().join("history");
+
+    if !path.exists() {
+      // create the directory if it doesn't exist
+      info!("Creating config directory at `{}`", path.to_string_lossy());
+      if let Err(err) = File::create(&path) {
+        error!("Error creating config directory: {}", err);
+      }
+    }
+
+    path
   }
 }
 
