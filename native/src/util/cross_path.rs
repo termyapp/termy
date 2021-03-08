@@ -70,7 +70,7 @@ impl CrossPath {
         .parent()
         .unwrap_or(Path::new("/"));
       match diff_paths(&self.buf.as_path(), repo_name) {
-        Some(diff) => diff.to_str().unwrap().to_string(),
+        Some(diff) => CrossPath::new(diff.to_str().unwrap_or(&self.to_string())).to_string(),
         _ => self.to_string(),
       }
     } else {
