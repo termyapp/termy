@@ -1,12 +1,12 @@
 use crate::util::{dirs::config, find_common_words_index};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::Utc;
 use fuzzy_matcher::FuzzyMatcher;
 use log::{error, info};
 use std::{
-  fs::{self, File, OpenOptions},
+  fs::{File, OpenOptions},
   io::{BufRead, BufReader, BufWriter, Write},
-  path::{Path, PathBuf},
+  path::PathBuf,
 };
 
 use super::{Priority, Suggestion, SuggestionProvider, SuggestionType};
@@ -28,8 +28,17 @@ pub struct Entry {
 
 impl History {
   pub fn new() -> Self {
-    let entries = parse_history();
+    let file = File::open(history_path()).unwrap();
+    let reader = BufReader::new(file);
+    let mut entries = vec![];
 
+    for result in reader.lines() {
+      if let Ok(line) = result {
+        if let Ok(entry) = parse_line(&line) {
+          entries.push(entry);
+        }
+      }
+    }
     Self { entries }
   }
 
@@ -109,26 +118,16 @@ fn history_path() -> PathBuf {
   }
 }
 
-fn parse_history() -> Vec<Entry> {
-  let file = File::open(history_path()).unwrap();
-  let reader = BufReader::new(file);
-  let mut entries = vec![];
-
-  for result in reader.lines() {
-    if let Ok(line) = result {
-      let mut column = line.split('\t');
-      let date = column.next().unwrap_or_default().to_owned();
-      let current_dir = column.next().unwrap_or_default().to_owned();
-      let value = column.next().unwrap_or_default().to_owned();
-      entries.push(Entry {
-        date,
-        current_dir,
-        value,
-      })
-    }
-  }
-
-  entries
+fn parse_line(line: &str) -> Result<Entry> {
+  let mut column = line.split('\t');
+  let date = column.next().with_context(|| "invalid date")?.to_owned();
+  let current_dir = column.next().with_context(|| "invalid date")?.to_owned();
+  let value = column.next().with_context(|| "invalid date")?.to_owned();
+  Ok(Entry {
+    date,
+    current_dir,
+    value,
+  })
 }
 
 #[cfg(test)]
@@ -137,9 +136,11 @@ mod tests {
 
   #[test]
   fn parses_history() {
-    let mut history = parse_history().into_iter();
+    let history = History::new();
+    let mut entries = history.entries.into_iter();
+
     assert_eq!(
-      history.next().unwrap(),
+      entries.next().unwrap(),
       Entry {
         date: "1".to_string(),
         current_dir: "/".to_string(),
@@ -148,7 +149,7 @@ mod tests {
     );
 
     assert_eq!(
-      history.next().unwrap(),
+      entries.next().unwrap(),
       Entry {
         date: "4242424242".to_string(),
         current_dir: "/Library/Application Support".to_string(),
