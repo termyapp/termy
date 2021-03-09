@@ -5,6 +5,7 @@ use log4rs::config::{Appender, Config, Root};
 use log4rs::encode::pattern::PatternEncoder;
 
 pub fn init() -> Result<()> {
+  // File::create_new()
   // todo: create ~/.termy folder and put log inside there & delete it on each init
   // or .config folder (standard?)
   // let file = FileAppender::builder()

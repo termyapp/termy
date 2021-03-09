@@ -1,7 +1,7 @@
+use crate::suggestions::executables::EXECUTABLES;
 use crate::{
-  paths::CrossPath,
   shell::{tsfn_send, Cell, ServerMessage, Status},
-  util::executables::EXECUTABLES,
+  util::cross_path::CrossPath,
 };
 use anyhow::Result;
 use internal::Internal;

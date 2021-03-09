@@ -20,6 +20,8 @@ export const loadMonaco = () => {
           return completionItemKind.Folder
         case 'executable':
           return completionItemKind.Event
+        case 'history':
+          return completionItemKind.EnumMember
         case 'externalHistory':
           return completionItemKind.Enum
         default:
@@ -75,7 +77,7 @@ export const loadMonaco = () => {
         const currentDir = useStore.getState().cells[cellId].currentDir
 
         const rawSuggestions: NativeSuggestion[] = await ipc.invoke({
-          type: 'autocomplete',
+          type: 'get-suggestions',
           value,
           currentDir,
         })

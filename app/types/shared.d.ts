@@ -16,7 +16,7 @@ export interface FrontendMessage {
 
 export type Message =
   | { type: 'api'; command: string } // todo: create types for the api
-  | { type: 'autocomplete'; value: string; currentDir: string }
+  | { type: 'get-suggestions'; value: string; currentDir: string }
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
   | { type: 'tldr'; command: string }
@@ -53,6 +53,7 @@ export type SuggestionKind =
   | 'file'
   | 'directory'
   | 'executable'
+  | 'history'
   | 'externalHistory'
 
 export interface WindowInfo {

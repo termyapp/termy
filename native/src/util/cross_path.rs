@@ -70,7 +70,7 @@ impl CrossPath {
         .parent()
         .unwrap_or(Path::new("/"));
       match diff_paths(&self.buf.as_path(), repo_name) {
-        Some(diff) => diff.to_str().unwrap().to_string(),
+        Some(diff) => CrossPath::new(diff.to_str().unwrap_or(&self.to_string())).to_string(),
         _ => self.to_string(),
       }
     } else {
@@ -98,36 +98,6 @@ impl fmt::Display for CrossPath {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f, "{}", self.buf.to_slash_lossy())
   }
-}
-
-/// Path to Termy's root directory
-///
-/// Used for:
-///  - external resources
-///  - setting.json
-///  - termy.db
-///  - ...
-///
-/// | Environment| Dev | Production |
-/// | --- | --- | --- |
-/// | MacOS| `termy/electron/native` | Production |
-/// | Linux| Dev | Production |
-/// | Windows| Dev | Production |
-///
-/// Path is different during build time, running Termy in development mode and running in production
-pub fn root_path() -> Result<PathBuf> {
-  let path = if cfg!(debug_assertions) {
-    env::current_dir()?
-  } else {
-    // https://www.electron.build/configuration/contents.html#filesetto
-    env::current_exe()?
-  };
-  Ok(path)
-}
-
-#[allow(dead_code)]
-pub fn test_dir() -> Result<PathBuf> {
-  Ok(root_path()?.join("test"))
 }
 
 #[cfg(test)]

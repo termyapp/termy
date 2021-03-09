@@ -29,11 +29,12 @@ export const initIpc = (): any | Promise<any> => {
         const result = native.api(message.command)
         return result
       }
-      case 'autocomplete': {
+      case 'get-suggestions': {
         const suggestions = await native.getSuggestions(
           message.value,
           message.currentDir,
         )
+
         return suggestions
       }
       case 'run-cell': {

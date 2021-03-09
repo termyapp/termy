@@ -21,6 +21,5 @@ app/public/*.node
 app/public/*.js
 app/public/electron.js.LICENSE.txt
 .env
-termy.db
 
 monaco-editor

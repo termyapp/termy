@@ -1,7 +1,7 @@
 use super::internal::view;
 use crate::{
-  paths::CrossPath,
   shell::{Cell, Data, ServerMessage, Status},
+  util::cross_path::CrossPath,
 };
 use anyhow::Result;
 use log::info;
