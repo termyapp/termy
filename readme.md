@@ -48,11 +48,13 @@ To provide VSCode style autocompletions in the terminal we need know the current
 
 Since Termy doesn't use the shell as intended, many of the built-in features will stop working (installed plugins, user config).
 
-But don't worry: many oh-my-zsh plugins will be in Termy and soon you'll also be able to configure your settings!
+But don't worry: soon there will be an option to configure your settings and add plugins!
 
 #### What about performance?
 
-Even without optimizations Termy is pretty fast at the moment. Now, I'm mainly focusing on the features that make Termy unique, but before the v1.0 release performance will improve a lot.
+Electron apps are not slow by default. By making performance a priority they can feel just as fast as a native app.
+
+Currently I'm focused on features that make Termy unique but before for the `v1.0` there will be a performance overhaul. That said, Termy is pretty fast at the moment. Also, the code that interacts with your system is in Rust, which does not have a reputation of being slow.
 
 #### Does it have `TRUECOLOR`?
 
