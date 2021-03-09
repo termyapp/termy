@@ -59,10 +59,9 @@ impl Internal {
         None,
       ),
       Self::Cd => {
-        if let Some(mut path) =
+        if let Some(path) =
           CrossPath::new(cell.current_dir()).find_path(&args.into_iter().next().unwrap())
         {
-          path.canonicalize();
           (
             view::view(&path)?,
             Some(vec![

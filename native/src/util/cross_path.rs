@@ -1,7 +1,6 @@
-use anyhow::Result;
 use dunce::canonicalize;
 use git2::Repository;
-use log::warn;
+use log::{error, warn};
 use path_slash::PathBufExt;
 use pathdiff::diff_paths;
 use std::{
@@ -69,7 +68,7 @@ impl CrossPath {
         .unwrap_or(Path::new("/"))
         .parent()
         .unwrap_or(Path::new("/"));
-      match diff_paths(&self.buf.as_path(), repo_name) {
+      match diff_paths(&self, repo_name) {
         Some(diff) => CrossPath::new(diff.to_str().unwrap_or(&self.to_string())).to_string(),
         _ => self.to_string(),
       }
@@ -94,8 +93,17 @@ impl CrossPath {
   }
 }
 
+impl AsRef<Path> for CrossPath {
+  fn as_ref(&self) -> &Path {
+    &self.buf
+  }
+}
+
 impl fmt::Display for CrossPath {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    if let Err(err) = self.buf.canonicalize() {
+      error!("Error while canonicalizing path {}", err);
+    }
     write!(f, "{}", self.buf.to_slash_lossy())
   }
 }

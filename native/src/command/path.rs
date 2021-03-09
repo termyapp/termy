@@ -8,7 +8,6 @@ use log::info;
 
 pub fn path(mut path: CrossPath, cell: Cell) -> Result<Status> {
   info!("Running path {:?}", path);
-  path.canonicalize();
 
   if path.buf.is_dir() {
     info!("Changing directory to {}", path);
