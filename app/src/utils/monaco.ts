@@ -40,10 +40,6 @@ export const loadMonaco = () => {
         type: 'tldr',
         command: suggestion.label,
       })
-      if (tldr && !documentation) {
-        documentation =
-          tldr + '\n*Source:* [📚tldr](https://github.com/tldr-pages/tldr)'
-      }
 
       if ('date' in suggestion && suggestion.date) {
         label = {
