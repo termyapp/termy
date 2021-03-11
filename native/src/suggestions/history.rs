@@ -88,9 +88,12 @@ impl History {
 
   fn parse_line(line: &str) -> Result<Entry> {
     let mut column = line.split('\t');
-    let date = column.next().with_context(|| "invalid date")?.to_owned();
-    let current_dir = column.next().with_context(|| "invalid date")?.to_owned();
-    let value = column.next().with_context(|| "invalid date")?.to_owned();
+    let date = column.next().with_context(|| "Invalid date")?.to_owned();
+    let current_dir = column
+      .next()
+      .with_context(|| "Invalid current dir")?
+      .to_owned();
+    let value = column.next().with_context(|| "Invalid value")?.to_owned();
     Ok(Entry {
       date,
       current_dir,
