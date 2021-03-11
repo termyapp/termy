@@ -1,41 +1,104 @@
-use std::{fs::File, io::Read, path::PathBuf};
+use std::{
+  fs::{self},
+  path::Path,
+};
 
 use super::{Priority, ProviderState, Suggestion, SuggestionProvider, SuggestionType};
 use anyhow::Result;
 use fuzzy_matcher::FuzzyMatcher;
 use is_executable::IsExecutable;
+use log::info;
 
 lazy_static! {
   // todo: update this periodically
-  pub static ref EXECUTABLES: Vec<(String, Option<String>)> = get_executables();
+  // todo: use hashmap, since lookups are faster w/ 15 or more elements
+  pub static ref EXECUTABLES: Executables = Executables::new();
 }
 
-pub struct Executables;
+struct Executable {
+  name: String,
+  documentation: Option<String>,
+}
+
+pub struct Executables {
+  executables: Vec<Executable>,
+}
+
+impl Executables {
+  fn new() -> Self {
+    let path_var = std::env::var_os("PATH").expect("PATH not found");
+    let paths: Vec<_> = std::env::split_paths(&path_var).collect();
+
+    // todo: add `cmd` built-ins on windows
+    let mut executables = vec![];
+    for path in paths {
+      if let Ok(mut contents) = std::fs::read_dir(path) {
+        while let Some(Ok(item)) = contents.next() {
+          let mut path = item.path();
+          if path.is_executable() {
+            #[cfg(windows)]
+            {
+              // PING.EXE -> PING
+              path.set_extension("");
+            }
+
+            let name = path
+              .file_name()
+              .unwrap_or_default()
+              .to_str()
+              .unwrap()
+              .to_string();
+
+            let executable = Executable {
+              name: if cfg!(windows) {
+                name.to_lowercase()
+              } else {
+                name.to_owned()
+              },
+              documentation: tldr_docs(&name),
+            };
+            executables.push(executable);
+          }
+        }
+      }
+    }
+
+    Self { executables }
+  }
+
+  pub fn contains(&self, name: &str) -> bool {
+    if self.executables.contains(&name)
+      || (cfg!(windows) && self.executables.contains(&name.to_lowercase()))
+    {
+      true
+    } else {
+      false
+    }
+  }
+}
 
 impl SuggestionProvider for Executables {
   fn suggestions(&self, state: &mut ProviderState) -> Result<()> {
-    let executables = EXECUTABLES.iter();
-    for executable in executables {
-      // todo: get tldr docs
-      // if let Ok(suggestion) = get_docs(&executable) {
-      if let Some((score, _)) = state
-        .matcher
-        .fuzzy_indices(&executable.0, state.value.as_ref())
-      {
+    let executables = EXECUTABLES.executables.into_iter();
+    for Executable {
+      name,
+      documentation,
+    } in executables
+    {
+      if let Some((score, _)) = state.matcher.fuzzy_indices(&name, state.value.as_ref()) {
         state.insert(
-          executable.0.clone(),
+          name.clone(),
           Suggestion {
-            label: executable.0.clone(),
+            label: name.clone(),
             insert_text: None,
-            score: if &(state.value) == &executable.0 {
-              // boosting so for something like `bash`, the
-              // `bash` executable shows up as the 1st suggestion
+            score: if &(state.value) == &name {
+              // boosting to make sure exact matches are included
               score + Priority::High as i64
             } else {
               score
             },
             kind: SuggestionType::Executable,
-            documentation: executable.1.clone(),
+            documentation,
             date: None,
           },
         );
@@ -46,57 +109,19 @@ impl SuggestionProvider for Executables {
   }
 }
 
-// todo: add `cmd` built-ins on windows
-fn get_executables() -> Vec<(String, Option<String>)> {
-  let path_var = std::env::var_os("PATH").expect("PATH not found");
-  let paths: Vec<_> = std::env::split_paths(&path_var).collect();
+fn tldr_docs(name: &str) -> Option<String> {
+  let path = if cfg!(debug_assertions) {
+    Path::new("../../external/tldr/pages/common").join(name)
+  } else {
+    Path::new("../external/tldr/common").join(name)
+  };
+  if let Ok(contents) = fs::read_to_string(path) {
+    info!("Found TLDR docs for {}", name);
 
-  let mut executables: Vec<(String, Option<String>)> = vec![];
-  for path in paths {
-    if let Ok(mut contents) = std::fs::read_dir(path) {
-      while let Some(Ok(item)) = contents.next() {
-        let mut path = item.path();
-        if path.is_executable() {
-          path.set_extension("");
-          let name = path
-            .file_name()
-            .unwrap_or_default()
-            .to_str()
-            .expect("File name should be UTF-8");
-
-          executables.push(if cfg!(windows) {
-            (name.to_lowercase(), None)
-          } else {
-            (name.to_owned(), None)
-          });
-
-          fn read_file_into_string(path: PathBuf, mut executables: Vec<(String, Option<String>)>, string_to_concat: String) {
-            let cmd_name = path
-            .file_name()
-            .unwrap_or_default()
-            .to_str()
-            .expect("File name should be UTF-8");
-
-            let path = string_to_concat + cmd_name;
-
-            let mut file = File::open(&path).expect("Unable to open file!");
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).expect("Unable to transfer file contents into string!");
-
-            executables[0].1 = std::option::Option::Some(contents);
-          }
-          
-          if cfg!(debug_assertions) {
-            read_file_into_string(path, executables, "../../external/tldr/pages/common/".to_string());
-          } else {
-            read_file_into_string(path, executables, "../external/tldr/common/".to_string());
-          }
-        }
-      }      
-    }
+    return Some(contents);
   }
 
-  executables
+  None
 }
 
 #[cfg(test)]
@@ -107,11 +132,10 @@ mod tests {
   #[test]
   fn getting_executables() {
     let start = Instant::now();
-    let executables = get_executables();
+    let executables = EXECUTABLES.executables;
     let duration = start.elapsed();
 
     println!("Time elapsed in expensive_function() is: {:?}", duration);
     assert!(executables.len() > 1);
-    assert!(executables[0].0.contains(&("cargo".to_string())));
   }
 }
