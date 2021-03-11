@@ -1,5 +1,5 @@
 use crate::{
-  command::{external::FrontendMessage, Command},
+  command::{external::FrontendMessage, Command, Kind},
   suggestions::history::History,
   util::cross_path::CrossPath,
 };
@@ -53,8 +53,17 @@ impl Cell {
     // once operators (|, &&, ||) are introduced, this could become Vec<Command>
     let command = parse_value(&(self.value), &(self.current_dir));
 
-    let mut history = History::new();
-    history.add(self.current_dir.clone(), self.value.clone());
+    // append to history
+    match command.kind {
+      Kind::Internal(_) | Kind::External(_) => {
+        let mut history = History::new();
+        history.add(self.current_dir.clone(), self.value.clone());
+      }
+      Kind::Path(_) => {
+        // todo: append to visited paths
+      }
+      _ => {}
+    }
 
     info!("Executing: {:?}", command);
 

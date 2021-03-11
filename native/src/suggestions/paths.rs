@@ -5,6 +5,24 @@ use anyhow::Result;
 use std::{fs, path::Path, time::UNIX_EPOCH};
 pub struct Paths;
 
+// todo: visited paths
+// if &current_dir.to_string() == &path.to_string() {
+// don't suggest current directory
+// continue;
+// if let Some(path) = diff_paths(
+//   CrossPath::new(&entry.current_dir).join(&entry.value),
+//   &state.current_dir,
+// ) {
+//   info!("Found path {:?}", path);
+//   let absolute_path = CrossPath::new(&state.current_dir).join(&path);
+//   if absolute_path.buf.exists() {
+//     label = path.to_str().unwrap_or_default().to_owned();
+//     key = label.clone();
+//   } else {
+//     continue;
+//   }
+// }
+
 impl SuggestionProvider for Paths {
   fn suggestions(&self, state: &mut ProviderState) -> Result<()> {
     let value = state.value.clone();

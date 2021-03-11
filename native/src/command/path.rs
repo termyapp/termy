@@ -7,6 +7,7 @@ use anyhow::Result;
 use log::info;
 
 pub fn path(mut path: CrossPath, cell: Cell) -> Result<Status> {
+  path.canonicalize();
   info!("Running path {:?}", path);
 
   if path.buf.is_dir() {

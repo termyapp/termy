@@ -36,23 +36,23 @@ export const loadMonaco = () => {
       let label: unknown = suggestion.label
 
       // todo: move this into resolveCompletionItem (or to native)
-      const tldr = ipc.sync({
-        type: 'tldr',
-        command: suggestion.label,
-      })
-      if (tldr && !documentation) {
-        documentation =
-          tldr + '\n*Source:* [📚tldr](https://github.com/tldr-pages/tldr)'
-      }
+      // const tldr = ipc.sync({
+      //   type: 'tldr',
+      //   command: suggestion.label,
+      // })
+      // if (tldr && !documentation) {
+      //   documentation =
+      //     tldr + '\n*Source:* [📚tldr](https://github.com/tldr-pages/tldr)'
+      // }
 
-      if ('date' in suggestion && suggestion.date) {
-        label = {
-          name: label,
-          qualifier: `Modified ${formatDistanceToNow(
-            parseInt(suggestion.date),
-          )} ago`,
-        }
-      }
+      // if ('date' in suggestion && suggestion.date) {
+      //   label = {
+      //     name: label,
+      //     qualifier: `Modified ${formatDistanceToNow(
+      //       parseInt(suggestion.date),
+      //     )} ago`,
+      //   }
+      // }
 
       return {
         label,
@@ -88,6 +88,8 @@ export const loadMonaco = () => {
         ]
 
         suggestions = _.uniqBy(suggestions, 'label')
+
+        console.debug('SUGGESTIONS', suggestions)
 
         return { incomplete: false, suggestions }
       },

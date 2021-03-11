@@ -12,12 +12,12 @@ mod path;
 
 #[derive(Debug)]
 pub struct Command {
-  kind: Kind,
+  pub kind: Kind,
   args: Vec<String>,
 }
 
 #[derive(Debug)]
-enum Kind {
+pub enum Kind {
   Path(CrossPath),
   Internal(Internal),
   External(String),

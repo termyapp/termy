@@ -34,7 +34,7 @@ impl Task for Suggestions {
       .take(100)
       .collect::<Vec<Suggestion>>();
 
-    trace!("Suggestions: {:?}", suggestions);
+    // trace!("Suggestions: {:#?}", suggestions);
 
     Ok(suggestions)
   }
