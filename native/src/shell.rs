@@ -1,6 +1,6 @@
 use crate::{
   command::{external::FrontendMessage, Command, Kind},
-  suggestions::history::History,
+  suggestions::history::HISTORY,
   util::cross_path::CrossPath,
 };
 use crossbeam_channel::{Receiver, Sender};
@@ -55,10 +55,14 @@ impl Cell {
 
     // append to history
     match command.kind {
-      Kind::Internal(_) | Kind::External(_) => {
-        let mut history = History::new();
-        history.add(self.current_dir.clone(), self.value.clone());
-      }
+      Kind::Internal(_) | Kind::External(_) => match HISTORY.lock() {
+        Ok(mut history) => {
+          history.add(self.current_dir.clone(), self.value.clone());
+        }
+        Err(err) => {
+          error!("Failed to lock HISTORY: {}", err);
+        }
+      },
       Kind::Path(_) => {
         // todo: append to visited paths
       }

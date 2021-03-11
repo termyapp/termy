@@ -7,12 +7,13 @@ use std::{
   fs::{File, OpenOptions},
   io::{BufRead, BufReader, BufWriter, Write},
   path::PathBuf,
+  sync::Mutex,
 };
 
 use super::{Priority, Suggestion, SuggestionProvider, SuggestionType};
 
 lazy_static! {
-  //   pub static ref EXECUTABLES: Vec<String> = get_executables();
+  pub static ref HISTORY: Mutex<History> = Mutex::new(History::new());
 }
 
 pub struct History {
@@ -27,7 +28,7 @@ pub struct Entry {
 }
 
 impl History {
-  pub fn new() -> Self {
+  fn new() -> Self {
     let file = File::open(Self::history_path()).unwrap();
     let reader = BufReader::new(file);
     let mut entries = vec![];

@@ -1,8 +1,7 @@
 use anyhow::Result;
 use executables::Executables;
 use fuzzy_matcher::skim::SkimMatcherV2;
-use history::History;
-use log::trace;
+use history::HISTORY;
 use napi::{Env, JsUnknown, Task};
 use paths::Paths;
 use serde::Serialize;
@@ -20,11 +19,11 @@ impl Task for Suggestions {
 
   fn compute(&mut self) -> napi::Result<Self::Output> {
     let mut state = ProviderState::new(self.0.clone(), self.1.clone());
+    let history = HISTORY.lock().unwrap();
 
     // order matters since we're using a hashmap
     Executables.suggestions(&mut state).unwrap();
     Paths.suggestions(&mut state).unwrap();
-    let history = History::new();
     history.suggestions(&mut state).unwrap();
 
     let mut suggestions: Vec<Suggestion> = state.hash_map.into_iter().map(|(_, s)| s).collect();
