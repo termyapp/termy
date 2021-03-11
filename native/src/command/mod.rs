@@ -41,11 +41,7 @@ impl Command {
         internal if Internal::parse(internal).is_some() => {
           Kind::Internal(Internal::parse(internal).unwrap())
         }
-        _ if EXECUTABLES.contains(&command)
-          || (cfg!(windows) && EXECUTABLES.contains(&command.to_lowercase())) =>
-        {
-          Kind::External(command)
-        }
+        _ if EXECUTABLES.contains(&command) => Kind::External(command),
         _ => Kind::NotFound,
       },
       args,

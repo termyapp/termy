@@ -43,25 +43,6 @@ export const initIpc = (): any | Promise<any> => {
       case 'frontend-message': {
         return handleFrontendMessage(message, getWindow(event))
       }
-      // todo: move tldr and write to native (api?)
-      case 'tldr': {
-        const { command } = message
-        try {
-          const content = fs.readFileSync(
-            path.resolve(
-              app.getAppPath(),
-              isDev
-                ? `../../external/tldr/pages/common/${command}.md`
-                : `../../tldr/common/${command}.md`,
-            ),
-            { encoding: 'utf-8' },
-          )
-          return content
-        } catch {
-          // file does not exist
-          return null
-        }
-      }
       case 'write': {
         const { path, value } = message
         fs.writeFile(path, value, err => {
@@ -96,26 +77,6 @@ export const initIpc = (): any | Promise<any> => {
         const result = native.api(message.command)
         returnValue = result
         break
-      }
-      case 'tldr': {
-        const { command } = message
-        try {
-          const content = fs.readFileSync(
-            path.resolve(
-              app.getAppPath(),
-              isDev
-                ? `../../external/tldr/pages/common/${command}.md`
-                : `../../tldr/common/${command}.md`,
-            ),
-            { encoding: 'utf-8' },
-          )
-          returnValue = content
-          break
-        } catch {
-          // file does not exist
-          returnValue = null
-          break
-        }
       }
       case 'write': {
         const { path, value } = message

@@ -1,5 +1,5 @@
 use anyhow::Result;
-use executables::Executables;
+use executables::EXECUTABLES;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use history::HISTORY;
 use napi::{Env, JsUnknown, Task};
@@ -22,7 +22,7 @@ impl Task for Suggestions {
     let history = HISTORY.lock().unwrap();
 
     // order matters since we're using a hashmap
-    Executables.suggestions(&mut state).unwrap();
+    EXECUTABLES.suggestions(&mut state).unwrap();
     Paths.suggestions(&mut state).unwrap();
     history.suggestions(&mut state).unwrap();
 
@@ -32,8 +32,6 @@ impl Task for Suggestions {
       .into_iter()
       .take(100)
       .collect::<Vec<Suggestion>>();
-
-    // trace!("Suggestions: {:#?}", suggestions);
 
     Ok(suggestions)
   }
