@@ -29,7 +29,6 @@ impl SuggestionProvider for Paths {
     let current_dir = CrossPath::new(&state.current_dir);
     for path in tokenize_value(&value).into_iter().map(expand_alias) {
       let clean_path = clean_path(&path);
-      // todo: '.' no suggs.
       if let Some(path) = current_dir.find_path(clean_path) {
         insert_paths(state, path.to_string())?;
       } else if path.len() <= 1 {
@@ -75,7 +74,7 @@ fn insert_paths<P: AsRef<Path>>(state: &mut ProviderState, path: P) -> Result<()
               None
             }
           },
-          score: 100,
+          score: 300,
           kind: if is_dir {
             SuggestionType::Directory
           } else {

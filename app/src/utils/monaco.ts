@@ -65,7 +65,7 @@ export const loadMonaco = () => {
     }
 
     monaco.languages.registerCompletionItemProvider(TERMY, {
-      triggerCharacters: [' ', '/'],
+      triggerCharacters: [' ', '/', '.'],
       provideCompletionItems: async (
         model: Monaco.editor.ITextModel,
         position: Monaco.Position,
