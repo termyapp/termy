@@ -68,22 +68,22 @@ impl History {
   }
 
   fn history_path() -> PathBuf {
-    if cfg!(debug_assertions) {
+    let path = if cfg!(debug_assertions) {
       use crate::util::dirs::test_dir;
       test_dir().join("history")
     } else {
-      let path = config().join("history");
+      config().join("history")
+    };
 
-      if !path.exists() {
-        // create the directory if it doesn't exist
-        info!("Creating config directory at `{}`", path.to_string_lossy());
-        if let Err(err) = File::create(&path) {
-          error!("Error creating config directory: {}", err);
-        }
+    if !path.exists() {
+      // create the directory if it doesn't exist
+      info!("Creating history file at `{}`", path.to_string_lossy());
+      if let Err(err) = File::create(&path) {
+        error!("Error creating history file: {}", err);
       }
-
-      path
     }
+
+    path
   }
 
   fn parse_line(line: &str) -> Result<Entry> {
