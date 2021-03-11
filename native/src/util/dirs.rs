@@ -20,8 +20,8 @@ pub fn config() -> PathBuf {
 /// | Environment| Dev | Production |
 /// | --- | --- | --- |
 /// | MacOS| termy/electron/native | Termy.app/Contents/MacOS/Termy |
-/// | Linux| termy/electron/native | ? |
-/// | Windows| termy/electron/native | ? |
+/// | Linux| termy/electron/native | /tmp/Termy-mount-XXXX/ |
+/// | Windows| termy/electron/native | AppData\\Local\\Programs\\termy-electron |
 ///
 /// Path is different during build time, running Termy in development mode and running in production
 pub fn root_path() -> PathBuf {
@@ -29,8 +29,17 @@ pub fn root_path() -> PathBuf {
     // todo: fix this (problem is there are 2 different debug paths (native, electron))
     dirs::home_dir().unwrap().join("dev/termy/native")
   } else {
-    // https://www.electron.build/configuration/contents.html#filesetto
-    env::current_exe().unwrap()
+    if cfg!(target_os = "macos") {
+      env::current_exe()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .to_path_buf()
+    } else {
+      env::current_exe().unwrap().parent().unwrap().to_path_buf()
+    }
   }
 }
 
