@@ -97,6 +97,8 @@ fn tldr_docs(name: &str) -> Option<String> {
   } else {
     if cfg!(windows) {
       root_path().parent().unwrap().join("tldr/common")
+    } else if cfg!(linux) {
+      root_path().join("tldr/common")
     } else {
       root_path()
         .parent()
