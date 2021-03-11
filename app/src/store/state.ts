@@ -27,7 +27,7 @@ export const getState = (): State => {
   const item = window.localStorage.getItem(TERMY_STATE)
   if (item) {
     try {
-      console.info('restoring state from local storage')
+      console.debug('restoring state from local storage')
       const state: State = JSON.parse(item)
       for (const id in state.cells) {
         state.cells[id].status = null
@@ -35,7 +35,7 @@ export const getState = (): State => {
       }
       return state
     } catch {
-      console.info("couldn't restore state from local storage")
+      console.error("couldn't restore state from local storage")
       return getDefaultState()
     }
   } else {
