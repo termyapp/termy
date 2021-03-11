@@ -95,7 +95,7 @@ fn tldr_docs(name: &str) -> Option<String> {
   let tldr_path = if cfg!(debug_assertions) {
     root_path().join("../external/tldr/pages/common")
   } else {
-    if cfg!(macos) {
+    if cfg!(target_os = "macos") {
       root_path()
         .parent()
         .unwrap()
