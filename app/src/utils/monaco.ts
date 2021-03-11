@@ -29,7 +29,7 @@ export const loadMonaco = () => {
       }
     }
 
-    const suggestionToCompletionItem = (
+    const suggestionToCompletionItem = (value: string) => (
       suggestion: Suggestion | NativeSuggestion,
     ): Monaco.languages.CompletionItem => {
       let label: unknown = suggestion.label
@@ -43,11 +43,22 @@ export const loadMonaco = () => {
         }
       }
 
+      let insertText = suggestion.insertText
+        ? suggestion.insertText
+        : suggestion.label
+
+      if (
+        value.length > 0 &&
+        insertText.length > 0 &&
+        insertText[0] === value[value.length - 1]
+      ) {
+        // make sure '.termy' suggestion gets inserted as '.termy' and not '..termy'
+        insertText = insertText.substring(1)
+      }
+
       return {
         label,
-        insertText: suggestion.insertText
-          ? suggestion.insertText
-          : suggestion.label,
+        insertText,
         kind: toMonacoKind(suggestion.kind),
         documentation: suggestion.documentation
           ? { value: suggestion.documentation }
@@ -73,9 +84,11 @@ export const loadMonaco = () => {
           currentDir,
         })
 
+        const withValue = suggestionToCompletionItem(value)
+
         let suggestions: Monaco.languages.CompletionItem[] = [
-          ...getTypedCliSuggestions(value).map(suggestionToCompletionItem),
-          ...rawSuggestions.map(suggestionToCompletionItem),
+          ...getTypedCliSuggestions(value).map(withValue),
+          ...rawSuggestions.map(withValue),
         ]
 
         suggestions = _.uniqBy(suggestions, 'label')
