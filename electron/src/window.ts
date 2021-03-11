@@ -24,6 +24,7 @@ export const createWindow = async (): Promise<TermyWindow> => {
     frame: isMac,
     transparent: isMac,
     acceptFirstMouse: true,
+    icon: getIcon(),
     webPreferences: {
       preload: getPreloadPath(),
       contextIsolation: true,
@@ -109,3 +110,8 @@ const getUrl = () =>
 
 const getPreloadPath = () =>
   path.resolve(app.getAppPath(), isDev ? './preload.js' : 'build/preload.js')
+
+const getIcon = () =>
+  process.platform === 'linux'
+    ? path.resolve(app.getAppPath(), 'build/icon.png')
+    : undefined
