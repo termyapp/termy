@@ -7,12 +7,13 @@ use std::{
   fs::{File, OpenOptions},
   io::{BufRead, BufReader, BufWriter, Write},
   path::PathBuf,
+  sync::Mutex,
 };
 
 use super::{Priority, Suggestion, SuggestionProvider, SuggestionType};
 
 lazy_static! {
-  //   pub static ref EXECUTABLES: Vec<String> = get_executables();
+  pub static ref HISTORY: Mutex<History> = Mutex::new(History::new());
 }
 
 pub struct History {
@@ -27,14 +28,14 @@ pub struct Entry {
 }
 
 impl History {
-  pub fn new() -> Self {
-    let file = File::open(history_path()).unwrap();
+  fn new() -> Self {
+    let file = File::open(Self::history_path()).unwrap();
     let reader = BufReader::new(file);
     let mut entries = vec![];
 
     for result in reader.lines() {
       if let Ok(line) = result {
-        if let Ok(entry) = parse_line(&line) {
+        if let Ok(entry) = Self::parse_line(&line) {
           entries.push(entry);
         }
       }
@@ -52,7 +53,7 @@ impl History {
     let file = OpenOptions::new()
       .append(true)
       .create(true)
-      .open(history_path())
+      .open(Self::history_path())
       .unwrap();
     let mut writer = BufWriter::new(file);
     if let Err(err) = write!(
@@ -65,24 +66,56 @@ impl History {
 
     self.entries.push(entry);
   }
+
+  fn history_path() -> PathBuf {
+    let path = if cfg!(debug_assertions) {
+      use crate::util::dirs::test_dir;
+      test_dir().join("history")
+    } else {
+      config().join("history")
+    };
+
+    if !path.exists() {
+      // create the directory if it doesn't exist
+      info!("Creating history file at `{}`", path.to_string_lossy());
+      if let Err(err) = File::create(&path) {
+        error!("Error creating history file: {}", err);
+      }
+    }
+
+    path
+  }
+
+  fn parse_line(line: &str) -> Result<Entry> {
+    let mut column = line.split('\t');
+    let date = column.next().with_context(|| "Invalid date")?.to_owned();
+    let current_dir = column
+      .next()
+      .with_context(|| "Invalid current dir")?
+      .to_owned();
+    let value = column.next().with_context(|| "Invalid value")?.to_owned();
+    Ok(Entry {
+      date,
+      current_dir,
+      value,
+    })
+  }
 }
 
 impl SuggestionProvider for History {
   fn suggestions(&self, state: &mut super::ProviderState) -> Result<()> {
-    // todo: current_dir -> diff path
     for entry in &self.entries {
-      if let Some((score, _)) = state
-        .matcher
-        .fuzzy_indices(&entry.value, state.value.as_ref())
-      {
+      if let Some(score) = state.matcher.fuzzy_match(&entry.value, &state.value) {
         let label =
-          String::from(&entry.value[find_common_words_index(state.value.as_ref(), &entry.value)..]);
+          String::from(&entry.value[find_common_words_index(&state.value, &entry.value)..]);
+
         state.insert(
           entry.value.clone(),
           Suggestion {
             label,
             insert_text: None,
             score: if entry.current_dir == state.current_dir {
+              // boost entries that were run in the same directory
               score + Priority::High as i64
             } else {
               score
@@ -97,37 +130,6 @@ impl SuggestionProvider for History {
 
     Ok(())
   }
-}
-
-fn history_path() -> PathBuf {
-  if cfg!(debug_assertions) {
-    use crate::util::dirs::test_dir;
-    test_dir().join("history")
-  } else {
-    let path = config().join("history");
-
-    if !path.exists() {
-      // create the directory if it doesn't exist
-      info!("Creating config directory at `{}`", path.to_string_lossy());
-      if let Err(err) = File::create(&path) {
-        error!("Error creating config directory: {}", err);
-      }
-    }
-
-    path
-  }
-}
-
-fn parse_line(line: &str) -> Result<Entry> {
-  let mut column = line.split('\t');
-  let date = column.next().with_context(|| "invalid date")?.to_owned();
-  let current_dir = column.next().with_context(|| "invalid date")?.to_owned();
-  let value = column.next().with_context(|| "invalid date")?.to_owned();
-  Ok(Entry {
-    date,
-    current_dir,
-    value,
-  })
 }
 
 #[cfg(test)]

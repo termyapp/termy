@@ -1,6 +1,6 @@
 use crate::{
-  command::{external::FrontendMessage, Command},
-  suggestions::history::History,
+  command::{external::FrontendMessage, Command, Kind},
+  suggestions::history::HISTORY,
   util::cross_path::CrossPath,
 };
 use crossbeam_channel::{Receiver, Sender};
@@ -53,8 +53,21 @@ impl Cell {
     // once operators (|, &&, ||) are introduced, this could become Vec<Command>
     let command = parse_value(&(self.value), &(self.current_dir));
 
-    let mut history = History::new();
-    history.add(self.current_dir.clone(), self.value.clone());
+    // append to history
+    match command.kind {
+      Kind::Internal(_) | Kind::External(_) => match HISTORY.lock() {
+        Ok(mut history) => {
+          history.add(self.current_dir.clone(), self.value.clone());
+        }
+        Err(err) => {
+          error!("Failed to lock HISTORY: {}", err);
+        }
+      },
+      Kind::Path(_) => {
+        // todo: append to visited paths
+      }
+      _ => {}
+    }
 
     info!("Executing: {:?}", command);
 

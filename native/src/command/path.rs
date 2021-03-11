@@ -6,9 +6,10 @@ use crate::{
 use anyhow::Result;
 use log::info;
 
+// todo: change this to cd?
 pub fn path(mut path: CrossPath, cell: Cell) -> Result<Status> {
-  info!("Running path {:?}", path);
   path.canonicalize();
+  info!("Running path {:?}", path);
 
   if path.buf.is_dir() {
     info!("Changing directory to {}", path);

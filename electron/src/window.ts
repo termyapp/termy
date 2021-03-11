@@ -63,13 +63,14 @@ const Window = {
   },
   handleNewWindow: (window: TermyWindow): void => {
     // open urls in external browser
-    window.webContents.on('new-window', (event, url) => {
-      const protocol = new URL(url).protocol
-      if (protocol === 'http:' || protocol === 'https:') {
+    const openExternal = (event: Electron.Event, url: string) => {
+      if (url != window.webContents.getURL()) {
         event.preventDefault()
         shell.openExternal(url)
       }
-    })
+    }
+    window.webContents.on('will-navigate', openExternal)
+    window.webContents.on('new-window', openExternal)
   },
   setupDevTools: async (window: TermyWindow) => {
     if (isDev) {

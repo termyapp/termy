@@ -56,7 +56,7 @@ export const loadMonaco = () => {
     }
 
     monaco.languages.registerCompletionItemProvider(TERMY, {
-      triggerCharacters: [' ', '/'],
+      triggerCharacters: [' ', '/', '.'],
       provideCompletionItems: async (
         model: Monaco.editor.ITextModel,
         position: Monaco.Position,
@@ -79,6 +79,8 @@ export const loadMonaco = () => {
         ]
 
         suggestions = _.uniqBy(suggestions, 'label')
+
+        console.debug('SUGGESTIONS', suggestions)
 
         return { incomplete: false, suggestions }
       },
