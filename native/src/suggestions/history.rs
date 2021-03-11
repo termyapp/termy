@@ -105,7 +105,7 @@ impl History {
 impl SuggestionProvider for History {
   fn suggestions(&self, state: &mut super::ProviderState) -> Result<()> {
     for entry in &self.entries {
-      if let Some((score, _)) = state.matcher.fuzzy_indices(&entry.value, &state.value) {
+      if let Some(score) = state.matcher.fuzzy_match(&entry.value, &state.value) {
         let label =
           String::from(&entry.value[find_common_words_index(&state.value, &entry.value)..]);
 

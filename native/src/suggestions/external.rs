@@ -10,7 +10,7 @@
 //       if let Ok(line) = line {
 //         if let Some(command) = line.split(";").last() {
 //           let command = command.to_string();
-//           if let Some((score, _)) = self.matcher.fuzzy_indices(&command, self.value.as_ref()) {
+//           if let Some(score)) = self.matcher.fuzzy_match(&command, self.value.as_ref()) {
 //             let label =
 //               String::from(&command[find_common_words_index(self.value.as_ref(), &command)..]);
 //             self.insert(

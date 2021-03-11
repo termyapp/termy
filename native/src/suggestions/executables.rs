@@ -67,7 +67,7 @@ impl SuggestionProvider for Executables {
   fn suggestions(&self, state: &mut ProviderState) -> Result<()> {
     let executables = self.executables.iter();
     for (name, documentation) in executables {
-      if let Some((score, _)) = state.matcher.fuzzy_indices(&name, state.value.as_ref()) {
+      if let Some(score) = state.matcher.fuzzy_match(&name, state.value.as_ref()) {
         state.insert(
           name.clone(),
           Suggestion {
