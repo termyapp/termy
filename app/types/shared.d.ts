@@ -19,7 +19,6 @@ export type Message =
   | { type: 'get-suggestions'; value: string; currentDir: string }
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
-  | { type: 'tldr'; command: string }
   | { type: 'write'; path: string; value: string }
   | { type: 'get-window-info' }
   | { type: 'window-action'; action: WindowAction }

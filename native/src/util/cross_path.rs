@@ -1,11 +1,10 @@
-use anyhow::Result;
 use dunce::canonicalize;
 use git2::Repository;
 use log::warn;
 use path_slash::PathBufExt;
 use pathdiff::diff_paths;
 use std::{
-  env, fmt,
+  fmt,
   path::{Path, PathBuf},
 };
 

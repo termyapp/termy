@@ -1,8 +1,7 @@
 use anyhow::Result;
-use executables::Executables;
+use executables::EXECUTABLES;
 use fuzzy_matcher::skim::SkimMatcherV2;
 use history::History;
-use log::trace;
 use napi::{Env, JsUnknown, Task};
 use paths::Paths;
 use serde::Serialize;
@@ -22,7 +21,7 @@ impl Task for Suggestions {
     let mut state = ProviderState::new(self.0.clone(), self.1.clone());
 
     // order matters since we're using a hashmap
-    Executables.suggestions(&mut state).unwrap();
+    EXECUTABLES.suggestions(&mut state).unwrap();
     Paths.suggestions(&mut state).unwrap();
     let history = History::new();
     history.suggestions(&mut state).unwrap();
@@ -33,8 +32,6 @@ impl Task for Suggestions {
       .into_iter()
       .take(100)
       .collect::<Vec<Suggestion>>();
-
-    trace!("Suggestions: {:?}", suggestions);
 
     Ok(suggestions)
   }
