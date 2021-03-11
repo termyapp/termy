@@ -1,4 +1,10 @@
+# rust
 target
+
+# napi
 index.node
 artifacts.json
 node_modules
+
+# test directory
+test/history
