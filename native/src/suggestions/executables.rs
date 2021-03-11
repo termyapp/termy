@@ -95,7 +95,16 @@ fn tldr_docs(name: &str) -> Option<String> {
   let tldr_path = if cfg!(debug_assertions) {
     root_path().join("../external/tldr/pages/common")
   } else {
-    root_path().join("../../tldr/common")
+    if cfg!(windows) {
+      root_path().parent().unwrap().join("tldr/common")
+    } else {
+      root_path()
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("tldr/common")
+    }
   };
 
   let path = tldr_path.join(name.to_lowercase() + ".md");
