@@ -36,7 +36,7 @@ pub fn init() -> Result<()> {
 
     Config::builder()
       .appender(Appender::builder().build("file", Box::new(file)))
-      .build(Root::builder().appender("file").build(LevelFilter::Trace))?
+      .build(Root::builder().appender("file").build(LevelFilter::Info))?
   };
 
   log4rs::init_config(config)?;

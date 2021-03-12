@@ -3,11 +3,10 @@ use crate::util::dirs::root_path;
 use anyhow::Result;
 use fuzzy_matcher::FuzzyMatcher;
 use is_executable::IsExecutable;
-use log::info;
+use log::{info, trace};
 use std::{
   collections::HashMap,
   fs::{self},
-  path::Path,
 };
 
 lazy_static! {
@@ -100,10 +99,10 @@ fn tldr_docs(name: &str) -> Option<String> {
 
   let path = tldr_path.join(name.to_lowercase() + ".md");
 
-  info!("TDLR {:?}", path);
+  trace!("TDLR {:?}", path);
 
   if let Ok(contents) = fs::read_to_string(path) {
-    info!("Found TLDR docs for {}", name);
+    info!("Found TLDR docs at: {:?}", path);
     return Some(contents);
   }
 
