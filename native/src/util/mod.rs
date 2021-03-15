@@ -2,6 +2,8 @@ use std::cmp;
 
 pub mod cross_path;
 pub mod dirs;
+pub mod error;
+pub mod parser;
 
 pub fn find_common_words_index(a: &str, b: &str) -> usize {
   let mut index = 0;
