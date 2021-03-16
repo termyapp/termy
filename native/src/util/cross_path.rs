@@ -8,6 +8,8 @@ use std::{
   path::{Path, PathBuf},
 };
 
+// todo: rename to SlashPath
+
 #[derive(Debug)]
 pub struct CrossPath {
   pub buf: PathBuf,
