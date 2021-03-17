@@ -1,8 +1,11 @@
 use super::{ProviderState, Suggestion, SuggestionProvider, SuggestionType};
-use crate::shell::expand_alias;
-use crate::{shell::tokenize_value, util::cross_path::CrossPath};
+use crate::util::{
+  cross_path::CrossPath,
+  parser::{expand_alias, tokenize_value},
+};
 use anyhow::Result;
 use std::{fs, path::Path, time::UNIX_EPOCH};
+
 pub struct Paths;
 
 // todo: visited paths

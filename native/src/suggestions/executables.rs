@@ -102,7 +102,7 @@ fn tldr_docs(name: &str) -> Option<String> {
   trace!("TDLR {:?}", path);
 
   if let Ok(contents) = fs::read_to_string(path) {
-    info!("Found TLDR docs at: {:?}", path);
+    // info!("Found TLDR docs at: {:?}", path);
     return Some(contents);
   }
 

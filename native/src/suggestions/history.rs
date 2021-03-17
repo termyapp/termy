@@ -137,30 +137,6 @@ mod tests {
   use super::*;
 
   #[test]
-  fn parses_history() {
-    let history = History::new();
-    let mut entries = history.entries.into_iter();
-
-    assert_eq!(
-      entries.next().unwrap(),
-      Entry {
-        date: "1".to_string(),
-        current_dir: "/".to_string(),
-        value: "echo first history item".to_string(),
-      }
-    );
-
-    assert_eq!(
-      entries.next().unwrap(),
-      Entry {
-        date: "4242424242".to_string(),
-        current_dir: "/Library/Application Support".to_string(),
-        value: "/".to_string(),
-      }
-    )
-  }
-
-  #[test]
   fn add_to_history() {
     let mut history = History::new();
     let value = Utc::now().to_string();
