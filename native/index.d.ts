@@ -1,6 +1,6 @@
-declare function api(command: string): unknown
+declare function api(props: any): unknown
 
-declare function getSuggestions(value: string, currentDir: string): Promise<any>
+declare function getSuggestions(currentDir: string, value: string): Promise<any>
 
 declare function runCell(
   props: any,

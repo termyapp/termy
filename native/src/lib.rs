@@ -2,27 +2,29 @@
 extern crate napi_derive;
 #[macro_use]
 extern crate lazy_static;
-
-use command::{external::FrontendMessage, internal::Internal};
-use crossbeam_channel::{unbounded, Sender};
-use log::info;
+use cell::{
+  channel::Channel,
+  external::{CellChannel, FrontendMessage},
+  Cell,
+};
+use crossbeam_channel::Sender;
+use log::{error, info};
 use napi::{
   CallContext, JsExternal, JsFunction, JsObject, JsString, JsUndefined, JsUnknown, Result,
 };
-use shell::{Cell, CellChannel, CellProps, ServerMessage};
 use std::thread;
 use suggestions::Suggestions;
-mod command;
+
+mod cell;
 mod logger;
-mod shell;
 mod suggestions;
 mod util;
 
 #[module_exports]
 fn init(mut exports: JsObject) -> Result<()> {
-  exports.create_named_method("api", api)?;
-
   exports.create_named_method("getSuggestions", get_suggestions)?;
+
+  exports.create_named_method("api", api)?;
 
   exports.create_named_method("runCell", run_cell)?;
 
@@ -33,25 +35,10 @@ fn init(mut exports: JsObject) -> Result<()> {
   Ok(())
 }
 
-#[js_function(1)]
-fn api(ctx: CallContext) -> napi::Result<JsString> {
-  let command: String = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
-
-  info!("Api call: {}", command);
-
-  let result = if let Some(internal) = Internal::parse(&command) {
-    internal.api()
-  } else {
-    "Internal command not found".to_string()
-  };
-
-  ctx.env.create_string(&result)
-}
-
 #[js_function(2)]
 fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
-  let value = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
-  let current_dir = ctx.get::<JsString>(1)?.into_utf8()?.into_owned()?;
+  let current_dir = ctx.get::<JsString>(0)?.into_utf8()?.into_owned()?;
+  let value = ctx.get::<JsString>(1)?.into_utf8()?.into_owned()?;
 
   info!("Getting suggestions for {}", value);
 
@@ -60,34 +47,27 @@ fn get_suggestions(ctx: CallContext) -> napi::Result<JsObject> {
   ctx.env.spawn(suggestions).map(|a| a.promise_object())
 }
 
+#[js_function(1)]
+fn api(ctx: CallContext) -> napi::Result<JsUnknown> {
+  let cell: Cell = ctx.env.from_js_value(ctx.get::<JsUnknown>(0)?)?;
+
+  info!("Api call: {} {}", cell.current_dir, cell.value);
+
+  ctx.env.to_js_value(&cell.api())
+}
+
 #[js_function(5)]
 fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
-  let props: CellProps = ctx.env.from_js_value(ctx.get::<JsUnknown>(0)?)?;
-  let server_message = ctx.get::<JsFunction>(1)?;
+  let cell: Cell = ctx.env.from_js_value(ctx.get::<JsUnknown>(0)?)?;
+  let js_function = ctx.get::<JsFunction>(1)?;
 
-  let (sender, receiver) = unbounded::<CellChannel>();
-  let external_sender = sender.clone();
+  let channel = Channel::new(&ctx, js_function);
+  let external_sender = channel.sender.clone();
 
-  let tsfn = ctx.env.create_threadsafe_function(
-    &server_message,
-    0,
-    |ctx: napi::threadsafe_function::ThreadSafeCallContext<Vec<ServerMessage>>| {
-      ctx
-        .value
-        .iter()
-        .map(|arg| ctx.env.to_js_value(&arg))
-        .collect::<Result<Vec<JsUnknown>>>()
-    },
-  )?;
-
-  info!("Running cell: {:?}", props);
+  info!("Running cell: {:?}", cell);
 
   thread::spawn(move || {
-    let cell = Cell::new(props.clone(), tsfn, sender, receiver);
-
-    cell.run();
-
-    info!("Finished running cell: {:?}", props);
+    cell.run(channel);
   });
 
   ctx.env.create_external(external_sender)
