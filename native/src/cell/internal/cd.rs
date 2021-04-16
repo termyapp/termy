@@ -15,7 +15,7 @@ impl Command {
 
           path.canonicalize();
           let mut messages = self.view().unwrap_or_default();
-          messages.push(Message::Action(Action::Cd(path.to_string())));
+          messages.push(Message::action(Action::Cd(path.to_string())));
           Ok(messages)
         } else {
           Err(TermyError::NotDirectory(path.to_string()))

@@ -1,10 +1,11 @@
-use super::{command::Command, Cell, Channel, Message, Status};
+use super::{command::Command, Channel, Message, Status};
 use anyhow::{Context, Result};
 use crossbeam_channel::unbounded;
 use io::Read;
 use log::{error, info, trace};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
+use serde_json::json;
 use std::io::Write;
 use std::thread;
 use std::{
@@ -91,7 +92,7 @@ impl External {
             }
           };
 
-          tsfn_inner.send_one(Message::Tui(chunk[..len].to_vec()));
+          tsfn_inner.send_one(tui(chunk[..len].to_vec()));
         }
       }
 
@@ -168,7 +169,7 @@ impl External {
             .expect("Failed to read remaining chunk");
 
           info!("Sending last chunk");
-          tsfn.send_one(Message::Tui(remaining_chunk));
+          tsfn.send_one(tui(remaining_chunk));
 
           let mut child = child.lock().unwrap();
           let successful = child.wait().expect("Failed to unwrap child").success();
@@ -182,10 +183,10 @@ impl External {
       }
     }
   }
+}
 
-  fn execute(&self, cell: &Cell, command: Command) -> crate::util::error::Result<Vec<Message>> {
-    todo!()
-  }
+fn tui(chunky_boi: Vec<u8>) -> Message {
+  Message(json!({ "tui": chunky_boi }).to_string())
 }
 
 fn get_cmd(command: &str, args: Vec<String>, current_dir: &str) -> CommandBuilder {

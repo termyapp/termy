@@ -6,6 +6,6 @@ const SHORTCUTS: &str =
 
 impl Command {
   pub fn shortcuts(&self) -> Result<Vec<Message>> {
-    Ok(vec![Message::Markdown(SHORTCUTS.to_string())])
+    Ok(vec![Message::markdown(SHORTCUTS.to_string())])
   }
 }

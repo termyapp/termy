@@ -6,7 +6,7 @@ use crate::{
 
 impl Command {
   pub fn home(&self) -> Result<Vec<Message>> {
-    Ok(vec![Message::Markdown(CrossPath::home().to_string())])
+    Ok(vec![Message::markdown(CrossPath::home().to_string())])
   }
 }
 

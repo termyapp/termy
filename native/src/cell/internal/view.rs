@@ -1,7 +1,8 @@
-use crate::cell::{command::Command, Component, ComponentKind, Message};
+use crate::cell::{command::Command, Message};
 use crate::util::error::Result;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, fs};
+use serde_json::json;
+use std::fs;
 
 pub struct View;
 
@@ -28,30 +29,29 @@ impl Command {
             .collect();
 
           if json.len() == 0 {
-            return Ok(vec![Message::Markdown("Folder is empty".to_string())]);
+            return Ok(vec![Message::markdown("Folder is empty".to_string())]);
           }
 
-          let json = serde_json::to_string(&json).unwrap();
+          let value = json!({
+            "kind": "table",
+            "props": {
+              "json": serde_json::to_string(&json).unwrap()
+            }
+          });
 
-          let mut props: HashMap<String, String> = HashMap::new();
-          props.insert("json".to_string(), json);
-
-          Ok(vec![Message::Component(Component {
-            kind: ComponentKind::Table,
-            props,
-          })])
+          Ok(vec![Message::from_value(value)])
         } else if path.buf.is_file() {
           // read file
           let extension = path.buf.extension().unwrap_or_default();
           let content = fs::read_to_string(&path.buf).unwrap_or_default();
 
-          Ok(vec![Message::Markdown(format!(
+          Ok(vec![Message::markdown(format!(
             "```{}\n{}\n```",
             extension.to_string_lossy(),
             content
           ))])
         } else {
-          Ok(vec![Message::Markdown(
+          Ok(vec![Message::markdown(
             "Path is not a directory or a file".to_string(),
           )])
         }
@@ -68,6 +68,7 @@ struct Entry {
   #[serde(rename = "type")]
   kind: Kind,
 }
+
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 enum Kind {

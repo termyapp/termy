@@ -1,8 +1,9 @@
 use crate::{
-  cell::{command::Command, Component, ComponentKind, Message},
+  cell::{command::Command, Message},
   util::error::{Result, TermyError},
 };
-use std::{collections::HashMap, fs};
+use serde_json::json;
+use std::fs;
 
 impl Command {
   pub fn edit(&self) -> Result<Vec<Message>> {
@@ -17,15 +18,16 @@ impl Command {
             .unwrap_or_default();
           let content = fs::read_to_string(&path.buf).unwrap_or_default();
 
-          let mut props: HashMap<String, String> = HashMap::new();
-          props.insert("content".to_string(), content);
-          props.insert("path".to_string(), path.to_string());
-          props.insert("language".to_string(), language.to_string());
+          let value = json!({
+            "kind": "edit",
+            "props": {
+              "content": content,
+              "path": path.to_string(),
+              "language": language,
+            }
+          });
 
-          Ok(vec![Message::Component(Component {
-            kind: ComponentKind::Edit,
-            props,
-          })])
+          Ok(vec![Message::from_value(value)])
         } else {
           return Err(TermyError::NotFile(path.to_string()));
         }
@@ -33,10 +35,4 @@ impl Command {
       Err(err) => Err(err),
     }
   }
-}
-
-struct Props {
-  content: String,
-  path: String,
-  language: String,
 }

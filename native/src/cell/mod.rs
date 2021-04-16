@@ -3,7 +3,7 @@ use crate::util::error::Result;
 use command::{Command, Kind};
 use log::info;
 use serde::{Deserialize, Serialize};
-use std::{borrow::Borrow, collections::HashMap};
+use serde_json::{json, Value};
 
 pub mod channel;
 pub mod command;
@@ -37,11 +37,11 @@ impl Cell {
 
   pub fn run(self, channel: Channel) -> Result<()> {
     let tsfn = channel.tsfn.clone();
+    // todo: once operators (|, &&, ||) are introduced, this could become Vec<Command>
     let command = Command::new(self);
 
     info!("Running cell: {:?}", command.cell);
-
-    // todo: once operators (|, &&, ||) are introduced, this could become Vec<Command>
+    tsfn.send_one(Message::status(Status::Running));
 
     let status: anyhow::Result<Status> = match command.kind.clone() {
       Kind::NotFound => Ok(Status::Error),
@@ -52,7 +52,7 @@ impl Cell {
           Ok(Status::Success)
         }
         Err(err) => {
-          tsfn.send_one(Message::Markdown(format!("Error: {}", err)));
+          tsfn.send_one(Message::markdown(format!("Error: {}", err)));
           Ok(Status::Error)
         }
       },
@@ -60,13 +60,12 @@ impl Cell {
 
     info!("Cell status: {:?}", status);
 
-    tsfn.send_one(Message::Status(status.unwrap_or(Status::Error)));
-
-    // todo: record
+    tsfn.send_one(Message::status(Status::Error));
 
     Ok(())
   }
 
+  // todo: record
   // fn record_command(&self, cell: Cell) -> Result<()> {
   //   match &self.kind {
   //     Kind::Internal(Internal::Cd(path)) => {
@@ -92,12 +91,27 @@ impl Cell {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum Message {
-  Status(Status),
-  Action(Action),
-  Tui(Vec<u8>),
-  Markdown(String),
-  Component(Component),
+pub struct Message(String);
+
+impl Message {
+  pub fn from_value(value: Value) -> Message {
+    Message(value.to_string())
+  }
+
+  pub fn markdown(content: String) -> Message {
+    let data = json!({ "markdown": content });
+    Message(data.to_string())
+  }
+
+  pub fn status(status: Status) -> Message {
+    let data = json!({ "status": status });
+    Message(data.to_string())
+  }
+
+  pub fn action(action: Action) -> Message {
+    let data = json!({ "action": action });
+    Message(data.to_string())
+  }
 }
 
 #[derive(Serialize, Debug)]
@@ -112,17 +126,4 @@ pub enum Status {
 pub enum Action {
   Cd(String),
   Theme(String),
-}
-
-#[derive(Serialize)]
-struct Component {
-  kind: ComponentKind,
-  props: HashMap<String, String>,
-}
-
-#[derive(Serialize)]
-enum ComponentKind {
-  Table,
-  Edit,
-  Path,
 }

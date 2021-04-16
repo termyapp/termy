@@ -6,8 +6,8 @@ impl Command {
     if let Some(theme) = self.args.iter().next() {
       match theme.as_str() {
         "#000" | "#fff" => Ok(vec![
-          Message::Markdown(format!("Changed theme to {}", theme)),
-          Message::Action(Action::Theme(theme.to_string())),
+          Message::markdown(format!("Changed theme to {}", theme)),
+          Message::action(Action::Theme(theme.to_string())),
         ]),
         _ => Err(TermyError::InvalidTheme(theme.to_string())),
       }
