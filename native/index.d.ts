@@ -1,4 +1,4 @@
-declare function api(props: any): unknown
+declare function api(currentDir: string, value: string): unknown
 
 declare function getSuggestions(currentDir: string, value: string): Promise<any>
 
