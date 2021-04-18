@@ -82,7 +82,8 @@ const getSuggestionsFromCommands = (commands: Command[]): Suggestion[] => {
 export const getTypedCliSuggestions = (value: string): Suggestion[] => {
   const tokens = value.split(' ')
 
-  if (tokens.length === 1) {
+  // only suggest commands when value is empty
+  if (tokens.length === 1 && value.length < 1) {
     return getSuggestionsFromCommands(Object.values(typedCli))
   } else if (typedCli[tokens[0]] && typedCli[tokens[0]].subCommands) {
     // @ts-ignore
