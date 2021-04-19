@@ -111,7 +111,8 @@ export default {
   },
   fonts: {
     $sans:
-      '"Inter var", Inter, Helvetica, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+      '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+    // todo: source code pro / liberation mono / hack
     $mono:
       '"Roboto Mono", Menlo, Courier, Courier New, Monaco, Consolas, "Liberation Mono", monospace',
     $serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
