@@ -1,16 +1,26 @@
 import { Div, Flex, GitBranch, Path, Span } from '@components'
 import { styled } from '@src/stitches.config'
+import { ipc } from '@src/utils'
 import type { CellWithActive } from '@types'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Input from './input'
 
 export default function Prompt(cell: CellWithActive) {
-  const { active, prettyPath, branch } = cell
+  const { id, active, currentDir } = cell
+  const [prettyPath, setPrettyPath] = useState(currentDir)
+  const [branch, setBranch] = useState('')
+
+  useEffect(() => {
+    setPrettyPath(
+      ipc.sync({ type: 'api', id, currentDir, value: 'pretty-path' })[0],
+    )
+    setBranch(ipc.sync({ type: 'api', id, currentDir, value: 'branch' })[0])
+  }, [id, currentDir])
 
   return (
     <Wrapper
       active={active}
-      // newLine={currentDir.length > 60} // todo: do better with long lines (decrease fontSize)
+      // newLine={currentDir.length > 60} // todo: do better with long lines (add minWidth then wrap)
     >
       <CurrentDir status={cell.status === null ? 'default' : cell.status}>
         <Path>{prettyPath}</Path>
@@ -24,7 +34,8 @@ export default function Prompt(cell: CellWithActive) {
             }}
           >
             on
-            <GitBranch /> <Span css={{ fontWeight: '$medium' }}>{branch}</Span>
+            <GitBranch />
+            <Span css={{ fontWeight: '$medium' }}>{branch}</Span>
           </Flex>
         )}
       </CurrentDir>

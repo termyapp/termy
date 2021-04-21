@@ -53,7 +53,7 @@ fn api(ctx: CallContext) -> napi::Result<JsUnknown> {
 
   info!("Api call: {} {}", cell.current_dir, cell.value);
 
-  ctx.env.to_js_value(&cell.api())
+  ctx.env.to_js_value(&cell.api().unwrap())
 }
 
 #[js_function(5)]
@@ -67,7 +67,9 @@ fn run_cell(ctx: CallContext) -> napi::Result<JsExternal> {
   info!("Running cell: {:?}", cell);
 
   thread::spawn(move || {
-    cell.run(channel);
+    if let Err(err) = cell.run(channel) {
+      error!("Errow while running cell: {:?}", err);
+    }
   });
 
   ctx.env.create_external(external_sender)

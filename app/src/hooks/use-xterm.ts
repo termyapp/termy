@@ -78,7 +78,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
   // debounced onResize
   const [, cancel] = useDebounce(
     () => {
-      if (!terminalRef.current || type !== 'text' || !active) return
+      if (!terminalRef.current || type !== 'tui' || !active) return
       terminalRef.current.loadAddon(fitAddon)
       fitAddon.fit()
 

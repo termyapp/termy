@@ -19,6 +19,8 @@ pub enum Kind {
   Shortcuts,
   Theme,
   Edit,
+  PrettyPath,
+  Branch,
   External(External),
   NotFound,
 }
@@ -32,7 +34,6 @@ impl Command {
       .map(expand_alias)
       .collect();
     let command = args.remove(0);
-    let args_iter = args.clone().into_iter();
 
     Self {
       cell,
@@ -43,6 +44,8 @@ impl Command {
         "shortcuts" => Kind::Shortcuts,
         "theme" => Kind::Theme,
         "edit" => Kind::Edit,
+        "pretty-path" => Kind::PrettyPath,
+        "branch" => Kind::Branch,
         path if current_path.find_path(path).is_some() => {
           let cross_path = current_path.find_path(path).unwrap();
           if path.starts_with("./") {
@@ -71,6 +74,8 @@ impl Command {
       Kind::Shortcuts => self.shortcuts(),
       Kind::Theme => self.theme(),
       Kind::Edit => self.edit(),
+      Kind::PrettyPath => self.pretty_path(),
+      Kind::Branch => self.branch(),
       _ => panic!("Kind should be internal"),
     }
   }

@@ -32,6 +32,8 @@ impl Cell {
       _internal => command.match_internal(),
     };
 
+    info!("Returning API data: {:#?}", data);
+
     data
   }
 
@@ -89,7 +91,7 @@ impl Cell {
   // }
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Message(String);
 
@@ -123,6 +125,7 @@ pub enum Status {
 }
 
 #[derive(Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub enum Action {
   Cd(String),
   Theme(String),

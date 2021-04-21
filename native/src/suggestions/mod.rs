@@ -52,8 +52,8 @@ pub trait SuggestionProvider {
 }
 
 pub struct ProviderState {
-  value: String,
   current_dir: String,
+  value: String,
   matcher: SkimMatcherV2,
   hash_map: HashMap<String, Suggestion>,
 }
@@ -61,8 +61,8 @@ pub struct ProviderState {
 impl ProviderState {
   fn new(current_dir: String, value: String) -> Self {
     Self {
-      value,
       current_dir,
+      value,
       matcher: SkimMatcherV2::default(),
       hash_map: HashMap::new(),
     }
