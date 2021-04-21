@@ -8,13 +8,12 @@ import React from 'react'
 
 interface Props {
   path: string
-  value: string // base64
-  language?: string
+  value: string
+  language: string // extension of the file (it's "" if there is none)
 }
 
 export default function Edit({ path, value, language }: Props) {
   const theme = useStore(themeSelector)
-  value = decodeURIComponent(escape(atob(value))) // decode
 
   return (
     <Div
