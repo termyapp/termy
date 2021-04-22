@@ -1,3 +1,9 @@
+import type { Status } from './index'
+
+// ----------------------------------------------------------------
+// App Messages
+// ----------------------------------------------------------------
+
 export interface RunCell {
   id: string
   value: string
@@ -15,7 +21,7 @@ export interface FrontendMessage {
 }
 
 export type Message =
-  | { type: 'api'; command: string } // todo: create types for the api
+  | ({ type: 'api' } & RunCell) // todo: create types for the api
   | { type: 'get-suggestions'; value: string; currentDir: string }
   | ({ type: 'run-cell' } & RunCell)
   | ({ type: 'frontend-message' } & FrontendMessage)
@@ -23,18 +29,28 @@ export type Message =
   | { type: 'get-window-info' }
   | { type: 'window-action'; action: WindowAction }
 
-export type WindowAction = 'minimize' | 'maximize' | 'unmaximize' | 'close'
+// ----------------------------------------------------------------
+// Native Messages
+// ----------------------------------------------------------------
 
-export interface ServerMessage {
-  action?: [ActionKeys, string][]
-  text?: number[]
-  mdx?: string
-  api?: string
-  status?: Status
-  error?: string
-}
+export type NativeMessage =
+  | { action: Action }
+  | { status: Status }
+  | { tui: number[] }
+  | { component: Component }
 
-export type ActionKeys = 'cd' | 'theme' | 'pretty_path' | 'branch'
+export type Component =
+  | { type: 'edit'; props: { path: string; value: string; language: string } }
+  | { type: 'table'; props: { json: string } }
+  | { type: 'path'; props: { children: string } }
+  | { type: 'markdown'; props: { children: string } }
+// todo: | { type: 'error'; message: string }
+
+export type Action = { cd: string } | { theme: string }
+
+// ----------------------------------------------------------------
+// Suggestions
+// ----------------------------------------------------------------
 
 export interface Suggestion {
   label: string
@@ -54,6 +70,12 @@ export type SuggestionKind =
   | 'executable'
   | 'history'
   | 'externalHistory'
+
+// ----------------------------------------------------------------
+// Window
+// ----------------------------------------------------------------
+
+export type WindowAction = 'minimize' | 'maximize' | 'unmaximize' | 'close'
 
 export interface WindowInfo {
   isMaximized: boolean

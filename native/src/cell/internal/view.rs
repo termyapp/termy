@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::fs;
 
-pub struct View;
-
 impl Command {
   pub fn view(&self) -> Result<Vec<Message>> {
     match self.find_first_path() {
@@ -33,13 +31,13 @@ impl Command {
           }
 
           let value = json!({
-            "kind": "table",
+            "type": "table",
             "props": {
-              "json": serde_json::to_string(&json).unwrap()
+              "json": json
             }
           });
 
-          Ok(vec![Message::from_value(value)])
+          Ok(vec![Message::component(value)])
         } else if path.buf.is_file() {
           // read file
           let extension = path.buf.extension().unwrap_or_default();

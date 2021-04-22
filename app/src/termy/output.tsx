@@ -2,98 +2,87 @@ import { Div } from '@components'
 import { useListener, useXterm } from '@hooks'
 import { styled } from '@src/stitches.config'
 import useStore, { dispatchSelector } from '@src/store'
-import type { CellWithActive, ServerMessage, ThemeMode } from '@types'
+import type {
+  CellWithActive,
+  Component,
+  NativeMessage,
+  ThemeMode,
+} from '@types'
 import React, { useEffect, useState } from 'react'
-import Mdx from './mdx'
+import GUI from './gui'
 
 export default function Output(cell: CellWithActive) {
-  const dispatch = useStore(dispatchSelector)
   const { id, type, status } = cell
-
-  // mdx
-  const [mdx, setMdx] = useState('')
-
-  // pty
+  const dispatch = useStore(dispatchSelector)
   const { terminalContainerRef, terminalRef } = useXterm(cell)
+  const [gui, setGui] = useState<Component | null>(null)
 
   useListener(
     id,
-    (_, message: ServerMessage) => {
-      console.debug('RECEIVED', message)
-      for (const [key, value] of Object.entries(message)) {
-        switch (key) {
-          case 'error': {
-            console.error(message.error)
-            break
-          }
-          case 'status': {
-            dispatch({ type: 'set-cell', id, cell: { status: value } })
-            break
-          }
-          case 'text': {
-            if (type !== 'text') {
-              dispatch({ type: 'set-cell', id, cell: { type: 'text' } })
+    (_, messages: NativeMessage[]) => {
+      console.debug('RECEIVED', messages)
+
+      const handleMessage = (message: NativeMessage) => {
+        console.log('Handling message:', message)
+
+        for (const [key, value] of Object.entries(message)) {
+          switch (key) {
+            case 'status': {
+              dispatch({ type: 'set-cell', id, cell: { status: value } })
+              break
             }
+            case 'component': {
+              if (type !== 'gui')
+                dispatch({ type: 'set-cell', id, cell: { type: 'gui' } })
 
-            const chunk = new Uint8Array(value)
-            terminalRef.current?.write(chunk, () => {
-              // we pause immediately in external.rs
-              dispatch({ type: 'resume-cell', id })
-            })
-            break
-          }
-          case 'mdx': {
-            dispatch({ type: 'set-cell', id, cell: { type: 'mdx' } })
-            setMdx(value)
-            break
-          }
-          case 'api': {
-            break
-          }
-          case 'action':
-            {
-              if (!message.action) return
-              // handle internal stuff
+              setGui(value)
+              break
+            }
+            case 'tui': {
+              if (type !== 'tui')
+                dispatch({ type: 'set-cell', id, cell: { type: 'tui' } })
 
-              message.action.forEach(([actionKey, actionValue]) => {
-                switch (actionKey) {
+              const chunk = new Uint8Array(value)
+              terminalRef.current?.write(chunk, () => {
+                // we pause immediately in external.rs
+                dispatch({ type: 'resume-cell', id })
+              })
+              break
+            }
+            case 'action': {
+              for (const [k, v] of Object.entries(value)) {
+                switch (k) {
                   case 'cd': {
                     dispatch({
                       type: 'set-cell',
                       id,
-                      cell: { currentDir: actionValue },
-                    })
-                    break
-                  }
-                  case 'pretty_path': {
-                    dispatch({
-                      type: 'set-cell',
-                      id,
-                      cell: { prettyPath: actionValue },
-                    })
-                    break
-                  }
-                  case 'branch': {
-                    dispatch({
-                      type: 'set-cell',
-                      id,
-                      cell: { branch: actionValue },
+                      cell: { currentDir: v as string },
                     })
                     break
                   }
                   case 'theme': {
                     dispatch({
                       type: 'set-theme',
-                      theme: actionValue as ThemeMode,
+                      theme: v as ThemeMode,
                     })
                     break
                   }
+                  default: {
+                    console.error('Invalid action:', value)
+                  }
                 }
-              })
+              }
+              break
             }
-
-            break
+            default: {
+              console.error('Invalid message:', message)
+            }
+          }
         }
+      }
+
+      for (const message of messages) {
+        handleMessage(message)
       }
     },
     [id, type, dispatch],
@@ -104,7 +93,7 @@ export default function Output(cell: CellWithActive) {
   // focus output after running the cell
   useEffect(() => {
     if (status === 'running') {
-      if (type === 'text') {
+      if (type === 'tui') {
         terminalRef.current?.focus()
       } else {
         focusMdx()
@@ -117,10 +106,10 @@ export default function Output(cell: CellWithActive) {
       id={`output-${id}`}
       tabIndex={-1} // make it focusable
       onFocus={() =>
-        type === 'text' ? terminalRef.current?.focus() : focusMdx()
+        type === 'tui' ? terminalRef.current?.focus() : focusMdx()
       }
     >
-      <Pty show={type === 'text'}>
+      <Pty show={type === 'tui'}>
         <Div
           ref={terminalContainerRef}
           css={{
@@ -134,12 +123,12 @@ export default function Output(cell: CellWithActive) {
       </Pty>
       <Div
         css={{
-          display: type === 'mdx' ? 'block' : 'none',
+          display: type === 'gui' ? 'block' : 'none',
           fontSize: '$sm',
           color: '$secondaryTextColor',
         }}
       >
-        <Mdx>{mdx}</Mdx>
+        {gui && <GUI {...gui} />}
       </Div>
     </Wrapper>
   )

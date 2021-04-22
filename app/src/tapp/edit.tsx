@@ -8,11 +8,11 @@ import React from 'react'
 
 interface Props {
   path: string
-  value: string
+  content: string
   language: string // extension of the file (it's "" if there is none)
 }
 
-export default function Edit({ path, value, language }: Props) {
+export default function Edit({ path, content: value, language }: Props) {
   const theme = useStore(themeSelector)
 
   return (

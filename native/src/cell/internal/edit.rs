@@ -19,7 +19,7 @@ impl Command {
           let content = fs::read_to_string(&path.buf).unwrap_or_default();
 
           let value = json!({
-            "kind": "edit",
+            "type": "edit",
             "props": {
               "content": content,
               "path": path.to_string(),
@@ -27,7 +27,7 @@ impl Command {
             }
           });
 
-          Ok(vec![Message::from_value(value)])
+          Ok(vec![Message::component(value)])
         } else {
           return Err(TermyError::NotFile(path.to_string()));
         }

@@ -62,7 +62,7 @@ impl Cell {
 
     info!("Cell status: {:?}", status);
 
-    tsfn.send_one(Message::status(Status::Error));
+    tsfn.send_one(Message::status(status.unwrap_or(Status::Error)));
 
     Ok(())
   }
@@ -96,12 +96,13 @@ impl Cell {
 pub struct Message(String);
 
 impl Message {
-  pub fn from_value(value: Value) -> Message {
-    Message(value.to_string())
+  pub fn component(value: Value) -> Message {
+    let component = json!({ "component": value });
+    Message(component.to_string())
   }
 
   pub fn markdown(content: String) -> Message {
-    let data = json!({ "markdown": content });
+    let data = json!({ "type": "markdown", "props": { "children": content } });
     Message(data.to_string())
   }
 

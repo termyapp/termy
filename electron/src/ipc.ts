@@ -2,15 +2,12 @@ import type {
   FrontendMessage,
   Message,
   RunCell,
-  ServerMessage,
   WindowAction,
   WindowInfo,
 } from '@shared'
-import { app, BrowserWindow, ipcMain } from 'electron'
-import isDev from 'electron-is-dev'
+import { BrowserWindow, ipcMain } from 'electron'
 import type { IpcMainInvokeEvent } from 'electron/renderer'
 import fs from 'fs'
-import path from 'path'
 import native from '../../native'
 import type { TermyWindow } from './window'
 
@@ -26,15 +23,15 @@ export const initIpc = (): any | Promise<any> => {
         return info
       }
       case 'api': {
-        const result = native.api(message.command)
+        // todo: async
+        const result = native.api(message)
         return result
       }
       case 'get-suggestions': {
         const suggestions = await native.getSuggestions(
-          message.value,
           message.currentDir,
+          message.value,
         )
-
         return suggestions
       }
       case 'run-cell': {
@@ -74,7 +71,7 @@ export const initIpc = (): any | Promise<any> => {
         break
       }
       case 'api': {
-        const result = native.api(message.command)
+        const result = native.api(message)
         returnValue = result
         break
       }
@@ -111,20 +108,30 @@ const getWindow = (event: IpcMainInvokeEvent): TermyWindow => {
 const handleRunCell = (message: RunCell, window: TermyWindow): boolean => {
   const { id, value, currentDir } = message
 
-  const serverMessage = (...args: [null, ServerMessage]) => {
-    const [error, receivedMessage] = args
+  // todo: maybe have one external function for handling all the native messages?
+  const serverMessage = (...args: string[]) => {
+    // first arg is for error
+    const [error, ...rawMessages] = args
 
-    if (error || !receivedMessage) {
+    if (error || !rawMessages) {
       console.error('Error while receiving server message:', args)
       return
     } else {
-      // send message to app
-      window.webContents.send(id, receivedMessage)
+      // string --> JSON
+      const messages = rawMessages.map(message => JSON.parse(message))
 
-      // remove external fn since if it's no longer running
-      if (receivedMessage.status && receivedMessage.status !== 'running') {
-        console.info('Removing `sendMessage` on cell:', id)
-        delete window.runningCells[id]
+      // send message to app
+      window.webContents.send(id, messages)
+
+      for (const message of messages) {
+        if (
+          typeof message.status === 'string' &&
+          message.status !== 'running'
+        ) {
+          // remove external fn since if it's no longer running
+          console.info('Removing `sendMessage` on cell:', id)
+          delete window.runningCells[id]
+        }
       }
     }
 
