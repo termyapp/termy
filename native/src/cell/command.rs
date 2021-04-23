@@ -6,12 +6,12 @@ use crate::{
 };
 
 pub struct Command {
+  pub args: Vec<String>,
   pub cell: Cell,
   pub kind: Kind,
-  pub args: Vec<String>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Kind {
   Cd,
   View,
@@ -35,34 +35,41 @@ impl Command {
       .collect();
     let command = args.remove(0);
 
-    Self {
-      cell,
-      kind: match command.as_str() {
-        "cd" => Kind::Cd,
-        "view" => Kind::View,
-        "home" => Kind::Home,
-        "shortcuts" => Kind::Shortcuts,
-        "theme" => Kind::Theme,
-        "edit" => Kind::Edit,
-        "pretty-path" => Kind::PrettyPath,
-        "branch" => Kind::Branch,
-        path if current_path.find_path(path).is_some() => {
-          let cross_path = current_path.find_path(path).unwrap();
-          if path.starts_with("./") {
-            // executable (eg. ./scripts/build.sh)
-            Kind::External(External(path.to_string()))
-          } else if cross_path.buf.is_dir() {
-            // if path is a directory we run `cd` by default
-            Kind::Cd
-          } else {
-            // if path is a file we run `view` by default
-            Kind::View
-          }
+    let kind = match command.as_str() {
+      "cd" => Kind::Cd,
+      "view" => Kind::View,
+      "home" => Kind::Home,
+      "shortcuts" => Kind::Shortcuts,
+      "theme" => Kind::Theme,
+      "edit" => Kind::Edit,
+      "pretty-path" => Kind::PrettyPath,
+      "branch" => Kind::Branch,
+      path if current_path.find_path(path).is_some() => {
+        let cross_path = current_path.find_path(path).unwrap();
+        if path.starts_with("./") {
+          // executable (eg. ./scripts/build.sh)
+          Kind::External(External(path.to_string()))
+        } else if cross_path.buf.is_dir() {
+          // if path is a directory we run `cd` by default
+          Kind::Cd
+        } else {
+          // if path is a file we run `view` by default
+          Kind::View
         }
-        external if EXECUTABLES.contains(&external) => Kind::External(External(command)),
-        _ => Kind::NotFound,
+      }
+      external if EXECUTABLES.contains(&external) => Kind::External(External(command)),
+      _ => Kind::NotFound,
+    };
+
+    Self {
+      args: if kind == Kind::Cd || kind == Kind::View {
+        // use command as args if cd/view is run implicitly
+        vec![cell.value.to_string()]
+      } else {
+        args
       },
-      args,
+      cell,
+      kind,
     }
   }
 

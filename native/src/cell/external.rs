@@ -13,7 +13,7 @@ use std::{
   sync::{Arc, Mutex},
 };
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct External(pub String);
 
 impl External {
