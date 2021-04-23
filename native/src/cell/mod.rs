@@ -102,7 +102,7 @@ impl Message {
   }
 
   pub fn markdown(content: String) -> Message {
-    let data = json!({ "type": "markdown", "props": { "children": content } });
+    let data = json!({ "component": { "type": "markdown", "props": { "children": content } } });
     Message(data.to_string())
   }
 
