@@ -15,7 +15,7 @@ export default function Prompt(cell: CellWithActive) {
       ipc.sync({ type: 'api', id, currentDir, value: 'pretty-path' })[0],
     )
     setBranch(ipc.sync({ type: 'api', id, currentDir, value: 'branch' })[0])
-  }, [id, currentDir])
+  }, [id, currentDir, cell.active]) // cell.active: update on focus change
 
   return (
     <Wrapper
