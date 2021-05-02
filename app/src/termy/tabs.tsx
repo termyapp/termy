@@ -43,6 +43,7 @@ export default function Tabs(props: Props) {
       <StyledTabs
         value={activeTab}
         onValueChange={id => dispatch({ type: 'focus-tab', id })}
+        activationMode="manual" // imporant to prevent focus when doing middle click close
       >
         <StyledList aria-label="tabs example" className="drag">
           {/* spacing for traffic lights on mac */}
@@ -50,7 +51,19 @@ export default function Tabs(props: Props) {
 
           {/* header */}
           {tabs.map((id, i) => (
-            <StyledTab key={id} value={id} className="no-drag">
+            <StyledTab
+              key={id}
+              value={id}
+              className="no-drag"
+              onClick={e => e.preventDefault()}
+              onAuxClick={e => {
+                // middle click close
+                if (e.button == 1) {
+                  e.preventDefault()
+                  dispatch({ type: 'remove-tab', id })
+                }
+              }}
+            >
               {i + 1}
             </StyledTab>
           ))}
