@@ -59,6 +59,9 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
       xtermElemntThatMessesUpFocus.tabIndex = -1
     }
 
+    // load addons
+    terminal.loadAddon(fitAddon)
+
     terminalRef.current = terminal
   }, [])
 
@@ -79,7 +82,6 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
   const [, cancel] = useDebounce(
     () => {
       if (!terminalRef.current || type !== 'tui' || !active) return
-      terminalRef.current.loadAddon(fitAddon)
       fitAddon.fit()
 
       // pty only lives as long as it's not over
