@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Terminal } from 'xterm'
 import xterm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
+import { WebLinksAddon } from 'xterm-addon-web-links'
 
 const SHORTCUTS = ['r', 't', 's', 'n', 'w', 'j', 'k']
 
@@ -27,6 +28,15 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
     const terminal = new xterm.Terminal({
       cursorStyle: 'block',
     })
+
+    // load addons
+    terminal.loadAddon(fitAddon)
+    terminal.loadAddon(
+      new WebLinksAddon((event: MouseEvent, uri: string) => {
+        // the default handler doesn't work with electron (https://github.com/xtermjs/xterm.js/issues/2943)
+        window.open(uri)
+      }),
+    )
 
     if (terminalContainerRef.current)
       terminal.open(terminalContainerRef.current)
@@ -58,9 +68,6 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
     if (xtermElemntThatMessesUpFocus) {
       xtermElemntThatMessesUpFocus.tabIndex = -1
     }
-
-    // load addons
-    terminal.loadAddon(fitAddon)
 
     terminalRef.current = terminal
   }, [])
