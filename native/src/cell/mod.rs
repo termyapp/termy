@@ -1,7 +1,8 @@
 use self::channel::Channel;
+use crate::suggestions::history::HISTORY;
 use crate::util::error::Result;
 use command::{Command, Kind};
-use log::info;
+use log::{error, info};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -40,12 +41,13 @@ impl Cell {
   pub fn run(self, channel: Channel) -> Result<()> {
     let tsfn = channel.tsfn.clone();
     // todo: once operators (|, &&, ||) are introduced, this could become Vec<Command>
-    let command = Command::new(self);
+    let command = Command::new(self.clone());
+    let kind = command.kind.clone();
 
     info!("Running cell: {:?}", command.cell);
     tsfn.send_one(Message::status(Status::Running));
 
-    let status: anyhow::Result<Status> = match command.kind.clone() {
+    let status: anyhow::Result<Status> = match &kind {
       Kind::NotFound => Ok(Status::Error),
       Kind::External(external) => external.run(command, channel),
       _internal => match command.match_internal() {
@@ -62,33 +64,41 @@ impl Cell {
 
     info!("Cell status: {:?}", status);
 
-    tsfn.send_one(Message::status(status.unwrap_or(Status::Error)));
+    let status = status.unwrap_or(Status::Error);
+
+    if let Status::Success = status {
+      if let Err(err) = self.record_command(kind) {
+        error!("Error recording command: {:?}", err);
+      }
+    }
+
+    tsfn.send_one(Message::status(status));
 
     Ok(())
   }
 
-  // todo: record
-  // fn record_command(&self, cell: Cell) -> Result<()> {
-  //   match &self.kind {
-  //     Kind::Internal(Internal::Cd(path)) => {
-  //       // todo: append to visited paths
-  //     }
-  //     Kind::Internal(_) | Kind::External(_) => {
-  //       match HISTORY.lock() {
-  //         Ok(mut history) => {
-  //           // append to history
-  //           history.add(cell.current_dir.clone(), cell.value.clone());
-  //         }
-  //         Err(err) => {
-  //           error!("Failed to lock HISTORY: {}", err);
-  //         }
-  //       }
-  //     }
-  //     _ => {}
-  //   }
+  fn record_command(&self, kind: Kind) -> Result<()> {
+    match kind {
+      Kind::NotFound => {}
+      Kind::Cd => {
+        // todo: append cd to visited paths
+      }
+      _ => {
+        match HISTORY.lock() {
+          Ok(mut history) => {
+            // append to history
+            history.add(self.current_dir.clone(), self.value.clone());
+          }
+          Err(err) => {
+            error!("Failed to lock HISTORY: {}", err);
+          }
+        }
+      }
+      _ => {}
+    }
 
-  //   Ok(())
-  // }
+    Ok(())
+  }
 }
 
 #[derive(Debug, Serialize)]

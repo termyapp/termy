@@ -62,9 +62,10 @@ impl History {
       entry.date, entry.current_dir, entry.value
     ) {
       error!("Error while adding history entry: {}", err);
+    } else {
+      info!("Adding to history: {:?}", entry);
+      self.entries.push(entry);
     }
-
-    self.entries.push(entry);
   }
 
   fn history_path() -> PathBuf {
