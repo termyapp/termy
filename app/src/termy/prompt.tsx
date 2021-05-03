@@ -29,11 +29,13 @@ export default function Prompt(cell: CellWithActive) {
             css={{
               color: '$secondaryForeground',
               ml: '$1',
+              mr: '-$1',
               alignItems: 'center',
+              opacity: 0.7,
+
               '& + &': { ml: '$1' },
             }}
           >
-            on
             <GitBranch />
             <Span css={{ fontWeight: '$medium' }}>{branch}</Span>
           </Flex>
