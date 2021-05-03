@@ -50,7 +50,8 @@ export const loadMonaco = () => {
       if (
         value.length > 0 &&
         insertText.length > 0 &&
-        insertText[0] === value[value.length - 1]
+        insertText[0] === '.' &&
+        value[value.length - 1] === '.'
       ) {
         // make sure '.termy' suggestion gets inserted as '.termy' and not '..termy'
         insertText = insertText.substring(1)
