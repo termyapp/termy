@@ -1,3 +1,5 @@
+use log::info;
+
 use super::{external::External, Cell, Message};
 use crate::{suggestions::executables::EXECUTABLES, util::cross_path::CrossPath};
 use crate::{
@@ -64,7 +66,10 @@ impl Command {
     Self {
       args: if kind == Kind::Cd || kind == Kind::View {
         // use command as args if cd/view is run implicitly
-        vec![cell.value.to_string()]
+        tokenize_value(&cell.value)
+          .into_iter()
+          .map(expand_alias)
+          .collect()
       } else {
         args
       },
