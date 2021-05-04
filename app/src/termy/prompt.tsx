@@ -1,11 +1,13 @@
 import { Div, Flex, GitBranch, Path, Span } from '@components'
 import { styled } from '@src/stitches.config'
+import useStore, { dispatchSelector } from '@src/store'
 import { ipc } from '@src/utils'
 import type { CellWithActive } from '@types'
 import React, { useEffect, useState } from 'react'
 import Input from './input'
 
 export default function Prompt(cell: CellWithActive) {
+  const dispatch = useStore(dispatchSelector)
   const { id, active, currentDir } = cell
   const [prettyPath, setPrettyPath] = useState(currentDir)
   const [branch, setBranch] = useState('')
@@ -23,7 +25,31 @@ export default function Prompt(cell: CellWithActive) {
       // newLine={currentDir.length > 60} // todo: do better with long lines (add minWidth then wrap)
     >
       <CurrentDir status={cell.status === null ? 'default' : cell.status}>
-        <Path>{prettyPath}</Path>
+        <Div css={{ position: 'relative' }}>
+          <FolderInput
+            type="file"
+            // @ts-ignore
+            webkitdirectory=""
+            // @ts-ignore
+            directory=""
+            title={currentDir}
+            onChange={event => {
+              const target = event.target as HTMLInputElement
+              if (!target || !target.files || !target.files.length) return
+              const [file] = target.files
+              if (file) {
+                const currentDir = file.path.split('/').slice(0, -1).join('/')
+                if (currentDir)
+                  dispatch({
+                    type: 'set-cell',
+                    id,
+                    cell: { currentDir },
+                  })
+              }
+            }}
+          />
+          <Path>{prettyPath}</Path>
+        </Div>
         {branch && (
           <Flex
             css={{
@@ -45,6 +71,15 @@ export default function Prompt(cell: CellWithActive) {
     </Wrapper>
   )
 }
+
+const FolderInput = styled('input', {
+  position: 'absolute',
+  width: '100%',
+  height: '100%',
+  top: 0,
+  left: 0,
+  opacity: 0,
+})
 
 const Wrapper = styled(Div, {
   pl: '-$2',
