@@ -9,12 +9,17 @@ import Input from './input'
 export default function Prompt(cell: CellWithActive) {
   const dispatch = useStore(dispatchSelector)
   const { id, active, currentDir } = cell
-  const [prettyPath, setPrettyPath] = useState(currentDir)
+  const [displayPath, setDisplayPath] = useState(currentDir)
   const [branch, setBranch] = useState('')
 
   useEffect(() => {
-    setPrettyPath(
-      ipc.sync({ type: 'api', id, currentDir, value: 'pretty-path' })[0],
+    setDisplayPath(
+      ipc.sync({
+        type: 'api',
+        id,
+        currentDir,
+        value: 'current-dir --short',
+      })[0],
     )
     setBranch(ipc.sync({ type: 'api', id, currentDir, value: 'branch' })[0])
   }, [id, currentDir, cell.active]) // cell.active: update on focus change
@@ -48,7 +53,7 @@ export default function Prompt(cell: CellWithActive) {
               }
             }}
           />
-          <Path>{prettyPath}</Path>
+          <Path>{displayPath}</Path>
         </Div>
         {branch && (
           <Flex

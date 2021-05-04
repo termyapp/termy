@@ -1,8 +1,8 @@
 mod branch;
 mod cd;
+mod current_dir;
 mod edit;
 mod home;
-mod pretty_path;
 mod shortcuts;
 mod theme;
 mod view;

@@ -1,5 +1,3 @@
-use log::info;
-
 use super::{external::External, Cell, Message};
 use crate::{suggestions::executables::EXECUTABLES, util::cross_path::CrossPath};
 use crate::{
@@ -21,7 +19,7 @@ pub enum Kind {
   Shortcuts,
   Theme,
   Edit,
-  PrettyPath,
+  CurrentDir,
   Branch,
   External(External),
   NotFound,
@@ -44,7 +42,7 @@ impl Command {
       "shortcuts" => Kind::Shortcuts,
       "theme" => Kind::Theme,
       "edit" => Kind::Edit,
-      "pretty-path" => Kind::PrettyPath,
+      "current-dir" => Kind::CurrentDir,
       "branch" => Kind::Branch,
       path if current_path.find_path(path).is_some() => {
         let cross_path = current_path.find_path(path).unwrap();
@@ -86,7 +84,7 @@ impl Command {
       Kind::Shortcuts => self.shortcuts(),
       Kind::Theme => self.theme(),
       Kind::Edit => self.edit(),
-      Kind::PrettyPath => self.pretty_path(),
+      Kind::CurrentDir => self.current_dir(),
       Kind::Branch => self.branch(),
       _ => panic!("Kind should be internal"),
     }
