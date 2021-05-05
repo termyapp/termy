@@ -6,12 +6,12 @@ use log::{error, info, trace};
 use portable_pty::{native_pty_system, CommandBuilder, PtySize};
 use serde::Deserialize;
 use serde_json::json;
-use std::io::Write;
 use std::thread;
 use std::{
   io,
   sync::{Arc, Mutex},
 };
+use std::{io::Write, time::Duration};
 
 #[derive(Clone, PartialEq)]
 pub struct External(pub String);
