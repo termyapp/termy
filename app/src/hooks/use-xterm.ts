@@ -3,8 +3,7 @@ import useStore, { dispatchSelector, themeSelector } from '@src/store'
 import { isMac } from '@src/utils'
 import type { CellWithActive, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
-import type { Terminal } from 'xterm'
-import xterm from 'xterm'
+import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 
@@ -25,12 +24,12 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
 
   // init
   useEffect(() => {
-    const terminal = new xterm.Terminal({
+    const terminal = new Terminal({
       cursorStyle: 'block',
     })
 
     terminal.loadAddon(
-      new WebLinksAddon((event: MouseEvent, uri: string) => {
+      new WebLinksAddon((_event: MouseEvent, uri: string) => {
         // the default handler doesn't work with electron (https://github.com/xtermjs/xterm.js/issues/2943)
         window.open(uri)
       }),

@@ -1,26 +1,28 @@
 {
   "include": ["src", "types"],
   "compilerOptions": {
-    "module": "esnext",
-    "target": "esnext",
-    "moduleResolution": "node",
-    "jsx": "preserve",
     "baseUrl": "./",
-    /* paths - If you configure Snowpack import aliases, add them here. */
     "paths": {
       "@src/*": ["src/*"],
       "@components": ["src/components"],
       "@hooks": ["src/hooks"],
       "@types": ["types"]
     },
-    /* noEmit - Snowpack builds (emits) files, not tsc. */
+    "module": "esnext",
+    "target": "esnext",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "moduleResolution": "node",
     "noEmit": true,
-    /* Additional Options */
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "importsNotUsedAsValues": "error"
+    "importsNotUsedAsValues": "error",
+    "types": ["vite/client"],
+    "allowJs": false,
+    "esModuleInterop": false,
+    "isolatedModules": true,
+    "jsx": "react"
   }
 }
