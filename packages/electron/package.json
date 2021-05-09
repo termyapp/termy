@@ -1,6 +1,6 @@
 {
   "name": "@termy/electron",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "main": "build/electron.js",
   "repository": {
@@ -32,7 +32,6 @@
     }
   },
   "devDependencies": {
-    "native": "file:../native",
     "@types/electron-localshortcut": "^3.1.0",
     "copy-webpack-plugin": "^7.0.0",
     "cross-env": "^7.0.2",
@@ -44,6 +43,7 @@
     "electron-localshortcut": "^3.2.1",
     "electron-store": "^7.0.2",
     "fix-path": "^3.0.0",
+    "native": "file:../native",
     "node-loader": "^1.0.2",
     "request": "^2.88.2",
     "spawn-sync": "^2.0.0",
