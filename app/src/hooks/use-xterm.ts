@@ -29,8 +29,6 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
       cursorStyle: 'block',
     })
 
-    // load addons
-    terminal.loadAddon(fitAddon)
     terminal.loadAddon(
       new WebLinksAddon((event: MouseEvent, uri: string) => {
         // the default handler doesn't work with electron (https://github.com/xtermjs/xterm.js/issues/2943)
@@ -89,6 +87,10 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
   const [, cancel] = useDebounce(
     () => {
       if (!terminalRef.current || type !== 'tui' || !active) return
+
+      // loading fitAddon here to avoid
+      // `this api only accepts integers` error
+      terminalRef.current.loadAddon(fitAddon)
       fitAddon.fit()
 
       // pty only lives as long as it's not over
