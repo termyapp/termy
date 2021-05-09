@@ -51,9 +51,11 @@ impl Command {
           Kind::External(External(path.to_string()))
         } else if cross_path.buf.is_dir() {
           // if path is a directory we run `cd` by default
+          args = vec![command];
           Kind::Cd
         } else {
           // if path is a file we run `view` by default
+          args = vec![command];
           Kind::View
         }
       }
@@ -61,19 +63,7 @@ impl Command {
       _ => Kind::NotFound,
     };
 
-    Self {
-      args: if kind == Kind::Cd || kind == Kind::View {
-        // use command as args if cd/view is run implicitly
-        tokenize_value(&cell.value)
-          .into_iter()
-          .map(expand_alias)
-          .collect()
-      } else {
-        args
-      },
-      cell,
-      kind,
-    }
+    Self { args, cell, kind }
   }
 
   pub fn match_internal(&self) -> Result<Vec<Message>> {
