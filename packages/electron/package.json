@@ -1,7 +1,7 @@
 {
-  "name": "termy-electron",
+  "name": "@termy/electron",
+  "version": "0.0.0",
   "private": true,
-  "version": "0.3.0",
   "main": "build/electron.js",
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
     }
   },
   "devDependencies": {
+    "native": "file:../native",
     "@types/electron-localshortcut": "^3.1.0",
     "copy-webpack-plugin": "^7.0.0",
     "cross-env": "^7.0.2",
