@@ -8,7 +8,7 @@ import type {
 import { BrowserWindow, ipcMain } from 'electron'
 import type { IpcMainInvokeEvent } from 'electron/renderer'
 import fs from 'fs'
-import native from 'native'
+import native from '@termy/native'
 import type { TermyWindow } from './window'
 
 export const initIpc = (): any | Promise<any> => {
