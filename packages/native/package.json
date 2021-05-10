@@ -2,11 +2,12 @@
   "name": "@termy/native",
   "version": "0.0.1",
   "private": true,
-  "devDependencies": {
-    "napi-rs": "latest"
-  },
   "scripts": {
-    "build": "cargo build && napi build",
-    "build-release": "cargo build --release && napi build --release"
+    "dev": "onchange 'src/**/*.rs' 'index.d.ts' -- cargo build && napi build",
+    "build": "napi build --release"
+  },
+  "devDependencies": {
+    "napi-rs": "latest",
+    "onchange": "^7.1.0"
   }
 }
