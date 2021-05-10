@@ -1,5 +1,5 @@
 {
-  "extends": "../app/tsconfig.json",
+  "extends": "../../tsconfig.json",
   "include": ["**/*"],
   "compilerOptions": {
     "target": "es2015",
