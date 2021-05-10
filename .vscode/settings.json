@@ -3,7 +3,7 @@
     "**/build": true,
     "**/dist": true,
     "**/external": true,
-    "**/app/public/fonts/*": true
+    "**/packages/app/public/fonts/*": true
   },
   "files.exclude": {
     "**/.git": true,
@@ -14,5 +14,5 @@
     "**/node_modules": true
   },
   "git.detectSubmodules": false, // prevent tldr from showing up
-  "rust-analyzer.linkedProjects": ["native/Cargo.toml", "native\\Cargo.toml"]
+  "rust-analyzer.linkedProjects": ["packages/native/Cargo.toml", "packages\\native\\Cargo.toml"]
 }
