@@ -92,7 +92,7 @@ impl SuggestionProvider for Executables {
 
 fn tldr_docs(name: &str) -> Option<String> {
   let tldr_path = if cfg!(debug_assertions) {
-    root_path().join("../external/tldr/pages/common")
+    root_path().join("../../external/tldr/pages/common")
   } else {
     root_path().join("tldr/common")
   };

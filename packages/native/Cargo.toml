@@ -1,7 +1,7 @@
 [package]
 name = "native"
-version = "0.3.0"
-authors = ["martonlanga <martonlanga@gmail.com>"]
+# versioning is done by lerna
+version = "0.0.0"
 license = "MIT"
 edition = "2018"
 

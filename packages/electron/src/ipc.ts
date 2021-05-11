@@ -1,10 +1,4 @@
-import type {
-  FrontendMessage,
-  Message,
-  RunCell,
-  WindowAction,
-  WindowInfo,
-} from '@shared'
+import type { FrontendMessage, Message, RunCell, WindowAction, WindowInfo } from '@shared'
 import { BrowserWindow, ipcMain } from 'electron'
 import type { IpcMainInvokeEvent } from 'electron/renderer'
 import fs from 'fs'
@@ -28,10 +22,7 @@ export const initIpc = (): any | Promise<any> => {
         return result
       }
       case 'get-suggestions': {
-        const suggestions = await native.getSuggestions(
-          message.currentDir,
-          message.value,
-        )
+        const suggestions = await native.getSuggestions(message.currentDir, message.value)
         return suggestions
       }
       case 'run-cell': {
@@ -124,10 +115,7 @@ const handleRunCell = (message: RunCell, window: TermyWindow): boolean => {
       window.webContents.send(id, messages)
 
       for (const message of messages) {
-        if (
-          typeof message.status === 'string' &&
-          message.status !== 'running'
-        ) {
+        if (typeof message.status === 'string' && message.status !== 'running') {
           // remove external fn since if it's no longer running
           console.info('Removing `sendMessage` on cell:', id)
           delete window.runningCells[id]
@@ -146,10 +134,7 @@ const handleRunCell = (message: RunCell, window: TermyWindow): boolean => {
   return true
 }
 
-const handleFrontendMessage = (
-  message: FrontendMessage,
-  window: TermyWindow,
-): boolean => {
+const handleFrontendMessage = (message: FrontendMessage, window: TermyWindow): boolean => {
   // only used by pty cells
   const external = window.runningCells[message.id]
   if (external) {
@@ -161,10 +146,7 @@ const handleFrontendMessage = (
   }
 }
 
-const handleWindowAction = (
-  action: WindowAction,
-  window: TermyWindow,
-): boolean => {
+const handleWindowAction = (action: WindowAction, window: TermyWindow): boolean => {
   switch (action) {
     case 'minimize':
       window.minimize()

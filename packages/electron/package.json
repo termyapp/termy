@@ -7,8 +7,6 @@
     "type": "git",
     "url": "https://github.com/termyapp/Termy"
   },
-  "author": "Marton Langa martonlanga+termy@gmail.com (https://martonlanga.com/)",
-  "description": "A new kind of terminal for web developers",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack --watch",
     "build-webpack": "cross-env NODE_ENV=production webpack",
@@ -26,7 +24,7 @@
       "build/**/*"
     ],
     "extraFiles": {
-      "from": "../external/tldr/pages",
+      "from": "../../external/tldr/pages",
       "to": "tldr"
     }
   },

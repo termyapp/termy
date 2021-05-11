@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "onchange 'src/**/*.rs' 'index.d.ts' -- cargo build && napi build",
-    "build": "napi build --release"
+    "dev": "onchange 'src/**/*.rs' 'index.d.ts' -- yarn build-dev",
+    "build": "cargo build --release napi build --release",
+    "build-dev": "cargo build && napi build"
   },
   "devDependencies": {
     "napi-rs": "latest",

@@ -2,15 +2,12 @@
   "name": "termy",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "dev": "lerna run dev --parallel"
+  },
   "workspaces": {
     "packages": [
       "packages/*"
-    ],
-    "nohoist": [
-      "**/electron-builder",
-      "**/electron-builder/**",
-      "**/electron-webpack",
-      "**/electron-webpack/**"
     ]
   },
   "devDependencies": {

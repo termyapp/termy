@@ -27,7 +27,7 @@ pub fn config() -> PathBuf {
 pub fn root_path() -> PathBuf {
   if cfg!(debug_assertions) {
     // todo: fix this (problem is there are 2 different debug paths (native, electron))
-    dirs::home_dir().unwrap().join("dev/termy/native")
+    dirs::home_dir().unwrap().join("dev/termy/packages/native")
   } else {
     if cfg!(target_os = "macos") {
       env::current_exe()
