@@ -5,8 +5,8 @@ name: CI
 on:
   push:
     branches:
-      # this will run on the lerna branch
-      - lerna
+      # this will run on the main branch
+      - main
 
 # this is where the magic happens, each job happens in parallel btw
 jobs:
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
         with:
-          ref: lerna
+          ref: main
       - uses: actions/setup-node@master
         with:
           node-version: 10.16
