@@ -15,12 +15,17 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "build": {
+    "afterSign": "scripts/notarize.js",
     "productName": "Termy",
     "appId": "app.termy",
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "build/icon.png",
-      "hardenedRuntime": true
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "sign": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "files": [
       "build/**/*"
