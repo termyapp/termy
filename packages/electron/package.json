@@ -11,14 +11,16 @@
     "dev": "cross-env NODE_ENV=development webpack --watch",
     "build-webpack": "cross-env NODE_ENV=production webpack",
     "build": "electron-builder",
-    "release": "GH_TOKEN= electron-builder --publish=always"
+    "release": "GH_TOKEN= electron-builder --publish=always",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
     "productName": "Termy",
     "appId": "app.termy",
     "mac": {
       "category": "public.app-category.developer-tools",
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "hardenedRuntime": true
     },
     "files": [
       "build/**/*"
@@ -29,6 +31,7 @@
     }
   },
   "devDependencies": {
+    "@termy/native": "^0.0.1",
     "@types/electron-localshortcut": "^3.1.0",
     "copy-webpack-plugin": "^7.0.0",
     "cross-env": "^7.0.2",
@@ -38,9 +41,10 @@
     "electron-devtools-installer": "git+https://github.com/MarshallOfSound/electron-devtools-installer.git",
     "electron-is-dev": "^1.2.0",
     "electron-localshortcut": "^3.2.1",
+    "electron-notarize": "^1.0.0",
     "electron-store": "^7.0.2",
+    "electron-updater": "^4.3.9",
     "fix-path": "^3.0.0",
-    "@termy/native": "^0.0.1",
     "node-loader": "^1.0.2",
     "request": "^2.88.2",
     "spawn-sync": "^2.0.0",

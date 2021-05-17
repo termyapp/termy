@@ -3,6 +3,7 @@ import contextMenu from 'electron-context-menu'
 import fixPath from 'fix-path'
 import { createWindow } from './window'
 import { initIpc } from './ipc'
+import { autoUpdater } from 'electron-updater'
 
 function init() {
   // fixes: https://github.com/termyapp/termy/issues/8
@@ -14,6 +15,7 @@ function init() {
   app.on('ready', () => {
     initIpc()
     createWindow()
+    autoUpdater.checkForUpdatesAndNotify()
   })
 
   app.on('activate', function () {
