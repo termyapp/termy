@@ -1,4 +1,5 @@
-export * from './stitches.config'
 export * from './src/button'
 export * from './src/flex'
+export * from './src/path'
 export * from './src/svg'
+export * from './stitches.config'

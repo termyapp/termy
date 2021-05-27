@@ -1,12 +1,11 @@
 import { styled } from '@src/stitches.config'
 import React from 'react'
-import { Div } from './div'
 
 interface Props {
   json: string
 }
 
-export const Table = ({ json }: Props) => {
+export default function Table({ json }: Props) {
   return Array.isArray(json) ? (
     <Container>
       <thead>
@@ -38,11 +37,7 @@ export const Table = ({ json }: Props) => {
                   py: '$2',
                 }}
               >
-                {typeof row[key] === 'boolean'
-                  ? row[key]
-                    ? 'true'
-                    : 'false'
-                  : row[key]}
+                {typeof row[key] === 'boolean' ? (row[key] ? 'true' : 'false') : row[key]}
               </Div>
             ))}
           </Div>
