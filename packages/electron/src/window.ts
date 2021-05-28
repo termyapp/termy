@@ -6,7 +6,7 @@ import installExtension, {
 import isDev from 'electron-is-dev'
 import electronLocalshortcut from 'electron-localshortcut'
 import path from 'path'
-import type { WindowInfo } from 'types/shared'
+import type { WindowInfo } from '@shared'
 import { getWindowPosition, recordWindowPosition } from './config'
 
 const isMac = process.platform === 'darwin'
@@ -104,14 +104,10 @@ const Window = {
 }
 
 const getUrl = () =>
-  isDev
-    ? 'http://localhost:4242'
-    : `file://${path.join(app.getAppPath(), 'build/index.html')}`
+  isDev ? 'http://localhost:4242' : `file://${path.join(app.getAppPath(), 'build/index.html')}`
 
 const getPreloadPath = () =>
   path.resolve(app.getAppPath(), isDev ? './preload.js' : 'build/preload.js')
 
 const getIcon = () =>
-  process.platform === 'linux'
-    ? path.resolve(app.getAppPath(), 'build/icon.png')
-    : undefined
+  process.platform === 'linux' ? path.resolve(app.getAppPath(), 'build/icon.png') : undefined

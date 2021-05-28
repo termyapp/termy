@@ -8,6 +8,5 @@
     "paths": {
       "@shared": ["../app/types/shared"]
     }
-  },
-  "references": [{ "path": "../app/types/shared" }]
+  }
 }

@@ -1,17 +1,12 @@
 {
-  "name": "termy",
+  "name": "@termy/root",
   "version": "0.0.1",
   "private": true,
-  "scripts": {
-    "dev": "lerna run dev --parallel"
-  },
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ]
-  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {},
   "devDependencies": {
-    "lerna": "^4.0.0",
     "prettier": "^2.3.0",
     "typescript": "^4.2.4"
   }
