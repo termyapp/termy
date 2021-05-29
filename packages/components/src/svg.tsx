@@ -1,4 +1,4 @@
-import { styled } from '../stitches.config'
+import { styled } from '../style'
 
 export const Svg = styled.svg({
   width: '$5',
