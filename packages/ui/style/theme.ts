@@ -1,12 +1,47 @@
 // Tailwind base theme:
 // https://github.com/tailwindlabs/tailwindcss/blob/master/stubs/defaultConfig.stub.js
 
+// export const darkTheme = {
+//     ...baseTheme,
+//     colors: {
+//       ...baseTheme.colors,
+
+//       base: 'vs-dark',
+
+//       $background: '#000',
+//       $foreground: baseTheme.colors.$white,
+//       $secondaryForeground: baseTheme.colors.$gray400,
+
+//       $accent: baseTheme.colors.$gray800,
+//       $caret: baseTheme.colors.$pink500,
+//       $selection: baseTheme.colors.$pink500,
+
+//       $focusedBackground: baseTheme.colors.$black,
+//       $focusedForeground: baseTheme.colors.$white,
+//       $runningBackground: baseTheme.colors.$gray900,
+//       $runningForeground: baseTheme.colors.$gray400,
+//       $successBackground: baseTheme.colors.$teal900,
+//       $successForeground: baseTheme.colors.$teal400,
+//       $errorBackground: baseTheme.colors.$red900,
+//       $errorForeground: baseTheme.colors.$red400,
+
+//       $currentDirForeground: baseTheme.colors.$pink900,
+//       $currentDirBackground: baseTheme.colors.$white,
+
+//       $focusedSuggestionBackground: baseTheme.colors.$blue600,
+//       $focusedSuggestionForeground: baseTheme.colors.$white,
+//     },
+//   }
+
 const base = {
   colors: {
-    foreground: 'white',
-    background: 'black',
+    base: 'vs', // VSCode base theme
+
+    background: '#FFFFFF',
+    foreground: '#000000',
 
     primary: '#3B82F6',
+    selection: '#BFDBFE',
   },
   space: {
     px: '1px',
@@ -62,10 +97,9 @@ const base = {
   },
   // todo: inter, hack
   fonts: {
-    $sans:
-      '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
-    $mono: 'Menlo, Courier, Courier New, Monaco, Consolas, "Liberation Mono", monospace',
-    $serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
+    sans: '"SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+    mono: 'Menlo, Courier, Courier New, Monaco, Consolas, "Liberation Mono", monospace',
+    serif: 'Georgia, Cambria, "Times New Roman", Times, serif',
   },
   fontWeights: {
     thin: '100',
@@ -149,7 +183,10 @@ export const light = base
 export const dark = {
   colors: {
     ...base.colors,
-    foreground: 'black',
-    background: 'white',
+
+    base: 'vs-dark', // VSCode base theme
+
+    background: '#000000',
+    foreground: '#000000',
   },
 }

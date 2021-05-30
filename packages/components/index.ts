@@ -1,5 +1,0 @@
-export * from './src/button'
-export * from './src/flex'
-export * from './src/path'
-export * from './src/svg'
-export * from './style'

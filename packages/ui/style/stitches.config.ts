@@ -58,3 +58,24 @@ export const { styled, css, global, keyframes, getCssString, theme } = createCss
 })
 
 export const darkTheme = theme(dark)
+
+export const globalStyles = global({
+  body: {
+    backgroundColor: '$background',
+    color: '$foreground',
+    caretColor: '$caret',
+    fontFamily: '$sans',
+
+    position: 'fixed',
+    top: '$2',
+    right: '$2',
+    bottom: '$2',
+    left: '$2',
+
+    '*': {
+      '::selection': {
+        backgroundColor: '$selection',
+      },
+    },
+  },
+})
