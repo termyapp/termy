@@ -1,11 +1,5 @@
-import { getTheme, ipc } from '@src/utils'
-import type {
-  Cell,
-  FrontendMessage,
-  Message,
-  ThemeMode,
-  WindowInfo,
-} from '@types'
+import { ipc } from '@src/utils'
+import type { Cell, FrontendMessage, Message, Themes, WindowInfo } from '@types'
 import produce from 'immer'
 import { v4 } from 'uuid'
 import { getDefaultCell, nextOrLast, nextOrPrevious } from './helpers'
@@ -22,7 +16,7 @@ export type Action =
   | { type: 'kill-cell'; id?: string }
   | { type: 'resume-cell'; id?: string }
   | ({ type: 'frontend-message' } & FrontendMessage)
-  | { type: 'set-theme'; theme: ThemeMode }
+  | { type: 'set-theme'; theme: Themes }
   | { type: 'focus-cell'; id: string | 'next' | 'previous' }
   | { type: 'focus-tab'; id: string | 'next' | 'previous' }
   | { type: 'update-window-info'; info: WindowInfo }
@@ -59,9 +53,7 @@ export default function reducer(state: State, action: Action) {
             // remove cell
             delete draft.cells[id]
             draft.tabs[draft.activeTab].activeCell = nextOrLast(id, cells)
-            const index = draft.tabs[draft.activeTab].cells.findIndex(
-              cell => cell === id,
-            )
+            const index = draft.tabs[draft.activeTab].cells.findIndex(cell => cell === id)
             if (index !== -1) draft.tabs[draft.activeTab].cells.splice(index, 1)
           }
           // if it is the last remaining cell in the active tab, remove the tab
@@ -79,9 +71,7 @@ export default function reducer(state: State, action: Action) {
             // same as other remove cell
             delete draft.cells[id]
             draft.tabs[draft.activeTab].activeCell = nextOrLast(id, cells)
-            const index = draft.tabs[draft.activeTab].cells.findIndex(
-              cell => cell === id,
-            )
+            const index = draft.tabs[draft.activeTab].cells.findIndex(cell => cell === id)
             if (index !== -1) draft.tabs[draft.activeTab].cells.splice(index, 1)
           }
         }
@@ -174,7 +164,7 @@ export default function reducer(state: State, action: Action) {
         break
       }
       case 'set-theme': {
-        draft.theme = getTheme(action.theme)
+        draft.theme = action.theme
         break
       }
       case 'update-window-info': {

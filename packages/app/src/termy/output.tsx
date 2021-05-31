@@ -1,13 +1,7 @@
-import { Div } from '@components'
 import { useListener, useXterm } from '@hooks'
-import { styled } from '@src/stitches.config'
 import useStore, { dispatchSelector } from '@src/store'
-import type {
-  CellWithActive,
-  Component,
-  NativeMessage,
-  ThemeMode,
-} from '@types'
+import { Div, styled } from '@termy/ui'
+import type { CellWithActive, Component, NativeMessage, Themes } from '@types'
 import React, { useEffect, useState } from 'react'
 import GUI from './gui'
 
@@ -32,15 +26,13 @@ export default function Output(cell: CellWithActive) {
               break
             }
             case 'component': {
-              if (type !== 'gui')
-                dispatch({ type: 'set-cell', id, cell: { type: 'gui' } })
+              if (type !== 'gui') dispatch({ type: 'set-cell', id, cell: { type: 'gui' } })
 
               setGui(value)
               break
             }
             case 'tui': {
-              if (type !== 'tui')
-                dispatch({ type: 'set-cell', id, cell: { type: 'tui' } })
+              if (type !== 'tui') dispatch({ type: 'set-cell', id, cell: { type: 'tui' } })
 
               const chunk = new Uint8Array(value)
               terminalRef.current?.write(chunk, () => {
@@ -63,7 +55,7 @@ export default function Output(cell: CellWithActive) {
                   case 'theme': {
                     dispatch({
                       type: 'set-theme',
-                      theme: v as ThemeMode,
+                      theme: v as Themes,
                     })
                     break
                   }
@@ -88,7 +80,7 @@ export default function Output(cell: CellWithActive) {
     [id, type, dispatch],
   )
 
-  const focusMdx = () => {} // todo: focus
+  const focusGui = () => {} // todo: focus
 
   // focus output after running the cell
   useEffect(() => {
@@ -96,7 +88,7 @@ export default function Output(cell: CellWithActive) {
       if (type === 'tui') {
         terminalRef.current?.focus()
       } else {
-        focusMdx()
+        focusGui()
       }
     }
   }, [status, type])
@@ -105,9 +97,7 @@ export default function Output(cell: CellWithActive) {
     <Wrapper
       id={`output-${id}`}
       tabIndex={-1} // make it focusable
-      onFocus={() =>
-        type === 'tui' ? terminalRef.current?.focus() : focusMdx()
-      }
+      onFocus={() => (type === 'tui' ? terminalRef.current?.focus() : focusGui())}
     >
       <Pty show={type === 'tui'}>
         <Div
@@ -134,7 +124,7 @@ export default function Output(cell: CellWithActive) {
   )
 }
 
-const Wrapper = styled(Div, {
+const Wrapper = styled('div', {
   position: 'relative',
   px: '$2',
   py: '$1',
@@ -142,7 +132,7 @@ const Wrapper = styled(Div, {
   overflowY: 'auto',
 })
 
-const Pty = styled(Div, {
+const Pty = styled('div', {
   position: 'relative',
 
   variants: {

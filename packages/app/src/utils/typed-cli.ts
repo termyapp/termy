@@ -1,4 +1,4 @@
-import type { Suggestion, SuggestionKind } from 'types'
+import type { Suggestion, SuggestionKind } from '@types'
 
 interface Command {
   name: string

@@ -1,8 +1,7 @@
 import Editor from '@monaco-editor/react'
-import { Div } from '@src/components'
-import useStore, { themeSelector } from '@src/store'
 import { TERMY } from '@src/termy/input'
 import { ipc } from '@src/utils'
+import { Div, theme } from '@termy/ui'
 import type { Message } from '@types'
 import React from 'react'
 
@@ -13,8 +12,6 @@ interface Props {
 }
 
 export default function Edit({ path, content: value, language }: Props) {
-  const theme = useStore(themeSelector)
-
   return (
     <Div
       css={{
@@ -46,7 +43,7 @@ export default function Edit({ path, content: value, language }: Props) {
         options={{
           fontSize: 16,
           suggestFontSize: 16,
-          fontFamily: theme.fonts.$mono,
+          fontFamily: theme.fonts.mono,
         }}
       />
     </Div>

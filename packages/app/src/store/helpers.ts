@@ -19,11 +19,7 @@ export const nextOrLast = (key: string, keys: string[]) => {
   return keys[newIndex]
 }
 
-export const nextOrPrevious = (
-  direction: 'next' | 'previous',
-  key: string,
-  keys: string[],
-) => {
+export const nextOrPrevious = (direction: 'next' | 'previous', key: string, keys: string[]) => {
   if (keys.length <= 1) return key
 
   const index = keys.indexOf(key)

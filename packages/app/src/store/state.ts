@@ -1,7 +1,6 @@
-import type { darkTheme } from '@src/themes'
 import { v4 } from 'uuid'
-import type { Cell, WindowInfo } from '../../types'
-import { getTheme, ipc, isDev } from '../utils'
+import type { Cell, Themes, WindowInfo } from '@types'
+import { ipc } from '../utils'
 import { getDefaultCell } from './helpers'
 
 const TERMY_STATE = 'TERMY_STATE'
@@ -20,7 +19,7 @@ export interface State {
   cells: {
     [id: string]: Cell
   }
-  theme: typeof darkTheme
+  theme: Themes
 }
 
 export const getState = (): State => {
@@ -59,7 +58,7 @@ export const getDefaultState = (): State => {
     cells: {
       [cell.id]: cell,
     },
-    theme: getTheme(isDev ? '#fff' : '#000'), // todo: refactor theme and fix circular dependency error
+    theme: 'light',
   }
 
   return state

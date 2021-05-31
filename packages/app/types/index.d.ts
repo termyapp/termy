@@ -2,7 +2,7 @@ export type Status = 'running' | 'success' | 'error' | null
 
 export type OutputType = 'tui' | 'gui' | null
 
-export type ThemeMode = '#fff' | '#000'
+export type Themes = 'light' | 'dark'
 
 export interface Cell {
   id: string

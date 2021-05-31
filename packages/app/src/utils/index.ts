@@ -1,10 +1,6 @@
-import type { Status, ThemeMode } from '../../types'
-import { darkTheme, lightTheme } from '../themes'
+import type { Status } from '@types'
 
 export const isDev = import.meta.env.MODE === 'development'
-
-export const getTheme = (mode?: ThemeMode) =>
-  mode === '#000' ? darkTheme : lightTheme
 
 export const isMac = /Mac/.test(navigator.userAgent)
 

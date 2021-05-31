@@ -1,7 +1,6 @@
 import useStore, { dispatchSelector } from '@src/store'
 import React, { useCallback, useEffect } from 'react'
-import { Flex } from '../components'
-import { styled } from '../stitches.config'
+import { styled } from '@termy/ui'
 import Output from './output'
 import Prompt from './prompt'
 
@@ -35,7 +34,8 @@ export default function Cell({ id, active, showBorder }: Props) {
   )
 }
 
-const Container = styled(Flex, {
+const Container = styled('div', {
+  display: 'flex',
   position: 'relative',
   flexDirection: 'column',
   // borderRadius: '$default',

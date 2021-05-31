@@ -1,29 +1,29 @@
 import { useMonaco } from '@monaco-editor/react'
 import { useGlobalShortcuts, useWindowInfo } from '@src/hooks'
-import { css, globalStyles } from '@src/stitches.config'
+import { darkTheme, globalStyles } from '@termy/ui'
 import useStore, { themeSelector } from '@src/store'
 import { getThemeData, loadMonaco } from '@src/utils'
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { TERMY } from './input'
 import Tabs from './tabs'
 
 loadMonaco()
 
 export default function Termy() {
+  globalStyles()
+
   const theme = useStore(themeSelector)
-
-  useMemo(() => globalStyles(), [])
-  const themeClass = useMemo(() => css.theme(theme), [theme])
-
   useEffect(() => {
-    document.body.className = themeClass
-  }, [themeClass])
+    // light is the default theme
+    document.body.className = theme === 'light' ? '' : darkTheme
+  }, [theme])
 
+  // init monaco
   const monaco = useMonaco()
 
   // update monaco theme
   useEffect(() => {
-    monaco?.editor.defineTheme(TERMY, getThemeData(theme))
+    monaco?.editor.defineTheme(TERMY, getThemeData())
     monaco?.editor.setTheme(TERMY) // force re-render
   }, [theme, monaco])
 

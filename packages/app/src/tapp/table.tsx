@@ -1,4 +1,4 @@
-import { styled } from '@src/stitches.config'
+import { Div, styled } from '@termy/ui'
 import React from 'react'
 
 interface Props {
@@ -49,4 +49,4 @@ export default function Table({ json }: Props) {
   )
 }
 
-const Container = styled.table({})
+const Container = styled('table', {})

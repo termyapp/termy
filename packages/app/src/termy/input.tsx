@@ -3,20 +3,13 @@ import useStore, { dispatchSelector, themeSelector } from '@src/store'
 // only import it as type, otherwise it overrides @monaco-editor/react instance
 import type * as Monaco from 'monaco-editor'
 import React, { useEffect, useRef } from 'react'
-import type { CellWithActive } from '../../types'
-import { Div } from '../components'
+import type { CellWithActive } from '@types'
+import { Div, theme } from '@termy/ui'
 
 export const TERMY = 'shell'
 
-export default function Input({
-  id,
-  currentDir,
-  value,
-  status,
-  active,
-}: CellWithActive) {
+export default function Input({ id, currentDir, value, status, active }: CellWithActive) {
   const dispatch = useStore(dispatchSelector)
-  const theme = useStore(themeSelector)
 
   const currentDirRef = useRef<string>(currentDir)
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
@@ -174,8 +167,8 @@ export default function Input({
               },
               fontSize: 18,
               suggestFontSize: 16,
-              fontFamily: theme.fonts.$mono,
-              fontWeight: theme.fontWeights.$medium,
+              fontFamily: theme.fonts.mono,
+              fontWeight: theme.fontWeights.medium,
 
               minimap: { enabled: false },
               scrollbar: {

@@ -1,7 +1,7 @@
 import * as ReactTabs from '@radix-ui/react-tabs'
 import { useMousetrap } from '@src/hooks'
-import { styled } from '@src/stitches.config'
 import { focusCell } from '@src/utils'
+import { styled } from '@termy/ui'
 import React, { useCallback, useEffect } from 'react'
 import useStore, { dispatchSelector } from '../store'
 import Cell from './cell'
@@ -15,9 +15,7 @@ interface Props {
 export default function Tab({ id, index, activeTab }: Props) {
   const dispatch = useStore(dispatchSelector)
   const cellIds = useStore(useCallback(state => state.tabs[id].cells, [id]))
-  const activeCell = useStore(
-    useCallback(state => state.cells[state.tabs[id].activeCell], [id]),
-  )
+  const activeCell = useStore(useCallback(state => state.cells[state.tabs[id].activeCell], [id]))
 
   // todo: Mod + 9 should focus last tab? what about Mod + 0?
   useMousetrap(`mod+${index + 1}`, () => {

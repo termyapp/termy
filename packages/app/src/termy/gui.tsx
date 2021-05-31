@@ -1,5 +1,6 @@
-import { Path, Table } from '@components'
 import Edit from '@src/tapp/edit'
+import Table from '@src/tapp/table'
+import { Path } from '@termy/ui'
 import type { Component } from '@types'
 import React from 'react'
 import ReactFromJSON from 'react-from-json'

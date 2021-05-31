@@ -1,6 +1,7 @@
 import { useDebounce } from '@hooks'
-import useStore, { dispatchSelector, themeSelector } from '@src/store'
+import useStore, { dispatchSelector } from '@src/store'
 import { isMac } from '@src/utils'
+import { theme } from '@termy/ui'
 import type { CellWithActive, XtermSize } from '@types'
 import { useEffect, useRef, useState } from 'react'
 import { Terminal } from 'xterm'
@@ -12,7 +13,6 @@ const SHORTCUTS = ['r', 't', 's', 'n', 'w', 'j', 'k']
 const fitAddon = new FitAddon()
 
 export default function useXterm({ id, status, active, type }: CellWithActive) {
-  const theme = useStore(themeSelector)
   const dispatch = useStore(dispatchSelector)
 
   const [size, setSize] = useState<XtermSize>()
@@ -35,8 +35,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
       }),
     )
 
-    if (terminalContainerRef.current)
-      terminal.open(terminalContainerRef.current)
+    if (terminalContainerRef.current) terminal.open(terminalContainerRef.current)
 
     terminal.attachCustomKeyEventHandler(e => {
       if (!isMac && e.ctrlKey && SHORTCUTS.includes(e.key)) return false
@@ -60,8 +59,7 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
     })
 
     // adds an extra layer to focus...
-    const xtermElemntThatMessesUpFocus = terminalContainerRef.current
-      ?.children[0] as HTMLDivElement
+    const xtermElemntThatMessesUpFocus = terminalContainerRef.current?.children[0] as HTMLDivElement
     if (xtermElemntThatMessesUpFocus) {
       xtermElemntThatMessesUpFocus.tabIndex = -1
     }
@@ -102,17 +100,15 @@ export default function useXterm({ id, status, active, type }: CellWithActive) {
 
   // update theme
   useEffect(() => {
-    const background = active
-      ? theme.colors.$focusedBackground
-      : theme.colors.$background
-    const cursor = over ? background : theme.colors.$caret
+    const background = theme.colors.background.value
+    const cursor = over ? background : theme.colors.primary.value
     terminalRef.current?.setOption('theme', {
       background,
-      foreground: theme.colors.$foreground,
-      selection: theme.colors.$selection, // color looks lighter in xterm, idk why
+      foreground: theme.colors.foreground.value,
+      selection: theme.colors.selection.value, // color looks lighter in xterm, idk why
       cursor,
     })
-    terminalRef.current?.setOption('fontFamily', theme.fonts.$mono)
+    terminalRef.current?.setOption('fontFamily', theme.fonts.mono.value)
   }, [theme, active, over])
 
   // resize observer
