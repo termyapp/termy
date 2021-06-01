@@ -38,7 +38,7 @@ const Container = styled('div', {
   display: 'flex',
   position: 'relative',
   flexDirection: 'column',
-  // borderRadius: '$default',
+  borderRadius: '$md',
 
   variants: {
     active: {
@@ -51,10 +51,10 @@ const Container = styled('div', {
     },
     showBorder: {
       true: {
-        // border: '1px solid $accent',
+        border: '2px solid $primary',
       },
       false: {
-        // border: '1px solid transparent',
+        border: '2px solid transparent',
       },
     },
   },

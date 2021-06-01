@@ -31,27 +31,21 @@ cd native
 yarn build
 ```
 
-3. Download [monaco-editor](https://microsoft.github.io/monaco-editor), unzip it and move the package to the external folder
-
-```
-mv path/to/downloaded/package external/monaco-editor
-```
-
-4. Start the electron server:
+3. Start the electron server:
 
 ```
 cd electron
 yarn dev
 ```
 
-5. In a separate cell, start the app server:
+4. In a separate cell, start the app server:
 
 ```
 cd app
 yarn dev
 ```
 
-6. If a window pops up now that means that you've done everything right!
+5. If a window pops up now that means that you've done everything right!
 
 # Building
 

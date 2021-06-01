@@ -103,7 +103,7 @@ const Wrapper = styled(Div, {
 })
 
 const CurrentDir = styled(Flex, {
-  mr: '$1',
+  mr: '$2',
   ml: '$2',
   fontSize: '$sm',
   transform: 'translateY(1.5px)',
