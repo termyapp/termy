@@ -30,6 +30,7 @@
     "rollup-plugin-typescript2": "^0.30.0"
   },
   "dependencies": {
+    "@devbookhq/splitter": "^1.0.4",
     "@stitches/react": "^0.1.9"
   }
 }
