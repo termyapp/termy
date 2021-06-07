@@ -1,6 +1,6 @@
 import useStore, { dispatchSelector } from '@src/store'
 import React, { useCallback, useEffect } from 'react'
-import { styled } from '@termy/ui'
+import { Cell as Container } from '@termy/ui'
 import Output from './output'
 import Prompt from './prompt'
 
@@ -33,29 +33,3 @@ export default function Cell({ id, active, showBorder }: Props) {
     </Container>
   )
 }
-
-const Container = styled('div', {
-  display: 'flex',
-  position: 'relative',
-  flexDirection: 'column',
-  borderRadius: '$md',
-
-  variants: {
-    active: {
-      true: {
-        opacity: 1,
-      },
-      false: {
-        opacity: 0.76,
-      },
-    },
-    showBorder: {
-      true: {
-        border: '2px solid $primary',
-      },
-      false: {
-        border: '2px solid transparent',
-      },
-    },
-  },
-})
