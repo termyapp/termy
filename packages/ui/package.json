@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@devbookhq/splitter": "^1.0.4",
+    "@radix-ui/react-tabs": "^0.0.13",
     "@stitches/react": "^0.1.9"
   }
 }
